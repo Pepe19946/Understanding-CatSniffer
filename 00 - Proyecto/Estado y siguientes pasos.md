@@ -1,5 +1,17 @@
 # Estado y siguientes pasos
 
+## Preparación de evaluación física — 2026-10-01
+
+- Se crearon [[FeralRF - Guía de validación experimental]] y [[FeralRF - Matriz de pruebas]] en `05 - Evaluación`.
+- Baseline host aportado: Windows, Python 3.14.7, pytest 9.1.1, `python -m pytest -rs` → 422 passed y 1 skipped por dependencia opcional KillerBee; el fallo de `pytest` simple se conserva como observación de reproducibilidad.
+- Se conservan 38 casos (`EV-00`…`EV-54`, con numeración por nivel) y ahora 35 registros `KI`; **ninguno fue ejecutado físicamente**. KI-33–35 documentan identidad Catnip no persistente/fallback COM, auto-flash y ausencia de TI sniffer V2 provisionable, y compatibilidad FeralRF-V2 no establecida.
+- Hardware actual: `DUT-V3-FERAL` (V3/P7/RP2040) más `OBS-V2-A-STOCK` y `OBS-V2-B-STOCK` (V2/P1/SAMD21), que se preservan como referencias conocidas-buenas. Fuente disponible: `PROTOCOL-DEVICE-ZIGBEE-CH25`, tráfico Zigbee continuo en canal 25.
+- CatSniffer-Tools se revalidó en la rama local solicitada `fix/CLI_control`, HEAD `126f13bc0441ad3f37fe0b029160a3c526e4d309` (2026-09-28), tres commits detrás del upstream y con el archivo no rastreado preexistente `py`. La implementación agrupa interfaces USB y mapea Bridge/LoRa/Shell antes de recurrir al orden COM; `devices --debug`, `identify` y `status` sustituyen la inspección ciega, aunque FeralRF aún calcula Shell=`Bridge+2` internamente.
+- Prioridad inmediata: Catnip+Windows para identidad/puertos, init/info/stats, RX start/stop, reconnect, reset sólo tras verificar Shell, y EV-05 contra la fuente Zigbee CH25. Después se separan OTA simétrica (`AUX-V3-FERAL`) y referencia independiente (`AUX-V3-STOCK`/instrumento/protocol device).
+- **FeralRF on CatSniffer V2: compatibility not established; do not flash as part of the current baseline.** No existe target explícito P1/SAMD21; ambos V2 permanecen stock.
+- Bloqueadores principales: estado U2/CTF, hashes de firmware, llegada/rol del segundo V3, equipo RF y autorización de bandas. La ausencia de segunda V3 ya no bloquea EV-05 ni EV-43 por existir tráfico Zigbee CH25.
+- Repositorios fuente permanecen fuera del alcance de escritura; FeralRF conserva el submódulo TI sucio preexistente.
+
 ## Trabajo transversal — refactor pedagógico
 
 - **Fecha:** `2026-09-28`.
