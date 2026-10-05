@@ -1,18 +1,18 @@
 # FeralRF - Matriz de pruebas
 
-> Estado inicial de nuestra validación: **NOT YET RUN** en todas las filas. Los resultados del repositorio son historia documental, no resultados propios.
+> La columna **Nuestra validación** conserva el estado auditado de la campaña. Los resultados de `Historia repo` son sólo antecedentes documentales. Las instrucciones ejecutables vigentes están en [[FeralRF - Guía de validación experimental#Procedimiento operativo completo por EV|Procedimiento operativo completo por EV]].
 
 | ID | Cat. | Capacidad | Origen / KI | Estado README/docs | ¿Código? | Cobertura unitaria | Script HW | Historia repo | Nuestra validación | Hardware / externo | Evidencia esperada | Resultado / notas |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|
-| EV-00 | L0 P0 | Puertos/autodetect | baseline; KI-15 | estable implícito | sí | mocks parciales | no | no separada | NOT YET RUN | 1 placa/Windows | lista COM+VID+nombre | — |
-| EV-01 | L0 P0 | init/info/stats | estable; KI-25 | Stable | sí | strict responses | smoke varios | control 18/18 | NOT YET RUN | 1 | stdout/timing | — |
-| EV-02 | L0 P0 | RX start/stop IEEE | estable; KI-31 | Stable | sí | host mocks | `smoke_phy4` | PASS control/OTA | NOT YET RUN | 1 | ACK/error/packets | — |
-| EV-03 | L0 P0 | reconnect | stress | no estado | sí | parcial | no | sin dato | NOT YET RUN | 1 | 5/5 ciclos | — |
-| EV-04 | L0 P0 | reset/recovery | workaround; KI-15 | requerido | sí host/RP | mock adapter | baseline reset | PASS histórico | NOT YET RUN | 1, Shell | 3/3 recovery | — |
-| EV-05 | L0 P1 | primera RX física | Stable; KI-22 | IEEE Stable | sí | no RF | `smoke_phy4` | 10/10 OTA | NOT YET RUN | 1 + fuente propia | trama/RSSI | — |
-| EV-06 | L0 P1 | exclusión RX/TX | negativo; KI-31 | regla de estado | sí | parcial | no | sin dato | NOT YET RUN | 1 | ERROR 0x05+recovery | — |
-| EV-10 | L1 P1 | PHY 0–7 control | baseline; KI-02 | Stable/Experimental | sí | enum/contract | `smoke_phase2` | PASS control | NOT YET RUN | 1 | salida por PHY | ACK≠RF |
-| EV-11 | L1 P1/2 | presets control | baseline; KI-03/04/20 | mixto | sí | schema/roundtrip | `smoke_prop` | mixto | NOT YET RUN | 1, antenas | log por preset | TX breve |
+| EV-00 | L0 P0 | Puertos/autodetect | baseline; KI-15 | estable implícito | sí | mocks parciales | no | no separada | **PARTIAL** | 2 V3/Windows | `devices --debug`, status, identify, HWID/location | mapa COM existe; falta suplemento |
+| EV-01 | L0 P0 | init/info/stats | estable; KI-25 | Stable | sí | strict responses | smoke varios | control 18/18 | **PARTIAL**, control favorable | DUT #1 | stdout/timing 3/3 | completar serie formal |
+| EV-02 | L0 P0 | RX start/stop IEEE | estable; KI-31 | Stable | sí | host mocks | `smoke_phy4` | PASS control/OTA | **PASS-control** | DUT #1 | ACK/error/STOP | no repetir salvo regresión |
+| EV-03 | L0 P0 | reconnect | stress | no estado | sí | parcial | no | sin dato | **PASS-control 5/5** | DUT #1 | 5/5 ciclos | cerrado para escenario probado |
+| EV-04 | L0 P0 | reset/recovery | workaround; KI-15 | requerido | sí host/RP | mock adapter | baseline reset | PASS histórico | **BLOCKED API; PASS-recovery manual 1/1** | Shell explícitos COM87/COM30 | recovery explícito | nunca derivar Shell |
+| EV-05 | L0 P1 | primera RX física | Stable; KI-22 | IEEE Stable | sí | no RF | `smoke_phy4` | 10/10 OTA | **PASS-RF RX IEEE**, atribución limitada | DUT + Zigbee CH25; peer opcional | trama/RSSI/LQI/CRC; PCAP pendiente | suplemento simultáneo opcional |
+| EV-06 | L0 P1 | exclusión RX/TX | negativo; KI-31 | regla de estado | sí | parcial | no | sin dato | **PASS-control/state-rejection** | DUT #1 | ERROR 0x05+recovery | no repetir |
+| EV-10 | L1 P1 | PHY 0–7 control | baseline; KI-02 | Stable/Experimental | sí | enum/contract | `smoke_phase2` | PASS control | **PASS-control 8/8** | DUT #1 | salida por PHY | no acredita RF |
+| EV-11 | L1 P1/2 | presets control | baseline; KI-03/04/20 | mixto | sí | schema/roundtrip | `smoke_prop` | mixto | **PASS-control reportado 27/27** | DUT #1, antenas | 18 logs individuales; 9 resumidos | repetir sólo 9 si faltan logs |
 | EV-12 | L1 P1 | raw/frame/burst/continuous | Stable; KI-14/29 | Stable | sí | builders | `smoke_tx_*` | PASS ambiguo | NOT YET RUN | 1 + observer ideal | ACK+captura | TX RF |
 | EV-13 | L1/2 P2 | CW/PRBS/stop | Stable; KI-07 | Stable | sí | mocks | `smoke_f22` | PASS wire 2026-04-29 | NOT YET RUN | analizador/2 placas | frecuencia/potencia/stop | TX RF |
 | EV-14 | L1 P0 | error RF asíncrono | KI-12/31 | documentado | sí | async errors | indirecto | troubleshooting | NOT YET RUN | 1 | timeline/error/bytes | — |
@@ -45,15 +45,15 @@
 
 ## Resumen de recursos
 
-- **Disponible ahora:** `DUT-V3-FERAL` ejecuta EV-00–06, 10–12 (control), 14–15, 30–31, 41–43, 45–47; `PROTOCOL-DEVICE-ZIGBEE-CH25` convierte EV-05 y EV-43 en recepción RF real. Los V2 permanecen stock.
-- **AUX-V3-FERAL:** habilita OTA simétrica EV-20–28, EV-40 y EV-44; no sustituye una implementación independiente.
+- **Disponible ahora:** `DUT-V3-FERAL` #1 (`COM88/COM86/COM87`) y `PEER-V3-FERAL` #2 (`COM31/COM32/COM30`) permiten los controles de una placa y OTA simétrica EV-12, EV-20–28 y EV-44 mediante los procedimientos seguros de la guía. `PROTOCOL-DEVICE-ZIGBEE-CH25` aporta recepción RF real a EV-05/43. Los V2 permanecen stock.
+- **Dos V3 con FeralRF:** habilitan evidencia física entre placas, pero siguen siendo la misma implementación. EV-40 permanece bloqueado porque el baseline oficial deriva Shell como `Bridge+2`; no debe ejecutarse sin corregir upstream.
 - **AUX-V3-STOCK:** fortalece IEEE/sniffing y tooling oficial; no se presume que cubra OOK, 4FSK o propietario 2.4 GHz.
 - **Equipo RF independiente:** EV-13, 23–27 y 50; SDR sirve para energía/frecuencia/decodificación compatible, analizador/power meter para potencia/espectro.
 - **Dispositivo/software tercero:** EV-25 (W-MBus), EV-26 (Wi-SUN/Sidewalk), EV-29 (KillerBee/Wireshark), EV-30 (`cryptography`). Un PC necesita radio compatible para producir RF.
 
 ## Matriz compacta de roles y preparación
 
-Leyenda: `D`=`DUT-V3-FERAL`; `AF`=`AUX-V3-FERAL`; `AS`=`AUX-V3-STOCK`; `V2`=`OBS-V2-A/B-STOCK`; `Z25`=`PROTOCOL-DEVICE-ZIGBEE-CH25`; `I`=`RF-OBSERVER`; `P`=`PROTOCOL-DEVICE`; `H`=`HOST-TOOL`. `Sí*` significa sólo la parte indicada. `DISC`, `ZSN` y `FSK` remiten a [[FeralRF - Guía de validación experimental#Procedimiento operativo de Catnip CLI|Procedimiento operativo de Catnip CLI]] §§3–9; allí están los comandos exactos y sus efectos. `—`=sin acción Catnip adicional después del preflight. La tabla complementa, no reemplaza, los estados históricos de arriba.
+Leyenda: `D`=`DUT-V3-FERAL` #1; `AF`=`PEER-V3-FERAL`/`AUX-V3-FERAL` #2, disponible ahora; `AS`=`AUX-V3-STOCK`; `V2`=`OBS-V2-A/B-STOCK`; `Z25`=`PROTOCOL-DEVICE-ZIGBEE-CH25`; `I`=`RF-OBSERVER`; `P`=`PROTOCOL-DEVICE`; `H`=`HOST-TOOL`. `Sí*` significa sólo la parte indicada. `DISC`, `ZSN` y `FSK` remiten a [[FeralRF - Guía de validación experimental#Procedimiento operativo de Catnip CLI|Procedimiento operativo de Catnip CLI]] §§3–9; allí están los comandos exactos y sus efectos. Para los comandos concretos de cada EV, usar [[FeralRF - Guía de validación experimental#Procedimiento operativo completo por EV|Procedimiento operativo completo por EV]]. `—`=sin acción Catnip adicional después del preflight.
 
 | EV | Mínimo hardware/roles | Ahora D+V2 | Con AF | Con AS | ¿Independiente preferible? | Preparación Catnip | Firmware peer requerido |
 |---|---|---|---|---|---|---|---|

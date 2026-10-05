@@ -10,14 +10,14 @@
 | Rama / upstream | `main` / `origin/main` |
 | Commit | `0178721cbd4f0d0f6f8eba5ae919ca46066d5dea` |
 | Fecha / asunto | `2026-07-22 12:34:03 -0600` — `docs: fix remaining 'RF_open at boot' folklore in architecture layer rules` |
-| Árbol | No limpio antes de este trabajo: `firmware/sdk/simplelink_cc13xx_cc26xx_sdk_8_30_01_01` aparece modificado. No se tocó. |
+| Árbol | No limpio: `firmware/sdk/simplelink_cc13xx_cc26xx_sdk_8_30_01_01` aparece modificado. En un control intermedio también era visible el archivo no rastreado y vacío `python/catnip` (timestamp 2026-10-01), pero dejó de existir antes del control final sin que esta revisión emitiera ningún borrado/clean/reset; no se recreó. |
 | Baseline host aportado | Windows, Python 3.14.7, pytest 9.1.1: `python -m pytest -rs` → **422 passed, 1 skipped**; el skip es `test_killerbee_dispatch.py` por ausencia de `killerbee`. `pytest` solo falla al importar `tests`: observación de entorno, no defecto funcional confirmado. |
 
 Fuentes principales: `README.md`; `docs/{ARCHITECTURE,PYTHON_API,VALIDATION_MATRIX,protocol,TESTING-ON-LINUX}.md`; `hardware/PINOUT.md`; `python/feralrf/`; `python/tests/`; `python/examples/`; `python/examples/lab/`; `firmware/cc1352/{include,src}/`. Contexto del Vault: [[Arquitectura FeralRF]], [[Protocolo y API Python]], [[Matriz de capacidades]] y [[Pruebas y evidencia existente]].
 
 ### Evidencia adicional: CatSniffer-Tools/Catnip
 
-Se inspeccionó `CatSniffer-Tools` sin cambiar de rama ni modificarlo: rama local `fix/CLI_control`, commit `126f13bc0441ad3f37fe0b029160a3c526e4d309`, fecha `2026-09-28 10:54:48 -0600`, tres commits detrás de `origin/fix/CLI_control`, con el archivo no rastreado preexistente `py`. Las afirmaciones siguientes proceden de implementación, no sólo del README:
+Se inspeccionó `CatSniffer-Tools` sin cambiar de rama ni modificarlo: rama local `fix/CLI_control`, commit `126f13bc0441ad3f37fe0b029160a3c526e4d309`, fecha `2026-09-28 10:54:48 -0600`, tres commits detrás de `origin/fix/CLI_control`. El archivo no rastreado preexistente `py` fue visible en un control intermedio, pero dejó de existir antes del control final sin que esta revisión emitiera ningún borrado/clean/reset; no se recreó. Las afirmaciones siguientes proceden de implementación, no sólo del README:
 
 - `catnip/modules/core/usb_connection.py`, `USBConnection.find_devices()`, `_group_ports_by_device()` y `_map_roles()`: VID/PID `1209:BABB`; agrupa las tres interfaces de una placa por serial/HWID/location y asigna Cat-Bridge, Cat-LoRa y Cat-Shell por descripción, atributo `interface` o índice USB; sólo como último recurso ordena los COM. El `Device ID` es numérico y se reasigna durante cada enumeración: no es identidad persistente.
 - `catnip/modules/device/cli.py`, comandos Click `devices`, `identify` y `status`: `catnip devices --debug` muestra campos USB crudos; `catnip identify --device N` hace identificación segura por Cat-Shell; `catnip status --device N --diagnostics` muestra revisión, tres COM, firmware CC reconocido y diagnóstico. Un FeralRF custom puede aparecer como firmware desconocido: confirmar además con `Radio.get_info()`.
@@ -32,7 +32,7 @@ Se inspeccionó `CatSniffer-Tools` sin cambiar de rama ni modificarlo: rama loca
 | Placa | Host USB | Radio principal | Familia oficial observada en repos | Control/flasheo | Uso en esta campaña |
 |---|---|---|---|---|---|
 | CatSniffer V2.0 | SAMD21E17 | CC1352P1 | host `SAMD21/catsniffer`; imágenes/tag V2/P1 | tres CDC; bootloader SAMD/UF2 y bootloader serie CC; recuperación CC externa por cJTAG si se cruza variante | `OBS-V2-A-STOCK`, `OBS-V2-B-STOCK`; conservar conocidas-buenas |
-| CatSniffer V3 | RP2040 | CC1352P7 | host `RP2040/catsniffer`; imágenes V3/P7 | tres CDC; ROM BOOTSEL/UF2 RP2040; CC por Shell+Bridge; recuperación CMSIS-DAP disponible | `DUT-V3-FERAL`; futuro `AUX-V3-*` |
+| CatSniffer V3 | RP2040 | CC1352P7 | host `RP2040/catsniffer`; imágenes V3/P7 | tres CDC; ROM BOOTSEL/UF2 RP2040; CC por Shell+Bridge; recuperación CMSIS-DAP disponible | #1 `DUT-V3-FERAL`: Bridge `COM88`, LoRa `COM86`, Shell `COM87`; #2 `PEER-V3-FERAL`/`AUX-V3-FERAL`: Bridge `COM31`, LoRa `COM32`, Shell `COM30` |
 
 FeralRF declara CC1352P7 + RP2040. `firmware/cc1352/CMakeLists.txt` usa por defecto `DEVICE_VARIANT=CC1352P7`; SysConfig/SmartRF y bibliotecas actuales son de la familia CC13x2x7. Aunque existe una cadena alternativa `CC1352P`, no hay configuración de placa V2/SAMD21 ni target explícito CC1352P1. La coincidencia parcial de familia CC13xx no demuestra compatibilidad.
 
@@ -44,16 +44,16 @@ Un HEX P7 en un P1 puede inutilizar el bootloader serie y exigir cJTAG. Los dos 
 
 | Rol | Significado |
 |---|---|
-| `DUT-V3-FERAL` | V3 primaria, ya ejecutando FeralRF evaluado. |
-| `AUX-V3-FERAL` | futura V3 con el mismo FeralRF; peer simétrico. |
-| `AUX-V3-STOCK` | futura V3 con firmware oficial; referencia independiente donde el firmware lo soporte. |
+| `DUT-V3-FERAL` | CatSniffer #1 V3, FeralRF: Bridge `COM88`, LoRa `COM86`, Shell `COM87`. |
+| `PEER-V3-FERAL` / `AUX-V3-FERAL` | CatSniffer #2 V3, FeralRF: Bridge `COM31`, LoRa `COM32`, Shell `COM30`; peer/observador RF simétrico disponible. |
+| `AUX-V3-STOCK` | rol alternativo futuro de la placa #2 con firmware oficial; sólo después de conservar evidencia y autorizar un cambio destructivo. |
 | `OBS-V2-A-STOCK`, `OBS-V2-B-STOCK` | V2 conocidas-buenas con firmware oficial; observadores/generadores sólo para capacidades verificadas. |
 | `RF-OBSERVER` | SDR, analizador de espectro, contador de frecuencia, medidor de potencia o sniffer dedicado. |
 | `PROTOCOL-DEVICE` | dispositivo real Zigbee, Thread, W-MBus, BLE, Wi-SUN, etc. |
 | `PROTOCOL-DEVICE-ZIGBEE-CH25` | equipo existente que genera tráfico Zigbee continuo en IEEE 802.15.4 canal 25; fuente independiente, no controlada por FeralRF. |
 | `HOST-TOOL` | Catnip, Wireshark, SmartRF Packet Sniffer, Sniffle, KillerBee u otro software aplicable; requiere radio compatible para emitir/recibir RF. |
 
-**Validación simétrica** (`DUT-V3-FERAL ↔ AUX-V3-FERAL`) reproduce el baseline OTA histórico y ejercita ambos endpoints, pero un defecto compartido puede pasar inadvertido. **Validación independiente** (`DUT-V3-FERAL ↔ AUX-V3-STOCK/OBS-V2-STOCK/PROTOCOL-DEVICE/RF-OBSERVER`) es preferible para interoperabilidad, frecuencia/canal y contenido físico real.
+**Validación simétrica** (`DUT-V3-FERAL ↔ PEER-V3-FERAL`) reproduce el baseline OTA histórico y ejercita ambos endpoints, pero un defecto compartido puede pasar inadvertido. Aunque la placa #2 observa RF físicamente, no es una implementación independiente mientras ejecute el mismo FeralRF. **Validación independiente** (`DUT-V3-FERAL ↔ AUX-V3-STOCK/OBS-V2-STOCK/PROTOCOL-DEVICE/RF-OBSERVER`) es preferible para interoperabilidad, frecuencia/canal y contenido físico real.
 
 ## Preparación Catnip segura
 
@@ -159,7 +159,7 @@ C:\Users\Support\Documents\ec-projects\catsniffer-feralrf\CatSniffer-Tools\catni
    ```
 
    Catnip abre sólo Cat-Shell y manda `identify`. El host stock hace parpadear los tres LEDs diez veces, con pasos de 100 ms (aproximadamente dos segundos), y responde `Identifying board...`. No toca ni reinicia el CC1352, por lo que es seguro aunque éste ejecute FeralRF; requiere que el host RP2040/SAMD conserve el comando Shell oficial/compatible. **Normal:** sólo la placa física esperada parpadea y aparece `Identification command sent successfully!`. **STOP:** parpadea otra placa, Shell no responde, o el `N` cambió.
-6. Registrar la fila, todos los campos debug y qué placa física parpadeó. Repetir con una sola placa conectada para `OBS-V2-A-STOCK`, `OBS-V2-B-STOCK` y, cuando llegue, AUX-V3.
+6. Registrar la fila, todos los campos debug y qué placa física parpadeó. Repetir con una sola placa conectada para CatSniffer #2 (`PEER-V3-FERAL`) y, sólo si una EV lo requiere, para `OBS-V2-A-STOCK`/`OBS-V2-B-STOCK`.
 
    Ejemplo ilustrativo probado por las cadenas de la implementación:
 
@@ -337,11 +337,11 @@ La terminal muestra índice, longitud, RSSI, hex y ASCII; `--write` produce PCAP
 
 Aplicación: EV-11/12 sólo para FSK/GFSK Sub-GHz compatible; EV-22 para filas FSK/GFSK 868/915, no MSK/4FSK; EV-25 sólo evidencia PHY FSK compatible, no protocolo W-MBus; EV-26 sólo capa FSK compatible, no Wi-SUN/Sidewalk stack. No sirve para OOK, MSK, 4FSK ni propietario 2.4 GHz. **STOP:** `Some settings were not confirmed`, respuesta inesperada al cambiar stream/command, COM faltante, firmware host incompatible, tramas persistentemente truncadas o parámetros desconocidos. Registrar configuración completa, firmware host, rol/serial/COM, PCAP/hash y reporte final.
 
-### 10. Flasheo documentado de AUX-V3 — no ejecutar en esta fase
+### 10. Cambio de rol documentado de la V3 #2 — no ejecutar en esta fase
 
 #### AUX-V3-STOCK → AUX-V3-FERAL
 
-Ejecutar sólo cuando AUX-V3 exista y se haya autorizado el cambio:
+La V3 #2 ya existe y actualmente es `PEER-V3-FERAL`; este procedimiento queda como referencia para una futura conversión desde stock y sólo se ejecutaría con autorización explícita:
 
 ```powershell
 Set-Location 'C:\Users\Support\Documents\ec-projects\catsniffer-feralrf\CatSniffer-Tools\catnip'
@@ -399,7 +399,7 @@ python .\catnip.py status --device N
 
 ### 12. ¿Qué ejecuto ahora?
 
-Con `DUT-V3-FERAL` conectado, V2 disponibles pero desconectados, fuente Zigbee CH25 disponible y AUX-V3 aún ausente:
+Con ambas V3 disponibles, haga el preflight **una placa a la vez**; mantenga los V2 desconectados. Primero conecte sólo CatSniffer #1:
 
 ```powershell
 Set-Location 'C:\Users\Support\Documents\ec-projects\catsniffer-feralrf\CatSniffer-Tools'
@@ -419,7 +419,9 @@ python .\catnip.py identify --device N
 python .\catnip.py status --device N
 ```
 
-La fase estrictamente read-only para hardware termina en `devices --debug`. `identify` escribe sólo la orden temporal de LEDs en Shell; `status` es no destructivo pero puede escribir las sondas Bridge descritas en §4. Ambos se ejecutan con DUT idle, antes de abrir FeralRF. Después, rellenar la tabla de §5 y ejecutar sólo el cálculo PowerShell de §6. Si Board es V3, la placa física es DUT, los tres COM son inequívocos y `Match=True`, detener Catnip y entregar el Bridge explícito a EV-01. Si cualquier condición falla, detener la validación y marcar EV-00/EV-04 según corresponda. **No ejecutar ahora:** `sniff`, `flash`, `update`, `restore` ni `verify`.
+Sustituya `N` por el ID mostrado en **esa misma enumeración**. Registre #1=`Bridge COM88 / LoRa COM86 / Shell COM87`. Desconecte #1, conecte sólo #2 y repita desde `devices`; vuelva a elegir el `N` recién mostrado y registre #2=`Bridge COM31 / LoRa COM32 / Shell COM30`. Finalmente conecte ambas, ejecute otra vez `devices --debug` y confirme que cada `identify --device N` hace parpadear la placa prevista.
+
+La fase estrictamente read-only para hardware termina en `devices --debug`. `identify` escribe sólo la orden temporal de LEDs en Shell; `status` es no destructivo pero puede escribir las sondas Bridge descritas en §4. Ambos se ejecutan con cada placa idle, antes de abrir FeralRF. Después, rellene la tabla de §5 para ambas y ejecute sólo la comparación PowerShell de §6. En esta máquina ambos resultados `Bridge+2 == Shell` deben ser `False`; eso **bloquea `Radio.reset_device()`**, pero no EV-01 ni los procedimientos que usan Shell explícito. Cierre Catnip antes de abrir COM88/COM31 desde FeralRF. Si revisión, identidad o roles difieren, detenga la validación. **No ejecutar ahora:** `sniff`, `flash`, `update`, `restore` ni `verify`.
 
 ### Evidencia de implementación para este procedimiento
 
@@ -436,10 +438,10 @@ La fase estrictamente read-only para hardware termina en `devices --debug`. `ide
 
 | Escenario | Combinación | Ejecutable / valor |
 |---|---|---|
-| A — disponible ahora | `DUT-V3-FERAL + OBS-V2-A-STOCK` (B opcional) | Todos los controles de una placa; RX IEEE real con `PROTOCOL-DEVICE-ZIGBEE-CH25`; observación Sub-GHz FSK/GFSK por SX1262 V2 si los parámetros encajan. V2 sólo observa IEEE si `status` confirma que ya lleva `ti_sniffer`; Catnip actual no ofrece esa imagen para V2. B permite observación paralela/redundante, no añade PHY. |
-| B — dos V3 FeralRF | `DUT-V3-FERAL + AUX-V3-FERAL` | Reproduce `smoke_ota_txrx.py`, baseline OTA completo, matriz de presets/modulación, BLE raw, propietario Sub-GHz, OOK, propietario 2.4 GHz, carga/burst y helpers de emulación. Es baseline simétrico, no certificación independiente. |
+| A — disponible ahora | `DUT-V3-FERAL + PEER-V3-FERAL + OBS-V2-A/B-STOCK` | Todos los controles de una placa y los OTA simétricos entre #1 y #2; RX IEEE real con `PROTOCOL-DEVICE-ZIGBEE-CH25`; observación Sub-GHz FSK/GFSK por SX1262 V2 si los parámetros encajan. V2 sólo observa IEEE si `status` confirma que ya lleva `ti_sniffer`; Catnip actual no ofrece esa imagen para V2. |
+| B — dos V3 FeralRF | `DUT-V3-FERAL + PEER-V3-FERAL` | **Disponible ahora.** Reproduce `smoke_ota_txrx.py`, matriz de presets/modulación, BLE raw, propietario Sub-GHz, OOK, propietario 2.4 GHz, carga/burst y helpers de emulación mediante los wrappers seguros de esta guía. Es baseline simétrico, no certificación independiente; EV-40 completo queda bloqueado porque el script oficial deriva Shell aritméticamente. |
 | C — FeralRF + V3 stock | `DUT-V3-FERAL + AUX-V3-STOCK` | Más fuerte para observar IEEE 802.15.4, canal, PCAP y frames con `ti_sniffer`; útil para compatibilidad con tooling oficial y diagnóstico. Stock no expone automáticamente todos los PHY FeralRF: BLE requiere Sniffle y Sub-GHz FSK usa SX1262; OOK/4FSK/propietario 2.4 no quedan cubiertos. |
-| D — FeralRF + V2 stock | `DUT-V3-FERAL + OBS-V2-A-STOCK` | Configuración real actual. Fuente/observador IEEE sólo si el firmware instalado lo permite; `sniff fsk` sí ofrece observación SX1262 FSK/GFSK Sub-GHz. No es peer FeralRF ni generador genérico confirmado por Catnip. |
+| D — FeralRF + V2 stock | `DUT-V3-FERAL + OBS-V2-A-STOCK` | También disponible. Fuente/observador IEEE sólo si el firmware instalado lo permite; `sniff fsk` sí ofrece observación SX1262 FSK/GFSK Sub-GHz. No es peer FeralRF ni generador genérico confirmado por Catnip. |
 | E — instrumento independiente | `DUT-V3-FERAL + RF-OBSERVER` | SDR confirma frecuencia/ocupación/contenido compatible; analizador, contador y power meter aportan pureza, potencia y error de frecuencia que otra CatSniffer no mide. Necesario para CW/PRBS y preferible en OOK, 433, 2.4 propietario y jamming. |
 
 ### Decisión de firmware para AUX-V3
@@ -544,7 +546,7 @@ r.disconnect()
 
 ### EV-04 — Reset y reinicialización (P0)
 
-**Objetivo:** validar el mecanismo de recuperación antes de modos frágiles y caracterizar de forma segura `KI-15`. **Origen:** workaround `KI-15`. **Evidencia:** FeralRF `radio.py:reset_device`; `run_validation_baseline.sh:_reset_one`; `PINOUT.md:RESET_CC`; Catnip `usb_connection.py` y `device/cli.py`. **Ruta:** PC→Cat-Shell 115200→RP2040 GPIO15→RESET_N CC1352→Bridge. **Roles mínimos:** `DUT-V3-FERAL`. **Prerrequisitos:** EV-00 con Shell verificado por Catnip y Windows; no basta observar que parece `Bridge+2`. **Comando:** `python -c "from feralrf import Radio; r=Radio(port='COM_BRIDGE'); print(r.init()); r.reset_device(wait=3.5); print(r.get_stats()); r.disconnect()"`. **Configuración:** use 3.5 s como baseline histórico. **Qué hace:** FeralRF cierra Bridge, calcula internamente `COM(n+2)`, manda `boot` y `exit`, reabre e inicializa. Catnip no cambia ese código, pero ofrece el mapa independiente previo. **Sano:** el Shell calculado coincide con el Shell que Catnip atribuye a esa misma placa y vuelve INFO/STATS sin reconectar USB. **Aceptación:** PASS 3/3; FAIL si abre otro dispositivo/exige desconexión; BLOQUEADO si el Shell calculado no coincide. **Ahora/AUX:** ejecutable por placa, una a la vez; no requiere peer. **Evidencia:** mapa Catnip antes/después, COM calculado, tiempos y errores. **Límites:** Catnip no permite pasar Shell explícito a `reset_device()` ni valida reset por watchdog. **Recuperación:** power-cycle y reidentificar puertos.
+**Objetivo:** validar el mecanismo de recuperación antes de modos frágiles y caracterizar de forma segura `KI-15`. **Origen:** workaround `KI-15`. **Evidencia:** FeralRF `radio.py:reset_device`; `run_validation_baseline.sh:_reset_one`; `CatSniffer-Firmware/RP2040/catsniffer/boards/rpi_pico.overlay` (alias ejecutable `pin-reset` en GPIO3 y `pin-boot` en GPIO2); Catnip `usb_connection.py` y `device/cli.py`. **Ruta:** PC→Cat-Shell 115200→RP2040 `change_mode()`→líneas boot/reset del CC1352→Bridge. `FeralRF/hardware/PINOUT.md` menciona GPIO15, pero no coincide con el overlay ejecutable inspeccionado. **Roles mínimos:** `DUT-V3-FERAL`. **Prerrequisitos:** EV-00 con Shell verificado por Catnip y Windows; no basta observar puertos próximos. **Comando inseguro, sólo para referencia y no ejecutar en estas placas:** `Radio(port='COM_BRIDGE').reset_device(wait=3.5)`. **Configuración:** el baseline histórico espera 3.5 s. **Qué hace:** FeralRF cierra Bridge, calcula internamente `COM(n+2)`, manda `boot` y `exit`, reabre e inicializa. Catnip no cambia ese código, pero ofrece el mapa independiente previo. **Estado actual:** `COM88→COM90` y `COM31→COM33` no coinciden con los Shell reales `COM87`/`COM30`; por ello la API queda `BLOCKED`. Use únicamente `Reset-Cc1352` con mapeo explícito en la sección operativa. **Aceptación:** PASS-recovery manual si INFO/STATS regresan; la API no puede recibir PASS en esta configuración. **Evidencia:** mapa Catnip, COM calculado, Shell explícito, tiempos y errores. **Límites:** Catnip no permite pasar Shell a `reset_device()` ni valida watchdog. **Recuperación:** power-cycle y reidentificar puertos si la ruta manual falla.
 
 ### EV-05 — Primera observación RF IEEE (P1)
 
@@ -719,6 +721,664 @@ r.disconnect()
 ### EV-54 — BLE protocol stack retirado (P3)
 
 **Objetivo:** confirmar alcance deliberadamente removido. **Origen:** removed/out-of-scope `KI-23`. **Evidencia:** Architecture/Python API/protocol §9; no IDs 0x40–0x54; quedan structs/funciones internos en `radio_if.c/.h` y SmartRF. **Ruta:** sólo BLE PHY raw es alcanzable; scan activo, initiator, master, GATT no tienen comandos públicos. **Prerrequisitos:** ninguno. **Comando:** EV-21 valida lo que sí queda; Sniffle valida el caso de uso externo, no FeralRF. **Configuración:** tratar BLE como PHY raw; no buscar perfiles/GATT en FeralRF. **Qué hace:** análisis de reachability. **Sano:** raw RX/TX funciona y operaciones de stack no se anuncian. **Falla conocida:** restos internos pueden sugerir erróneamente que las rutas retiradas siguen alcanzables. **Aceptación:** retirada no es bug; registrar candidato de docs si restos internos inducen a error. **Evidencia:** API/enum/handler. **Límites:** `set_adv_hop` es hopping pasivo raw, no active scan. **Indicadores:** herramientas que llamen símbolos retirados. **Recuperación:** no aplica.
+
+## Procedimiento operativo completo por EV
+
+Esta sección es la instrucción de ejecución vigente. Las fichas resumidas anteriores explican el diseño; cuando exista una diferencia, prevalece esta sección. Está verificada contra `FeralRF@0178721cbd4f0d0f6f8eba5ae919ca46066d5dea`, `CatSniffer-Firmware@c0cd5a45e019dbd14ed11d039aacb13f300e5731` y Catnip `fix/CLI_control@126f13bc0441ad3f37fe0b029160a3c526e4d309`. El EXE Catnip instalado mostró `v3.3.3.0`, pero su commit de build no está establecido.
+
+### Convenciones obligatorias para todas las EV
+
+Abra PowerShell en:
+
+```powershell
+Set-Location 'C:\Users\Support\Documents\ec-projects\catsniffer-feralrf\FeralRF\python'
+$DutBridge  = 'COM88'
+$DutShell   = 'COM87'
+$PeerBridge = 'COM31'
+$PeerShell  = 'COM30'
+$CatnipExe  = 'C:\Program Files\Catnip\catnip.exe'
+```
+
+No derive ningún Shell del Bridge. Defina en cada terminal que vaya a efectuar recuperaciones:
+
+```powershell
+function Reset-Cc1352 {
+    param([Parameter(Mandatory)][string]$Shell,
+          [Parameter(Mandatory)][string]$Bridge)
+    python -c "import serial,time; s=serial.Serial('$Shell',115200,timeout=1,write_timeout=1); print('OPEN',s.name); s.write(b'boot\r\n'); s.flush(); print('SENT boot'); time.sleep(.5); s.write(b'exit\r\n'); s.flush(); print('SENT exit'); time.sleep(.3); s.close(); print('CLOSED')"
+    if ($LASTEXITCODE -ne 0) { throw "Reset serial falló en $Shell" }
+    Start-Sleep -Seconds 4
+    $env:EV_BRIDGE=$Bridge
+    @'
+import os
+from feralrf import Radio
+r=Radio(port=os.environ['EV_BRIDGE'])
+try:
+    print('RECOVERY_INFO:', r.init())
+    print('RECOVERY_STATS:', r.get_stats())
+finally:
+    r.disconnect()
+'@ | python -
+    if ($LASTEXITCODE -ne 0) { throw "El Bridge $Bridge no recuperó" }
+}
+```
+
+Para usar el script oficial OTA sin su cálculo inseguro `Bridge+2`, defina esta función. No modifica archivos: importa `examples.smoke_ota_txrx`, sustituye sólo en memoria su función de reset por el mapa explícito y ejecuta su `main()` original.
+
+```powershell
+function Invoke-FeralOta {
+    param([string]$Tx='COM88',[string]$Rx='COM31',
+          [Nullable[int]]$Phy=$null,[int]$Channel=0,[string]$Preset='',
+          [int]$Power=0,[int]$Count=10,[int]$MinMarkers=10)
+    $env:EV_TX=$Tx; $env:EV_RX=$Rx; $env:EV_PHY="$Phy"; $env:EV_CH="$Channel"
+    $env:EV_PRESET=$Preset; $env:EV_POWER="$Power"; $env:EV_COUNT="$Count"
+    $env:EV_MIN="$MinMarkers"
+    @'
+import os,sys,time,serial
+from examples import smoke_ota_txrx as app
+shell={'COM88':'COM87','COM31':'COM30'}
+def safe_reset(bridge):
+    if bridge not in shell: raise RuntimeError(f'No explicit Shell mapping for {bridge}')
+    with serial.Serial(shell[bridge],115200,timeout=1,write_timeout=1) as s:
+        s.write(b'boot\r\n'); s.flush(); time.sleep(.5)
+        s.write(b'exit\r\n'); s.flush(); time.sleep(.3)
+    time.sleep(3.5)
+app.reset_cc1352=safe_reset
+argv=['smoke_ota_txrx.py','--tx-port',os.environ['EV_TX'],'--rx-port',os.environ['EV_RX'],
+      '--channel',os.environ['EV_CH'],'--power',os.environ['EV_POWER'],
+      '--count',os.environ['EV_COUNT'],'--min-markers',os.environ['EV_MIN']]
+if os.environ['EV_PRESET']:
+    argv += ['--preset',os.environ['EV_PRESET']]
+else:
+    argv += ['--phy',os.environ['EV_PHY']]
+sys.argv=argv
+raise SystemExit(app.main())
+'@ | python -
+    if ($LASTEXITCODE -ne 0) { throw "OTA falló: TX=$Tx RX=$Rx PHY=$Phy preset=$Preset" }
+}
+```
+
+`Invoke-FeralOta` conserva la semántica del script upstream. No convierte el segundo FeralRF en implementación independiente; sólo da evidencia OTA simétrica. Para cada EV, inicie `Start-Transcript -Path .\EV-XX-AAAAmmdd-HHMM.txt` antes del primer comando y `Stop-Transcript` al final. Preserve siempre comando completo, stdout/stderr completo, roles/COM, fecha, distancia/orientación/antena, firmware/hash conocido, observación física y recuperación. Pare ante puerto ambiguo, error RF asíncrono, timeout no recuperable, calentamiento, emisión fuera del entorno autorizado o discrepancia de identidad.
+
+**Mapa de implementación común.** Salvo que una EV diga lo contrario, el camino es PowerShell → script bajo `FeralRF/python/examples[/lab]` → `FeralRF/python/feralrf/radio.py` → serialización en `commands.py`/`protocol.py` → Cat-Bridge del RP2040 (`CatSniffer-Firmware/RP2040/catsniffer/src/main.c`) → `FeralRF/firmware/cc1352/src/host_if_task.c` → `command_processor.c` → `control_task.c` o `data_task.c` → `radio_if.c` → TI RF driver → antena. El PC/RP2040 sólo transporta el protocolo; el CC1352P7 ejecuta el control y la RF. Catnip (`CatSniffer-Tools/catnip/modules/{device,firmware,sniff}`) se usa para identidad/estado o workflows stock explícitos, no como sustituto de la API FeralRF. Un ACK demuestra aceptación síncrona hasta el handler; cada EV declara aparte si se observó scheduling, intento RF, recepción, framing, timing o medición instrumental.
+
+### EV-00 — Enumeración e identidad de puertos
+
+**Objetivo e implementación.** Confirmar las dos placas y sus tres CDC antes de usar RF. Catnip corre en PC, agrupa puertos en `usb_connection.py` y consulta el RP2040 por Cat-Shell; no prueba FeralRF. **Equipo:** ambas V3, conectadas primero una por una. **Terminal:** una, cualquier directorio.
+
+**Ejecución:** con ambas desconectadas ejecute `Get-Command catnip | Format-List Source,Path,CommandType`; conecte sólo #1 y ejecute `& $CatnipExe devices`, `& $CatnipExe devices --debug`, `& $CatnipExe identify --device 1`, `& $CatnipExe status --device 1`, y `Get-CimInstance Win32_SerialPort | Select-Object DeviceID,Name,PNPDeviceID`. Desconecte #1, conecte sólo #2 y repita; después conecte ambas, vuelva a enumerar y use los IDs recién mostrados, nunca IDs recordados.
+
+**Esperado/evidencia/PASS.** Deben quedar físicamente identificados #1=`COM88/COM86/COM87` y #2=`COM31/COM32/COM30`, con Board V3. Preserve tablas y debug íntegros. `PASS-identity` exige roles inequívocos y LED de la placa elegida; `PARTIAL` si sólo hay tabla; `FAIL/STOP` ante V2/unknown, puerto faltante o LED equivocado. **No prueba:** firmware CC1352 funcional ni RF. **Estado previo/acción:** EV-00 anterior fue `PARTIAL`; requiere suplemento completo, no borrar el mapa anterior.
+
+### EV-01 — Init, GET_INFO y GET_STATS
+
+**Objetivo/base/ruta.** Confirmar PC→COM88→RP2040 passthrough→CC1352P7 `CMD_RADIO_INIT/GET_INFO/GET_STATS`. `Radio.init()` reintenta hasta tres veces; firmware reinicia métricas en `ControlTask_onRadioInit`. **Equipo:** DUT #1. **Terminal:** una en `FeralRF\python`; Catnip cerrado.
+
+**Ejecución:** ejecute tres veces el bloque:
+
+```powershell
+1..3 | ForEach-Object {
+  $env:EV_I="$_"
+  @'
+import os,time
+from feralrf import Radio
+t=time.perf_counter(); r=Radio(port='COM88')
+try:
+ print('RUN',os.environ['EV_I'],'INFO',r.init())
+ print('RUN',os.environ['EV_I'],'STATS',r.get_stats())
+ print('RUN',os.environ['EV_I'],'SECONDS',round(time.perf_counter()-t,3))
+finally: r.disconnect()
+'@ | python -
+  if ($LASTEXITCODE -ne 0) { break }
+}
+```
+
+**Criterios.** `PASS-control`=3/3 INFO coherente y STATS decodificable sin timeout; `FAIL`=fallo repetible tras cerrar ocupantes; `PARTIAL`=menos de tres. Preserve todo. Firmware `1.0.0` y serial `FERALRF1` no identifican el hash del HEX. **No prueba:** RF. **Estado previo/acción:** evidencia fuerte pero formalmente `PARTIAL`; completar esta serie una vez.
+
+### EV-02 — RX IEEE controlado y parada
+
+**Objetivo/base.** Probar configuración y start/stop. `CMD_RX_START` ACK sólo agenda; `DataTask_poll` abre RF después y puede emitir `ERR_RF_INIT_FAILED`. **Equipo:** DUT #1. **Terminal:** una.
+
+```powershell
+python examples\smoke_phy4_ieee154.py --port COM88 --channel 25 --duration 5
+```
+
+**Criterios/evidencia.** `PASS-control`=INFO, SET_PHY/CHANNEL ACK, RX_START, ventana y RX_STOP sin error; paquetes no son obligatorios. `PASS-RF` requiere frames reales y pertenece a EV-05. Preserve stdout y cualquier `RxStreamError`. **No prueba:** stack Zigbee, sensibilidad ni que ACK por sí solo abriera RF. **Fallo/STOP:** error asíncrono, STOP timeout o stream sintético; recuperar por COM87. **Estado previo/acción:** ya `PASS-control`; no repetir salvo regresión o después de recuperación significativa.
+
+### EV-03 — Reconnect limpio
+
+**Objetivo/base.** Verificar `connect/init/disconnect` en cinco procesos independientes. **Equipo:** DUT #1. **Terminal:** una.
+
+```powershell
+1..5 | ForEach-Object { Write-Host "CYCLE $_"; python -c "from feralrf import Radio; r=Radio(port='COM88'); print(r.init()); r.disconnect()"; if ($LASTEXITCODE -ne 0) { break } }
+```
+
+**Criterios.** `PASS-control`=5/5, sin COM ocupado ni demora creciente manifiesta; cualquier fallo confirmado=`FAIL`. Preserve ciclos completos. **No prueba:** sesión larga, USB unplug/replug o misma instancia. **Estado/acción:** `PASS-control 5/5`; no repetición necesaria.
+
+### EV-04 — Reset y reinicialización
+
+**Objetivo/base.** Validar recuperación y KI-15. `Radio.reset_device()` y varios scripts calculan Shell=`Bridge+2`; ambos mapas actuales lo contradicen. **Equipo:** DUT #1; luego #2 por separado. **Terminal:** una.
+
+**Ejecución segura:** no ejecute `Radio.reset_device()`. Registre primero:
+
+```powershell
+python -c "from feralrf import Radio; print('DUT calculated=',Radio(port='COM88')._get_shell_port()); print('PEER calculated=',Radio(port='COM31')._get_shell_port())"
+Reset-Cc1352 -Shell COM87 -Bridge COM88
+Reset-Cc1352 -Shell COM30 -Bridge COM31
+```
+
+**Criterios.** La API permanece `BLOCKED` porque calcula COM90/COM33, no COM87/COM30. La secuencia explícita obtiene `PASS-recovery` por placa si INFO/STATS regresan; repetir 3 veces sólo si se desea cerrar recuperación manual 3/3. **No prueba:** que la API sea segura, watchdog ni nivel eléctrico exacto. **STOP:** nunca abra COM90/COM33 como supuesto Shell. **Estado/acción:** preservar KI-15 y recuperación DUT 1/1; suplementar peer y, opcionalmente, 3/3 manual.
+
+### EV-05 — Primera observación RF IEEE
+
+**Objetivo/base.** Recibir tráfico real de `PROTOCOL-DEVICE-ZIGBEE-CH25`. `RadioIF_processIeee154Packets` entrega CRC/RSSI/LQI/timestamp. El smoke oficial sólo imprime la metadata del primer paquete; el bloque mínimo siguiente usa la misma API y conserva **todos** los frames requeridos. **Equipo:** DUT #1 y fuente Zigbee; #2 como segundo receptor FeralRF simultáneo, no como implementación independiente. **Terminales:** A peer RX, B DUT RX, ambas en `FeralRF\python`.
+
+En A pegue el bloque completo con `COM31` y 35 s:
+
+```powershell
+$env:EV_PORT='COM31'; $env:EV_SECONDS='35'
+@'
+import os
+from feralrf import Radio,PHY,RxStreamError
+r=Radio(port=os.environ['EV_PORT']); started=False; n=0; good=0
+try:
+ print('INFO',r.init()); r.set_phy(PHY.IEEE_802_15_4,25); r.start_rx(); started=True
+ print('RX_START_ACK',os.environ['EV_PORT'])
+ for p in r.read_packets(timeout=float(os.environ['EV_SECONDS'])):
+  if isinstance(p,RxStreamError): print('ASYNC_ERROR',p); continue
+  n+=1; good+=int(p.crc_ok)
+  print('PACKET',n,'ts_us',p.timestamp_us,'ch',p.channel,'rssi_dbm',p.rssi_dbm,
+        'lqi',p.lqi,'crc_ok',p.crc_ok,'len',len(p.data),'raw_hex',p.data.hex())
+ print('TOTAL',n,'CRC_VALID',good)
+finally:
+ if started:
+  try: r.stop_rx(); print('RX_STOP_ACK')
+  except Exception as e: print('RX_STOP_ERROR',repr(e))
+ r.disconnect()
+'@ | python -
+```
+
+Espere `RX_START_ACK COM31`. Dentro de cinco segundos, pegue en B el mismo bloque cambiando sólo la primera línea por `$env:EV_PORT='COM88'; $env:EV_SECONDS='30'`. No transmita durante ambas ventanas y espere `RX_STOP_ACK` en las dos terminales. Repita el par tres veces sólo si se está cerrando la evidencia formal; guarde ambos transcripts con el mismo número de corrida.
+
+**Criterios.** `PASS-RF` DUT=al menos un frame CRC válido reproducible, con bytes variables y plausibles, en las tres ventanas formales; coincidencia temporal de actividad en #2 fortalece atribución, pero dos FeralRF no son independencia de implementación. `INCONCLUSIVE` si ambos ven cero sin confirmar la fuente; `FAIL candidate` si #2 ve tráfico fuerte y DUT no en repeticiones. Preserve cada línea `PACKET`, no sólo totales. **No prueba:** Zigbee stack, asociación, PER/RSSI calibrado. **Estado/acción:** `PASS-RF` ya preservado con 41/43/43 paquetes, pero faltan bytes completos y observación simultánea; este procedimiento es suplemento, no reemplazo del resultado.
+
+### EV-06 — Exclusión RX/TX
+
+**Objetivo/base.** Confirmar que `ControlTask_canStartTx` rechaza TX cuando `s_rx_enabled`; no llega a `RadioIF_transmitRaw`. **Equipo:** DUT #1. **Terminal:** una.
+
+```powershell
+@'
+from feralrf import Radio,PHY
+from feralrf.exceptions import CommandError
+r=Radio(port='COM88')
+try:
+ print('INFO',r.init()); r.set_phy(PHY.IEEE_802_15_4,25); r.start_rx()
+ try: r.transmit(b'\x01',power_dbm=-20); raise RuntimeError('TX accepted unexpectedly')
+ except CommandError as e: print('EXPECTED_ERROR',e.error_code,hex(e.error_code)); assert e.error_code==5
+ r.stop_rx(); print('STATS',r.get_stats())
+finally: r.disconnect()
+'@ | python -
+```
+
+**Criterios.** `PASS-control`=`0x05`, STOP y STATS; aceptación TX/timeout=`FAIL`. **No prueba:** RX físicamente activo ni RF simultánea; prueba el flag lógico. **Estado/acción:** ya PASS; no repetir.
+
+### EV-10 — Matriz de PHY por control
+
+**Objetivo/base.** Recorrer PHY 0–7 con `smoke_phase2.py`; ACK y start/stop, no RF. **Equipo:** DUT #1. **Terminal:** una. Use reset explícito entre filas; el canal 9 de PHY1 pertenece al plan local, mientras el baseline upstream usa 37.
+
+```powershell
+$rows=@(@(0,37),@(1,9),@(2,37),@(3,37),@(4,25),@(5,0),@(6,0),@(7,0))
+foreach($row in $rows){ python examples\smoke_phase2.py --port COM88 --phy $row[0] --channel $row[1] --power 0; if ($LASTEXITCODE -ne 0) { break }; Reset-Cc1352 -Shell COM87 -Bridge COM88 }
+```
+
+**Criterios.** `PASS-control`=8/8; error asíncrono/timeout=`FAIL`. Preserve fila y reset. **No prueba:** frecuencia, potencia, modulación o RX física; PHY7 requiere preset. **Estado/acción:** ya 8/8; no repetir salvo regresión.
+
+### EV-11 — Presets propietarios, sólo control
+
+**Objetivo/base.** Ejecutar `smoke_prop_phase1.py` para 27 presets no OOK/no MIOTY. SET_PROP_CONFIG ACK no confirma backend; RX/TX son diferidos y el script puede no mostrar error asíncrono. **Equipo:** DUT #1; transmisión breve a 0 dBm. **Terminal:** una. Reset explícito entre bandas, no `--auto-reset`.
+
+Para recuperar evidencia individual faltante de 902/915:
+
+```powershell
+$presets='gfsk_915_50k','gfsk_902_50k','sidewalk_915_fsk_50k','sidewalk_915_fsk_250k','wisun_915_fsk_50k','wisun_915_fsk_100k','wisun_915_fsk_150k','wisun_915_fsk_200k','wisun_915_fsk_300k'
+foreach($p in $presets){ Write-Host "PRESET $p"; python examples\smoke_prop_phase1.py --port COM88 --preset $p --power 0; if ($LASTEXITCODE -ne 0) { break } }
+```
+
+**Criterios.** `PASS-control` por preset=script termina y GET_STATS responde; RF sigue `INCONCLUSIVE`. Preserve stdout individual. Cero drop/overflow con cero tráfico no caracteriza colas. **No prueba:** protocolo, OTA, frecuencia ni TX efectivo. **STOP:** no incluir `ook_*`/MIOTY; reset COM87 al cambiar banda. **Estado/acción:** 27/27 reportado, 18 con evidencia individual; repetición parcial sólo de nueve si no se recuperan logs.
+
+### EV-12 — TX raw/frame/burst/continuous y STOP
+
+**Objetivo/base.** Separar aceptación, scheduling y observación OTA. En `examples/lab/ota_tx_burst.py`, `--count 40` llega a `Radio.transmit_burst(packet,count,interval_us)` (`feralrf/radio.py`), que valida `1..65535`; `CommandBuilder.tx_burst()` (`commands.py`) lo serializa como `<HI`. `command_processor.c:CMD_TX_BURST` lo decodifica como `uint16_t`; `ControlTask_onTxBurst()` lo copia a `s_tx_burst_remaining` y devuelve el ACK de scheduling. `ControlTask_processTxBurst()` llama `RadioIF_transmitRaw()` y sólo decrementa después de un retorno exitoso. Si una transmisión falla, pone el restante en cero y cancela silenciosamente el burst: no envía al host el error asíncrono que sí produce la ruta TX_RAW. Por eso 40 significa **máximo solicitado de transmisiones exitosas según el retorno interno**, no 40 ondas demostradas. `interval_us` fija el siguiente instante de inicio desde el poll previo, no garantiza separación on-air exacta. `RadioIF_transmitRaw()` elige la ruta TI IEEE/BLE/propietaria correspondiente. **Equipo:** DUT TX #1, peer RX #2. **Terminales:** A RX primero, B TX.
+
+Para RAW, A: `python examples\lab\ota_rx_probe.py --port COM31 --phy 4 --channel 25 --duration 15 --marker-hex DEADBEEF --min-hits 1`; espere `RX_START`, y B: `python examples\smoke_tx_phase1.py --port COM88 --phy 4 --channel 25 --power 0 --packet-hex DEADBEEF`.
+
+Para FRAME repita A con `--marker-hex A1B2C3D4 --min-hits 10 --duration 15`; B: `python examples\lab\ota_tx_frame.py --port COM88 --phy 4 --channel 25 --power 0 --payload-hex A1B2C3D4 --count 10 --interval-us 100000`.
+
+Para BURST, A con `--marker-hex C0FFEE01 --min-hits 40 --duration 15`; B: `python examples\lab\ota_tx_burst.py --port COM88 --phy 4 --channel 25 --power 0 --payload-hex C0FFEE01 --count 40 --interval-us 25000`.
+
+Para CONTINUOUS, A con `--marker-hex F00DBA5E --min-hits 1 --duration 8`; B: `python examples\smoke_tx_continuous_phase1.py --port COM88 --phy 4 --channel 25 --power 0 --packet-hex F00DBA5E --interval-us 100000 --run-seconds 2`.
+
+Después de las cuatro modalidades, repita cada par con A recibiendo en `COM88` y B transmitiendo por `COM31`, conservando marker, PHY, canal, duración, count e intervalo de la modalidad correspondiente.
+
+**Criterios/evidencia.** `PASS-control` por ACK; `PASS-RF` si el receptor observa marker; burst-count sólo pasa si observa 40; timing/power/frequency requieren instrumento. CONTINUOUS exige que markers cesen después de TX_STOP (una cola residual acotada debe anotarse). **FAIL/STOP:** transmisión persiste, menos de 40 sin interferencia explicable, error/timeout; ejecute STOP y reset explícito. **Estado:** no ejecutado; ejecutar completo.
+
+### EV-13 — CW y PRBS instrumentados
+
+**Objetivo/base.** `CMD_TX_TEST` usa TI `CMD_TX_TEST`: CW=`bUseCw=1`; PRBS15/32=`whitenMode 2/3`. ACK indica que `RF_postCmd` aceptó el comando, no frecuencia/potencia/espectro. `smoke_f22_tx_test.py` es inseguro sin wrapper porque deriva ambos Shell. **Equipo:** DUT #1, peer #2 y, para PASS fuerte, analizador/espectro/carga autorizada. **Terminal:** una más instrumento.
+
+```powershell
+$env:EV_TX='COM88';$env:EV_RX='COM31'
+@'
+import os,sys,time,serial
+from examples.lab import smoke_f22_tx_test as app
+shell={'COM88':'COM87','COM31':'COM30'}
+def reset(p):
+ with serial.Serial(shell[p],115200,timeout=1) as s: s.write(b'boot\r\n');time.sleep(.5);s.write(b'exit\r\n')
+ time.sleep(3.5)
+app.reset=reset;sys.argv=['smoke_f22_tx_test.py','--tx-port',os.environ['EV_TX'],'--rx-port',os.environ['EV_RX']]
+raise SystemExit(app.main())
+'@ | python -
+```
+
+**Criterios.** `PASS-control`=5/5 del script; la caída de BLE ambiental es sólo evidencia RF indirecta y puede ser inconclusa si baseline≤30. `PASS-instrument` requiere centro, espectro y stop observados; potencia solicitada sólo queda validada con medidor calibrado. **STOP:** no irradiar CW/PRBS fuera de banco autorizado; siempre `tx_test_stop`/reset. **Estado:** no ejecutado; equipo independiente aún requerido para cierre.
+
+### EV-14 — Error RF asíncrono
+
+**Objetivo/base.** Verificar que ACK puede ir seguido de `RxStreamError`; `DataTask_poll` emite `ERR_RF_INIT_FAILED` seq 0 si `RadioIF_startRx` falla. No debe inducirse una avería. **Equipo:** DUT #1. **Terminal:** una.
+
+```powershell
+@'
+from feralrf import Radio,PHY,RxStreamError
+r=Radio(port='COM88')
+try:
+ print('INFO',r.init());r.set_phy(PHY.IEEE_802_15_4,25);r.start_rx();print('RX_START_ACK')
+ for x in r.read_packets(timeout=10): print('ASYNC' if isinstance(x,RxStreamError) else 'PACKET',repr(x))
+ r.stop_rx();print('STATS',r.get_stats())
+finally:r.disconnect()
+'@ | python -
+```
+
+**Criterios.** Si no hay error y RX/STOP responde, registrar `ASYNC FAILURE NOT TRIGGERED`; eso es un control sano, pero no valida el camino de reporte. Si aparece un `RxStreamError`, `PASS-async-reporting` sólo si código/contexto quedan inequívocamente registrados y el DUT se recupera; no es PASS RF. Stream fijo `8e89be` sería limitación/regresión documental. **No prueba:** manejo de todas las fallas posibles. **Estado:** no ejecutado; ejecutar como observación no destructiva.
+
+### EV-15 — Límites y parámetros inválidos
+
+**Objetivo/base.** Confirmar validación host sin emitir. `random_bytes` admite 1..240; burst count 1..65535; frame vacío se rechaza; payload efectivo firmware TX es 125. **Equipo:** DUT #1 sólo para recovery final. **Terminal:** una.
+
+```powershell
+@'
+from feralrf import Radio
+r=Radio(port='COM88')
+cases=[('random0',lambda:r.random_bytes(0)),('random241',lambda:r.random_bytes(241)),
+       ('burst0',lambda:r.transmit_burst(b'X',0)),('burst65536',lambda:r.transmit_burst(b'X',65536)),
+       ('frame-empty',lambda:r.transmit_frame(b'')),('sha241',lambda:r.sha256(b'X'*241))]
+try:
+ print('INFO',r.init())
+ for name,fn in cases:
+  try: fn(); print(name,'UNEXPECTED_ACCEPT')
+  except ValueError as e: print(name,'EXPECTED',repr(e))
+ print('STATS',r.get_stats())
+finally:r.disconnect()
+'@ | python -
+```
+
+**Criterios.** `PASS-host-boundaries`=todos `ValueError` y STATS; cualquier aceptación=`FAIL` y no continuar con esa entrada. **No prueba:** límites wire/firmware ni emisión a valores válidos; por ello EV-15 queda `PARTIAL` hasta una fase negativa firmware cuidadosamente aislada. **Estado:** no ejecutado.
+
+### EV-20 — IEEE 802.15.4 OTA de dos placas
+
+**Objetivo/base.** Reproducir `smoke_ota_txrx.py` con markers `DEADBEEF`: TX_RAW se agenda en #1 y la ruta RF/CRC/RX de #2 debe entregarlos. **Equipo:** #1 y #2 FeralRF, antenas 2.4 GHz. **Terminal:** una; el script coordina RX antes de TX.
+
+```powershell
+Invoke-FeralOta -Tx COM88 -Rx COM31 -Phy 4 -Channel 25 -Power 0 -Count 10 -MinMarkers 10
+Invoke-FeralOta -Tx COM31 -Rx COM88 -Phy 4 -Channel 25 -Power 0 -Count 10 -MinMarkers 10
+```
+
+**Criterios.** `PASS-RF-symmetric`=10/10 en ambas direcciones; 1–9/10=`PARTIAL`, cero repetible=`FAIL`. Preserve total_rx, markers, roles y geometría. **No prueba:** interoperabilidad independiente, frame IEEE válido, potencia/frecuencia calibradas o Zigbee. El marker puede aparecer dentro de raw PHY. **STOP:** cualquier reset debe mostrar los Shell explícitos del wrapper; no ejecute el script directamente. **Estado:** no ejecutado; ahora desbloqueado por segunda V3.
+
+### EV-21 — BLE raw 1M/2M/Coded OTA
+
+**Objetivo/base.** Validar markers raw entre FeralRF en cuatro PHY; no hay GAP/GATT/stack. `smoke_ota_txrx` usa TX_RAW, no BLE scan. **Equipo:** dos V3 FeralRF, 2.4 GHz. **Terminal:** una.
+
+```powershell
+$rows=@(@(0,37),@(1,9),@(2,37),@(3,37))
+foreach($r in $rows){ Invoke-FeralOta -Tx COM88 -Rx COM31 -Phy $r[0] -Channel $r[1] -Power 0 -Count 10 -MinMarkers 8 }
+foreach($r in $rows){ Invoke-FeralOta -Tx COM31 -Rx COM88 -Phy $r[0] -Channel $r[1] -Power 0 -Count 10 -MinMarkers 8 }
+```
+
+**Criterios.** `PASS-RF-symmetric`=≥8/10 cada fila/dirección; guardar ratios. Cualquier fila baja se repite sólo después de documentar orientación/interferencia. **No prueba:** advertising conforme, CRC interoperable, conexiones, GATT ni recepción por Sniffle. Un sniffer BLE independiente sigue siendo preferible. **STOP:** error RF, reset incorrecto o emisión no autorizada. **Estado:** no ejecutado.
+
+### EV-22 — Matriz Sub-1 GHz 868/915 y 4FSK
+
+**Objetivo/base.** OTA simétrica de presets, no stacks. `configure_prop` carga frecuencia/modulación; TX_RAW ACK no basta. **Equipo:** dos V3 FeralRF y antenas adecuadas. **Terminal:** una.
+
+```powershell
+$presets='gfsk_868_50k','gfsk_868_100k','msk_868_50k','4fsk_868_50k','4gfsk_868_50k','gfsk_915_50k','gfsk_902_50k'
+foreach($p in $presets){ Invoke-FeralOta -Tx COM88 -Rx COM31 -Preset $p -Power 0 -Count 10 -MinMarkers 10 }
+foreach($p in $presets){ Invoke-FeralOta -Tx COM31 -Rx COM88 -Preset $p -Power 0 -Count 10 -MinMarkers 10 }
+```
+
+**Criterios.** `PASS-RF-symmetric`=10/10 por preset/dirección; `PARTIAL` si sólo una dirección. Preserve antena/banda. **No prueba:** frecuencia, desviación, espectro o protocolo; 4FSK sólo compatibilidad entre implementaciones idénticas. **STOP:** confirme legalidad de 868/902/915 en el banco; no use antena desconocida. **Estado:** no ejecutado.
+
+### EV-23 — Caracterización 433 MHz
+
+**Objetivo/base.** Cuantificar el antecedente marginal, no obtener un PASS aislado. **Equipo:** dos V3, antenas 433 o montaje conducido; instrumento preferible. **Terminal:** una. Para cada preset y dirección ejecute diez veces 10 markers, guardando cada ratio:
+
+```powershell
+$presets='gfsk_433_50k','fsk_433_50k','msk_433_50k'
+foreach($p in $presets){1..10|%{Write-Host "$p DUT->PEER run $_";Invoke-FeralOta -Tx COM88 -Rx COM31 -Preset $p -Power 0 -Count 10 -MinMarkers 1}}
+foreach($p in $presets){1..10|%{Write-Host "$p PEER->DUT run $_";Invoke-FeralOta -Tx COM31 -Rx COM88 -Preset $p -Power 0 -Count 10 -MinMarkers 1}}
+```
+
+**Criterios.** Reporte caracterización=éxitos/100 por preset/dirección, no simple PASS. ≥95/100 estable puede etiquetarse `PASS-RF` bajo esa geometría; menor=`MARGINAL`; 0 con instrumento confirmando emisión=`FAIL`; sin antena/instrumento=`INCONCLUSIVE`. **No prueba:** causa firmware frente a matching/antena. **STOP:** OOK pertenece a EV-24. **Estado:** no ejecutado; equipo 433 sigue siendo prerrequisito de conclusión fuerte.
+
+### EV-24 — OOK 868/433, lock y recovery
+
+**Objetivo/base.** Confirmar OTA OOK y recuperación. `RadioIF_setPropConfig` carga patches genook no descargables; OOK debe ser lo último antes de reset. **Equipo:** dos V3, antenas/banco correctos; analizador preferible. **Terminal:** una.
+
+```powershell
+Invoke-FeralOta -Tx COM88 -Rx COM31 -Preset ook_868_4k8 -Power 0 -Count 10 -MinMarkers 10
+Reset-Cc1352 -Shell COM87 -Bridge COM88; Reset-Cc1352 -Shell COM30 -Bridge COM31
+Invoke-FeralOta -Tx COM31 -Rx COM88 -Preset ook_868_4k8 -Power 0 -Count 10 -MinMarkers 10
+Reset-Cc1352 -Shell COM87 -Bridge COM88; Reset-Cc1352 -Shell COM30 -Bridge COM31
+```
+
+Ejecute OOK433 sólo con antena/equipo 433, sustituyendo preset por `ook_433_4k8`, y recupere ambas placas inmediatamente. **Criterios.** `PASS-RF` por markers; `LIMITATION REPRODUCED` si cambiar de modo sin reset bloquea exactamente y el reset recupera; `FAIL` si reset explícito no recupera. **No prueba:** decodificación OOK de terceros ni sensibilidad. **STOP:** no use `--auto-reset`, `demo_emulate_ook_garage.py` ni scripts sin wrapper: llaman reset inseguro. **Estado:** no ejecutado.
+
+### EV-25 — Wireless M-Bus S/T/C/N
+
+**Objetivo/base.** Distinguir OTA de markers con presets de interoperabilidad W-MBus. **Equipo:** dos V3; dispositivo/decoder W-MBus para conclusión de protocolo; antena 169 para N. **Terminal:** una.
+
+```powershell
+$presets='wireless_mbus_s_868','wireless_mbus_t_868','wireless_mbus_c_868'
+foreach($p in $presets){Invoke-FeralOta -Tx COM88 -Rx COM31 -Preset $p -Count 10 -MinMarkers 10}
+foreach($p in $presets){Invoke-FeralOta -Tx COM31 -Rx COM88 -Preset $p -Count 10 -MinMarkers 10}
+# Sólo con antenas/equipo 169 MHz:
+Invoke-FeralOta -Tx COM88 -Rx COM31 -Preset wireless_mbus_n_169_2k4 -Count 10 -MinMarkers 10
+Invoke-FeralOta -Tx COM88 -Rx COM31 -Preset wireless_mbus_n_169_4k8 -Count 10 -MinMarkers 10
+Invoke-FeralOta -Tx COM31 -Rx COM88 -Preset wireless_mbus_n_169_2k4 -Count 10 -MinMarkers 10
+Invoke-FeralOta -Tx COM31 -Rx COM88 -Preset wireless_mbus_n_169_4k8 -Count 10 -MinMarkers 10
+```
+
+**Criterios.** `PASS-RF-PHY`=10/10 markers; `PASS-protocol` sólo si un dispositivo/decoder W-MBus independiente acepta frames conformes, algo que estos comandos no generan. Role-swap requerido para simetría. **No prueba:** framing, CRC, cifrado o modos W-MBus completos. **STOP:** N queda `BLOCKED` sin antena/banco 169. **Estado:** EV-11 sólo control; OTA pendiente.
+
+### EV-26 — Wi-SUN y Sidewalk FSK
+
+**Objetivo/base.** Reproducir siete presets OTA de `smoke_f29_subg_915.py`; MIOTY está excluido por el propio script. **Equipo:** dos V3, antenas 902/915; dispositivo independiente para protocolo. **Terminal:** una. Use el script original con reset parcheado sólo en memoria:
+
+```powershell
+$env:EV_TX='COM88';$env:EV_RX='COM31'
+@'
+import os,sys,time,serial
+import examples.smoke_f29_subg_915 as app
+shell={'COM88':'COM87','COM31':'COM30'}
+def reset(p):
+ with serial.Serial(shell[p],115200,timeout=1,write_timeout=1) as s:s.write(b'boot\r\n');time.sleep(.5);s.write(b'exit\r\n');s.flush()
+ time.sleep(3.5)
+app.reset_cc1352=reset
+sys.argv=['smoke_f29_subg_915.py','--tx-port',os.environ['EV_TX'],'--rx-port',os.environ['EV_RX'],'--count','10','--min-markers','10','--power','0']
+raise SystemExit(app.main())
+'@ | python -
+```
+
+**Criterios.** `PASS-RF-PHY`=70/70. Para la dirección inversa, vuelva a pegar el bloque completo sustituyendo exactamente la primera línea por `$env:EV_TX='COM31';$env:EV_RX='COM88'`; no cambie el mapa `shell`. **No prueba:** Wi-SUN FAN, Sidewalk networking/LR, interoperabilidad o espectro. `PASS-protocol` exige nodos terceros. **STOP:** sólo banda autorizada; no confundir nombres de preset con stack. **Estado:** no ejecutado actual; antecedente histórico 70/70.
+
+### EV-27 — Propietario 2.4 GHz
+
+**Objetivo/base.** OTA de `gfsk_2440_50k` y `_250k`. **Equipo:** dos V3; SDR/analizador 2.4 GHz para independencia. **Terminal:** una.
+
+```powershell
+foreach($p in 'gfsk_2440_50k','gfsk_2440_250k'){Invoke-FeralOta -Tx COM88 -Rx COM31 -Preset $p -Count 10 -MinMarkers 10}
+foreach($p in 'gfsk_2440_50k','gfsk_2440_250k'){Invoke-FeralOta -Tx COM31 -Rx COM88 -Preset $p -Count 10 -MinMarkers 10}
+```
+
+**Criterios.** 10/10 ambas direcciones=`PASS-RF-symmetric`; instrumento confirmando 2440 MHz/modulación=`PASS-instrument`. **No prueba:** interoperabilidad propietaria externa ni exactitud de potencia. **STOP:** U2/CTF o antena no establecidos hacen un cero `INCONCLUSIVE`, no fallo inmediato. **Estado:** no ejecutado.
+
+### EV-28 — Helpers de emulación PHY-level
+
+**Objetivo/base.** Verificar firmas de helpers, no emulación de stacks. `smoke_f17_emulation.py` deriva Shell; use wrapper. **Equipo:** dos V3. **Terminal:** una.
+
+```powershell
+$env:EV_TX='COM88';$env:EV_RX='COM31'
+@'
+import os,sys,time,serial
+import examples.smoke_f17_emulation as app
+shell={'COM88':'COM87','COM31':'COM30'}
+def reset(p):
+ with serial.Serial(shell[p],115200,timeout=1,write_timeout=1) as s:s.write(b'boot\r\n');time.sleep(.5);s.write(b'exit\r\n');s.flush()
+ time.sleep(3.5)
+app.reset_cc1352=reset
+sys.argv=['smoke_f17_emulation.py','--tx-port',os.environ['EV_TX'],'--rx-port',os.environ['EV_RX'],'--count','20','--skip-ook','--skip-433']
+raise SystemExit(app.main())
+'@ | python -
+```
+
+**Criterios.** Todos los helpers incluidos superan su threshold=`PASS-signature`. Para invertir roles, vuelva a pegar el bloque completo sustituyendo exactamente la primera línea por `$env:EV_TX='COM31';$env:EV_RX='COM88'`; conserve el mapa `shell`. 433/OOK permanecen en EV-23/24 y no se habilitan aquí inicialmente. **No prueba:** dispositivo/protocolo real, autenticación o framing interoperable. **STOP:** no quite `--skip-ook` mientras reset no esté controlado por wrapper y EV-24 cerrado. **Estado:** no ejecutado.
+
+### EV-29 — KillerBee real: sniff e inject
+
+**Objetivo/base.** Probar adapter→Radio→IEEE y PCAP. El baseline host registró KillerBee opcional ausente; no instalar dependencias durante la sesión sin decisión separada. **Equipo:** DUT, Zigbee CH25, Wireshark/KillerBee. **Terminal:** una.
+
+Preflight: `python -c "import killerbee; print(killerbee.__file__)"`. Si falla, EV-29=`BLOCKED` y se detiene. Si existe:
+
+```powershell
+python examples\killerbee_sniff.py --port COM88 --channel 25 --count 20 --pcap .\EV-29-ch25.pcap
+Get-FileHash .\EV-29-ch25.pcap -Algorithm SHA256
+```
+
+**Criterios.** `PASS-sniff`=20 frames variables, FCS/validcrc coherente, PCAP abre como DLT 195; `PASS-inject` requiere además flujo KillerBee externo y segundo observador, no cubierto por este comando. **No prueba:** stack Zigbee en FeralRF. **STOP:** no flashear stock/sniffer ni ejecutar Catnip sniff sobre DUT. **Estado:** `BLOCKED` por dependencia ausente hasta verificar/corregir el entorno; EV posteriores no RF-integración pueden continuar.
+
+### EV-30 — Vectores crypto en hardware
+
+**Objetivo/base.** Comparar aceleradores CC1352 con vectores/oráculo host usando el script original F25. **Equipo:** DUT #1 y paquete `cryptography`. **Terminal:** una.
+
+```powershell
+python -c "import cryptography; print(cryptography.__version__)"
+python examples\lab\smoke_f25_crypto.py --port COM88
+```
+
+**Criterios.** `PASS-crypto`=9/9; skip Curve25519 sólo puede dar `PARTIAL`, no PASS. Preserve bytes/comparaciones y versiones. **No prueba:** side channels, generación certificada o seguridad de protocolo. **STOP:** mismatch de vector; no continuar stress. **Estado:** no ejecutado.
+
+### EV-31 — Crypto stress y límites
+
+**Objetivo/base.** Repetición y límites después de EV-30. No hay script upstream completo; use F25 veinte veces, que conserva oráculos. **Equipo:** DUT. **Terminal:** una.
+
+```powershell
+1..20 | % { Write-Host "CRYPTO RUN $_"; python examples\lab\smoke_f25_crypto.py --port COM88; if ($LASTEXITCODE -ne 0) { break } }
+```
+
+**Criterios.** `PASS-repeat`=20×9/9 sin degradación; guardar duración por corrida si se desea latencia. Límites locales 0/241 SHA/TRNG ya pertenecen a EV-15. **No prueba:** throughput sostenido, concurrencia o side-channel. **STOP:** primer mismatch/timeout. **Estado:** no ejecutado.
+
+### EV-40 — Baseline completo actual
+
+**Objetivo/base.** Reproducir `run_validation_baseline.sh`. El script deriva Shell=`Bridge+2` dentro de Bash/Python y no acepta Shell explícito. **Equipo:** dos V3 y Git Bash.
+
+**Ejecución:** **BLOCKED: no ejecutar el script sin cambios** con COM88/COM31. Tampoco generar una copia ad hoc sin revisión, porque EV-40 busca reproducibilidad del baseline oficial. EV-10–28 pueden ejecutarse individualmente con los wrappers seguros anteriores.
+
+**Criterios.** Se desbloquea sólo cuando exista una versión revisada que acepte `--tx-shell COM87 --rx-shell COM30` o un mecanismo equivalente auditable; entonces se preservará log completo y hash del script. **No prueba aun ejecutado:** independencia, instrumentación ni protocolos. **Estado:** no ejecutado/BLOCKED por KI-15; posteriores independientes pueden continuar.
+
+### EV-41 — Cambio PHY sin reset
+
+**Objetivo/base.** Determinar si el deadlock histórico persiste en HEAD. **Equipo:** DUT; reset explícito preparado. **Terminal:** una.
+
+```powershell
+@'
+from feralrf import Radio,PHY
+rows=[(PHY.BLE_1M,37),(PHY.IEEE_802_15_4,25),(PHY.SUB_1GHZ_868,0),(PHY.BLE_1M,37)]
+r=Radio(port='COM88')
+try:
+ print('INFO',r.init())
+ for cycle in range(1,4):
+  for phy,ch in rows:
+   print('STEP',cycle,phy.name,ch);r.set_phy(phy,ch);r.set_channel(ch);r.start_rx();r.stop_rx();print('STATS',r.get_stats())
+finally:r.disconnect()
+'@ | python -
+```
+
+**Criterios.** 3 ciclos completos=`REGRESSION NOT REPRODUCED` (no demuestra ausencia); timeout en transición repetible=`LIMITATION REPRODUCED`; incapacidad de recuperar=`FAIL`. Preserve último ACK/paso. **No prueba:** RF. **STOP:** al primer hang, no reintente antes de guardar evidencia y `Reset-Cc1352 COM87 COM88`. **Estado:** no ejecutado.
+
+### EV-42 — Cambios con reset y entre bandas
+
+**Objetivo/base.** Validar workaround explícito diez ciclos. **Equipo:** DUT. **Terminal:** una.
+
+```powershell
+$rows=@(@(0,37),@(4,25),@(7,0))
+1..10 | % { $cycle=$_; foreach($r in $rows) { Write-Host "CYCLE $cycle PHY $($r[0])"; python examples\smoke_phase2.py --port COM88 --phy $r[0] --channel $r[1] --power 0; if ($LASTEXITCODE -ne 0) { throw 'step failed' }; Reset-Cc1352 -Shell COM87 -Bridge COM88 } }
+```
+
+PHY7 aquí sólo prueba control default; GFSK433↔868 requiere `smoke_prop_phase1` y reset explícito entre ambos, sin OOK. **Criterios.** 10/10=`PASS-workaround`; fallo pese a reset=`FAIL`. **No prueba:** necesidad del reset ni RF. **Estado:** EV-10 aportó menos ciclos; requiere ejecución dedicada.
+
+### EV-43 — RX soak y contadores
+
+**Objetivo/base.** Soak real CH25 y monotonicidad. `canary_regression.py` lee paquetes/estadísticas y STOP final. **Equipo:** DUT + Zigbee CH25. **Terminal:** una.
+
+```powershell
+python examples\lab\canary_regression.py --port COM88 --phy 4 --channel 25 --power 0 --soak-duration 60 --report-every 15 --profile quiet --min-packets 1
+python examples\lab\canary_regression.py --port COM88 --phy 4 --channel 25 --power 0 --soak-duration 300 --report-every 30 --profile quiet --min-packets 1
+```
+
+**Criterios.** `PASS-soak` por etapa=stats monotónicas, ≥1 frame, STOP/final stats; luego reconecte con EV-01 una vez. Drops/overflow se reportan, no se exige cero sin tasa controlada. **No prueba:** capacidad de cola o PER. **STOP:** no iniciar 5 min si 60 s falla. **Estado:** no ejecutado.
+
+### EV-44 — Presión de cola/burst
+
+**Objetivo/base.** Relacionar 40 solicitados con observados y counters. En firmware count es máximo de intentos exitosos; al primer `RadioIF_transmitRaw` fallido el burst se cancela sin error asíncrono al host. **Equipo:** #1 TX, #2 RX. **Terminales:** A RX primero, B TX.
+
+1. A: `python examples\lab\ota_rx_probe.py --port COM31 --phy 4 --channel 25 --duration 15 --marker-hex CAFE4401 --min-hits 40 --print-limit 40`.
+2. Espere `RX_START`; B: `python examples\lab\ota_tx_burst.py --port COM88 --phy 4 --channel 25 --power 0 --payload-hex CAFE4401 --count 40 --interval-us 25000`.
+3. Dirección inversa: A=`python examples\lab\ota_rx_probe.py --port COM88 --phy 4 --channel 25 --duration 15 --marker-hex CAFE4401 --min-hits 40 --print-limit 40`; espere `RX_START`; B=`python examples\lab\ota_tx_burst.py --port COM31 --phy 4 --channel 25 --power 0 --payload-hex CAFE4401 --count 40 --interval-us 25000`.
+4. Reduzca el intervalo sólo en una progresión posterior documentada.
+
+**Criterios.** 40 observados=`PASS-RF-count` para esa tasa; menos=`PARTIAL/pressure observed`, no culpar RX sin tercer observador. Timing exacto requiere instrumento. **No prueba:** capacidad máxima con una sola tasa. **STOP:** overflow creciente, STOP/reconnect fallido. **Estado:** no ejecutado.
+
+### EV-45 — Wrap de secuencia
+
+**Objetivo/base.** `_next_seq` salta 0xFF; probar >253 comandos reales. **Equipo:** DUT. **Terminal:** una.
+
+```powershell
+@'
+from feralrf import Radio
+r=Radio(port='COM88')
+try:
+ print('INFO',r.init())
+ for i in range(300):
+  s=r.get_stats()
+  if i%25==0: print('SEQ_RUN',i,'STATS',s)
+ print('PASS 300/300')
+finally:r.disconnect()
+'@ | python -
+```
+
+**Criterios.** `PASS-control`=300/300 en una conexión; timeout/mismatch=`FAIL`. **No prueba:** TX wrap histórico ni RF, pero sí secuencia de protocolo actual. **STOP:** primer fallo, preservar índice. **Estado:** no ejecutado.
+
+### EV-46 — Re-init y ciclo de vida
+
+**Objetivo/base.** Repetir RADIO_INIT en una instancia; cada init detiene RX y reinicia stats. **Equipo:** DUT. **Terminal:** una.
+
+```powershell
+@'
+from feralrf import Radio
+r=Radio(port='COM88')
+try:
+ for i in range(1,21): print('REINIT',i,r.init(),r.get_stats())
+finally:r.disconnect()
+'@ | python -
+```
+
+**Criterios.** 20/20=`PASS-lifecycle`; preservar iteración/tiempo. **No prueba:** reconnect USB ni conservación de métricas (se reinician por diseño). **STOP:** timeout o estado que no recupera. **Estado:** no ejecutado; EV-03 no lo sustituye.
+
+### EV-47 — Recuperación tras interrupción/error
+
+**Objetivo/base.** Confirmar cleanup tras Ctrl-C, no provocar corrupción. **Equipo:** DUT + Zigbee. **Terminales:** A prueba, B recuperación.
+
+1. A: `python examples\lab\canary_regression.py --port COM88 --phy 4 --channel 25 --soak-duration 300 --report-every 15 --profile quiet --min-packets 1`.
+2. Tras el primer `[RPT]`, pulse Ctrl-C una vez y espere retorno al prompt.
+3. B, sólo después: `python -c "from feralrf import Radio;r=Radio(port='COM88');print(r.init());print(r.get_stats());r.disconnect()"`.
+4. Si B falla, preserve salida y ejecute reset explícito; repita EV-01, no el soak.
+
+**Criterios.** `PASS-recovery`=cleanup y nueva INIT/STATS sin reset; `PARTIAL` si requiere reset; `FAIL` si reset no recupera. **No prueba:** power loss/USB disconnect. **Estado:** no ejecutado.
+
+### EV-50 — Jamming continuo
+
+**Objetivo/base.** Medir interferencia real, no ACK. `smoke_jam_phase1.py` limita 1..30000 ms y firmware tiene timeout; ACK no prueba PER. **Equipo:** recinto RF o conexión conducida, víctima independiente e instrumento. Las dos V3 al aire no satisfacen por sí solas seguridad/autorización.
+
+**Ejecución:** `BLOCKED` hasta documentar recinto/conexión, carga/atenuación y autorización. Comando reservado, no ejecutar en espacio abierto: `python examples\lab\smoke_jam_phase1.py --port COM88 --phy 4 --channel 25 --power 0 --duration-ms 1000 --wait-ms 500`.
+
+**Criterios.** `PASS-control` sólo ACK/STOP; `PASS-instrument` exige energía confinada, cese tras STOP y cambio de PER de víctima con baseline. **STOP:** cualquier fuga/emisión no autorizada o STOP dudoso; cortar alimentación. **No prueba:** eficacia general o legalidad. **Estado:** BLOCKED.
+
+### EV-51 — Spectrum/RSSI scan
+
+**Objetivo/base.** Validar scan cuando exista data path. En HEAD hay dataclasses/ideas, pero no comando público completo ni handler E2E. **Ejecución:** ninguna; `BLOCKED`. **PASS futuro:** API+wire+handler+datos comparados con instrumento. **No prueba actualmente:** nada físico. EV-52/53 no dependen de inventar esta ruta.
+
+### EV-52 — MIOTY TS-UNB
+
+**Objetivo/base.** Reproducir limitación del preset 396 baud, no declarar soporte. **Equipo:** dos V3 y, para conclusión física, analizador/dispositivo MIOTY. **Terminal:** una.
+
+```powershell
+Invoke-FeralOta -Tx COM88 -Rx COM31 -Preset mioty_868_tsunb -Power 0 -Count 10 -MinMarkers 1
+Reset-Cc1352 -Shell COM87 -Bridge COM88; Reset-Cc1352 -Shell COM30 -Bridge COM31
+```
+
+**Criterios.** 0/10 con ambos controles sanos=`LIMITATION REPRODUCED`, no PASS; marker recibido sólo es `REGRESSION NOT REPRODUCED` hasta que instrumento/protocolo confirme TS-UNB. **No prueba:** MIOTY interoperable. **STOP:** no iterar tras lock/error; recuperar. **Estado:** no ejecutado actual, FAIL histórico 0/10.
+
+### EV-53 — RSA, AIS, 802.15.4g y High-PA
+
+**Objetivo/base.** Conservar límites pendientes. No existen rutas públicas completas ni banco High-PA caracterizado para estas capacidades. **Ejecución:** ninguna; `BLOCKED`. No use `test_pa_characterization.py` como sustituto: caracteriza configuraciones externas y no implementa RSA/AIS/15.4g. **PASS futuro:** implementación y oráculo/instrumento por capacidad. **Estado:** BLOCKED; no impide EV ya implementadas.
+
+### EV-54 — BLE protocol stack retirado
+
+**Objetivo/base.** Confirmar alcance: FeralRF conserva PHY raw y retiró scan/conexión/GATT el 2026-07-20; Sniffle es herramienta separada. **Ejecución:** revisión estática, no test FeralRF. `rg -n "BLE protocol|GATT|scan mode|removed" ..\docs\VALIDATION_MATRIX.md ..\README.md`. **Criterio:** `NOT APPLICABLE` a FeralRF actual; usar AUX stock/Sniffle sería otra campaña y puede implicar flash. **No prueba:** BLE stack. **Estado:** N/A; no convertir en FAIL.
+
+## Resumen operativo y acción requerida
+
+| EV | Propósito | DUT | Observador/equipo | Script/herramienta exacta | Evidencia alcanzable | Estado previo | Acción |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| 00 | identidad/COM | #1/#2 | Catnip/Windows | `catnip devices --debug/identify/status` | identidad | PARTIAL | suplemento |
+| 01 | init/info/stats | #1 | — | bloque Python 3× | control | PARTIAL | completar |
+| 02 | RX start/stop | #1 | — | `smoke_phy4_ieee154.py` | control | PASS-control | no repetir |
+| 03 | reconnect | #1 | — | loop 5× | control | PASS 5/5 | no repetir |
+| 04 | reset | #1/#2 | Shell explícito | `Reset-Cc1352` | recovery | API BLOCKED; manual 1/1 | suplementar |
+| 05 | RX IEEE real | #1 | Zigbee+#2 | bloque RX exhaustivo (`Radio.read_packets`) | RF RX + bytes/metadata | PASS-RF | suplemento simultáneo opcional |
+| 06 | exclusión RX/TX | #1 | — | bloque Python | control/estado | PASS | no repetir |
+| 10 | PHY 0–7 | #1 | — | `smoke_phase2.py` | control | 8/8 | no repetir |
+| 11 | 27 presets | #1 | — | `smoke_prop_phase1.py` | control | 27/27 reportado | 9 logs si faltan |
+| 12 | TX modos | #1 | #2 | `ota_rx_probe` + `smoke/ota_tx_*` | control+RF simétrica | NOT TESTED | ejecutar |
+| 13 | CW/PRBS | #1 | #2+instrumento | F22 wrapper | control/indirecta/instrumento | NOT TESTED | instrumento |
+| 14 | error async | #1 | — | bloque Python | observación | NOT TESTED | ejecutar |
+| 15 | límites | #1 | — | bloque Python | host-boundaries | NOT TESTED | ejecutar parcial |
+| 20 | IEEE OTA | #1↔#2 | peer | `Invoke-FeralOta` | RF simétrica | NOT TESTED | ejecutar |
+| 21 | BLE raw OTA | #1↔#2 | peer/sniffer | `Invoke-FeralOta` | RF simétrica | NOT TESTED | ejecutar |
+| 22 | Sub-G matrix | #1↔#2 | peer/instrumento | `Invoke-FeralOta` | RF simétrica | NOT TESTED | ejecutar |
+| 23 | 433 | #1↔#2 | antena/instrumento | `Invoke-FeralOta` 100 ensayos | caracterización | NOT TESTED | condicionado |
+| 24 | OOK | #1↔#2 | instrumento | `Invoke-FeralOta`+reset | RF/recovery | NOT TESTED | último |
+| 25 | W-MBus | #1↔#2 | dispositivo tercero | `Invoke-FeralOta` | PHY; protocolo bloqueado | NOT TESTED | ejecutar PHY |
+| 26 | Wi-SUN/Sidewalk | #1↔#2 | nodo tercero | F29 wrapper | PHY; protocolo bloqueado | NOT TESTED | ejecutar PHY |
+| 27 | prop 2.4 | #1↔#2 | SDR | `Invoke-FeralOta` | RF simétrica | NOT TESTED | ejecutar |
+| 28 | helpers | #1↔#2 | receptor conforme | F17 wrapper | firma | NOT TESTED | ejecutar subset |
+| 29 | KillerBee | #1 | Zigbee/host | `killerbee_sniff.py` | PCAP | BLOCKED dep. | verificar dependencia |
+| 30 | crypto | #1 | oracle host | F25 | vectores HW | NOT TESTED | ejecutar |
+| 31 | crypto repeat | #1 | oracle host | F25×20 | repetición | NOT TESTED | tras EV30 |
+| 40 | baseline | #1↔#2 | Git Bash | baseline oficial | completa si corregido | NOT TESTED | BLOCKED KI-15 |
+| 41 | switch sin reset | #1 | — | bloque Python | reproducción límite | NOT TESTED | ejecutar cauteloso |
+| 42 | switch con reset | #1 | Shell COM87 | smoke+reset | workaround | NOT TESTED | ejecutar |
+| 43 | RX soak | #1 | Zigbee | canary 60/300 | soak RF | NOT TESTED | ejecutar escalonado |
+| 44 | cola/burst | #1↔#2 | peer; tercero ideal | ota probe/burst | count RF | NOT TESTED | ejecutar |
+| 45 | seq wrap | #1 | — | 300 STATS | protocolo | NOT TESTED | ejecutar |
+| 46 | re-init | #1 | — | 20 init | lifecycle | NOT TESTED | ejecutar |
+| 47 | interrupción | #1 | — | canary+Ctrl-C | recovery | NOT TESTED | ejecutar |
+| 50 | jamming | #1 | víctima+instrumento+recinto | jam smoke | instrumento | BLOCKED | no ejecutar abierto |
+| 51 | scan | — | instrumento futuro | ninguno | ninguna | BLOCKED | esperar implementación |
+| 52 | MIOTY | #1↔#2 | MIOTY/instrumento | `Invoke-FeralOta` | limitación/PHY | histórico FAIL | opcional controlado |
+| 53 | pendientes | — | futuro | ninguno | ninguna | BLOCKED | esperar implementación |
+| 54 | BLE stack | — | Sniffle externo | revisión estática | alcance | N/A | no ejecutar FeralRF |
+
+## Open validation gaps
+
+- No hay trazabilidad hash del HEX que ejecutan ambas V3 al commit fuente.
+- Dos FeralRF dan compatibilidad simétrica, no interoperabilidad independiente ni detección de defectos compartidos.
+- Faltan analizador/SDR calibrado, medidor de potencia y montajes/antenas conocidos para frecuencia, espectro, potencia, 169/433 MHz, CW/PRBS y jamming.
+- Faltan dispositivos conformes W-MBus, Wi-SUN, Sidewalk y MIOTY; markers raw no sustituyen esos protocolos.
+- KillerBee sigue bloqueado hasta confirmar dependencia/host; Catnip instalado no tiene provenance de commit demostrada.
+- `run_validation_baseline.sh`, F17, F22, F29 y F9 contienen reset `Bridge+2`; sólo los wrappers en memoria documentados son seguros. EV-40 permanece bloqueado porque su objetivo exige el baseline completo oficial.
+- TX_BURST cancela silenciosamente al primer fallo de `RadioIF_transmitRaw`; sin observador no se conoce el número transmitido. Ningún ACK valida timing/potencia/frecuencia.
+- El control externo U2/CTF y la discrepancia GPIO de reset requieren reconciliación antes de atribuir fallos multibanda al CC1352/FeralRF.
 
 ## Inventario de problemas, limitaciones y trabajo pendiente
 
