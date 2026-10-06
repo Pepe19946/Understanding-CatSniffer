@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "05 - Evaluación/FeralRF - Matriz de pruebas.md",
+                "file": "05 - Evaluación/# EV-13 — Registro técnico consolid.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "FeralRF - Matriz de pruebas"
+              "title": "# EV-13 — Registro técnico consolid"
             }
           },
           {
@@ -204,6 +204,9 @@
   },
   "active": "1532fc1e621875c9",
   "lastOpenFiles": [
+    "05 - Evaluación/# EV-14 — Error RF asíncrono y firm.md",
+    "05 - Evaluación/# EV-14 — Error RF asíncrono y firm.txt",
+    "05 - Evaluación/FeralRF - Matriz de pruebas.md",
     "05 - Evaluación/# EV-13 — Registro técnico consolid.md",
     "05 - Evaluación/# EV-13 — Registro técnico consolid.MD",
     "05 - Evaluación/# EV-12 — Validación de TX rawframe..MD",
@@ -214,7 +217,6 @@
     "05 - Evaluación/# EV-12 — Informe técnico y auditor.md",
     "05 - Evaluación/# Registro provisional de validació.md",
     "05 - Evaluación/EV-04 — Reset y reinicialización.md",
-    "05 - Evaluación/FeralRF - Matriz de pruebas.md",
     "05 - Evaluación/FeralRF - Guía de validación experimental.md",
     "05 - Evaluación/# EV-06 — Validación de exclusión R.md",
     "05 - Evaluación/Registro — EV-03 reconexión limpia.md",
@@ -231,7 +233,6 @@
     "04 - FeralRF/Matriz de capacidades.md",
     "04 - FeralRF/Arquitectura FeralRF.md",
     "01 - Hardware/Arquitectura CatSniffer v3.1.md",
-    "00 - Proyecto/Estado y siguientes pasos.md",
     "Sin título.canvas",
     "Sin título 1.canvas",
     "90 - Recursos",
@@ -240,7 +241,6 @@
     "04 - FeralRF",
     "03 - Herramientas",
     "02 - Firmware",
-    "01 - Hardware",
-    "00 - Proyecto"
+    "01 - Hardware"
   ]
 }
