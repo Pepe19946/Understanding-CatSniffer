@@ -23,12 +23,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "05 - Evaluación/Guía enfocada OTA FeralRF - TX RX con dos CatSniffer.md",
+                "file": "06 - Experimentos/Informe de validación OTA FeralRF — transmisión y recepción con dos CatSniffer V3.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "Guía enfocada OTA FeralRF - TX RX con dos CatSniffer"
+              "title": "Informe de validación OTA FeralRF — transmisión y recepción con dos CatSniffer V3"
             }
           },
           {
@@ -215,8 +215,10 @@
   },
   "active": "1532fc1e621875c9",
   "lastOpenFiles": [
-    "05 - Evaluación/Guía enfocada OTA FeralRF - TX RX con dos CatSniffer.md",
     "06 - Experimentos/Checklist OTA FeralRF - dos CatSniffer.md",
+    "06 - Experimentos/Informe de validación OTA FeralRF — transmisión y recepción con dos CatSniffer V3.md",
+    "05 - Evaluación/Guía enfocada OTA FeralRF - TX RX con dos CatSniffer.md",
+    "06 - Experimentos/DSDSA.md",
     "05 - Evaluación/Auditoría técnica de validación FeralRF - EV ejecutadas.md",
     "05 - Evaluación/FeralRF - Guía de validación experimental.md",
     "05 - Evaluación/FeralRF - Wiki técnica integral.md",
@@ -240,8 +242,6 @@
     "05 - Evaluación/EV-05 — Primera observación RF IEEE.md",
     "05 - Evaluación/EV-10 — Matriz de PHY por control.md",
     "05 - Evaluación/Registro — EV-03 reconexión limpia.md",
-    "05 - Evaluación/# Registro provisional de validació.md",
-    "05 - Evaluación/# EV-14 — Error RF asíncrono y firm.md",
     "05 - Evaluación/# EV-14 — Error RF asíncrono y firm.txt",
     "05 - Evaluación/# EV-12 — Validación de TX rawframe.txt",
     "05 - Evaluación/# EV-13 — Registro técnico consolid.txt",
