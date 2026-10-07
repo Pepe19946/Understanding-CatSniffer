@@ -1,4 +1,15 @@
-# FeralRF — Qué parte de CatSniffer reemplaza
+# Arquitectura FeralRF
+
+> Encabezado original conservado: # FeralRF — Qué parte de CatSniffer reemplaza
+
+## Alcance de esta definición y vínculo con la campaña
+
+Análisis estático de referencia conservado, con sus fechas/commit en el cuerpo previo. No prueba qué binario está instalado. La validación actual se consulta en [[FeralRF - Matriz de pruebas]] y [[Auditoría técnica de validación FeralRF - EV ejecutadas]]. La definición integral está en [[FeralRF - Wiki técnica integral]].
+
+EV-12 muestra divergencia entre ACK y conteo OTA para BURST/CONT con intervalos positivos; reloj/SysTick, cancelación del backend y observador son hipótesis distintas. EV-12/13 muestran timeoutRX_STOP sin causa confirmada; no atribuirlo automáticamente a colas/taskprio. EV-04 recupera mediante Shell manual pero selecciona COM90 frente a 87. Los riesgos estáticos deRF_close/RF_runCmd,OOK y CTF no son por sí solos causas reproducidas. RF_openlazy requiere distinguir rutas 433/jam y revisión. GPIO15 frente a overlay GPIO3/reset GPIO2 necesita identificar build/revisión; recuperación manual no mide pines.
+
+## Registro documental previo — conservar su fecha y alcance
+
 
 ## En una frase
 

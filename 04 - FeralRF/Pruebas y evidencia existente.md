@@ -1,4 +1,17 @@
-# Evidencia FeralRF — Qué demuestran realmente las pruebas
+# Pruebas y evidencia existente
+
+> Encabezado original conservado: # Evidencia FeralRF — Qué demuestran realmente las pruebas
+
+## Separación de historia, tests host y campaña actual
+
+Esta nota conserva la revisión de pruebas oficiales/históricas y sus límites; no se reejecutó ningún test en esta auditoría. Cobertura actual: [[FeralRF - Matriz de pruebas]]. Cronología: [[Registro de validación FeralRF]]. Evaluacióntécnica: [[Auditoría técnica de validación FeralRF - EV ejecutadas]]. Definición: [[FeralRF - Wiki técnica integral]].
+
+El baseline host 422 passed/1 skip y crypto 9/9 deabril son resultados reportados de otra etapa, no evidencian HIL actual. EV-14 registra 3 tests FakeSerial 3PASSED: contrato host, no RF real. Los smoke EV-10/11 acreditan control, no RF multibanda. EV-12 actual sí aporta observación OTA IEEE y conteos; EV-13 instrumentación física diferida; EV-14 baselines con bytes sin error real inducido. Estas ampliaciones no completan retroactivamente bytes faltantes de EV-05 ni logs individuales de nueve presets.
+
+No hay logs PCAP/binarios/capturas instrumentales adjuntos dentro del conjunto inspeccionado. Comandos/salidas presentes se preservan en §17de cada EV con procedencia: nombre/hash. Artefactos/repo/link externo mencionados no se verificaron de nuevo. Ver niveles de confianza y discrepancias en la auditoría, evitando tratar resultados narrados como captura independiente.
+
+## Registro documental previo — conservar su fecha y alcance
+
 
 ## En una frase
 

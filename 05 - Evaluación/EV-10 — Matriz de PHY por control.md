@@ -1,3 +1,85 @@
+# EV-10 — Matriz de PHY por control
+
+Registro canónico. PASS de control se mantiene separado de validación RF.
+
+## 1. Contexto de evaluación
+
+Se necesitaba conocer qué enumeraciones PHY respondían al ciclo de control antes de comparar sus capacidades por aire.
+
+## 2. Objetivo de validación
+
+Ejecutar smoke de control para los ocho PHY documentados, con recuperación entre filas.
+
+## 3. Capacidad o requisito FeralRF evaluado
+
+Selección PHY, configuración y RX_START/RX_STOP por API. Este smoke no ejecuta TX; la prueba de TX_RAW está en los presets de EV-11. [[Matriz de capacidades]], [[Protocolo y API Python]].
+
+## 4. Precondiciones y condiciones
+
+COM88, potencia configurada 0 dBm. Filas (PHY,canal): (0,37), (1,9), (2,37), (3,37), (4,25), (5,0), (6,0), (7,0). Reset manual boot/exit sobre COM87 entre filas. Hashes/versiones instaladas no fijados.
+
+## 5. Resultado esperado
+
+ACK/control sin error en cada fila y posibilidad de reiniciar el siguiente caso. El plan de RF independiente pertenece a EV-20/EV-21 y evaluaciones de bandas.
+
+## 6. Procedimiento y ejecución cronológica
+
+1. Ejecutar el smoke/phase 2 para cada una de las ocho parejas documentadas.
+2. Entre filas, efectuar recuperación manual mediante Shell COM87 e INIT/estadísticas.
+3. Registrar las ocho salidas y una recuperación final.
+El canal 9 de BLE2M es el valor efectivamente usado; no se sustituye por 37 del ejemplo upstream.
+
+## 7. Resultado observado
+
+8/8 filas informadas como satisfactorias por control; recuperación registrada entre ellas. No se aportó observación de emisiones para estos ocho casos.
+
+## 8. Evidencia
+
+Comandos y salidas por PHY en §17, incluyendo resets. El smoke no establece completitud RF de TX ni ausencia de todo error asíncrono tardío.
+
+## 9. Comparación entre lo esperado y lo observado
+
+Cumple el objetivo de control de esta matriz. ACK de programación/configuración no equivale a una señal conforme al PHY elegido.
+
+## 10. Interpretación técnica
+
+Se acreditan rutas host/firmware bajo reinicio entre filas. No se acredita cambio de PHY sin reset, ni interoperabilidad BLE2M/Coded/sub-GH z/propietaria.
+
+## 11. Anomalías, desviaciones y limitaciones
+
+Reset entre filas impide evaluar continuidad de estado. Sin instrumento, bytes RF ni recepción independiente de TX. PHY7 por defecto no caracteriza todos los presets.
+
+## 12. Resultado de la evaluación
+
+PASS para las ocho filas de control; NOT FULLY VALIDATED para RF multi-PHY.
+
+## 13. Confianza
+
+High para los registros de control; Low para cualquier inferencia RF no medida.
+
+## 14. Preguntas abiertas
+
+¿Qué PHY emiten y reciben de forma interoperable? ¿Se puede alternar sin reset? ¿Hay eventos tardíos no consumidos por el smoke?
+
+## 15. Acciones de seguimiento
+
+Completar EV-20/21 y EV-41 con marcadores/eventos completos; no promover esta matriz a RF PASS.
+
+## 16. Trazabilidad
+
+Guía EV-10/20/21/41; [[FeralRF - Guía de validación experimental]]; [[FeralRF - Matriz de pruebas]]; [[Arquitectura FeralRF]]; [[EV-06 — Exclusión RX y TX y recuperación de estado]]; [[EV-11 — Control de presets propietarios]]; [[Pruebas y evidencia existente]].
+
+Definición específica: [[FeralRF - Wiki técnica integral#10. Conceptos PHY necesarios]].
+
+
+
+## 17. Notas originales preservadas y material pendiente
+
+Fuente: `EV-10 — Matriz de PHY por control.md`. SHA-256 previo: `26FC534557428B37820224010D53D71B54CE97E5B57A3CEE0CF39418031866A4`.
+
+Transcripción íntegra, sin corregir comandos, salidas, errores ni conclusiones históricas. Sus estados y recomendaciones deben leerse con el alcance y las correcciones de la parte normalizada. Las fechas de esta auditoría no son fechas de ejecución experimental. Los comandos son evidencia histórica; no se ejecutaron durante esta revisión.
+
+````text
 EV-10 — Matriz de PHY por control
 1. Objetivo teórico
 
@@ -437,3 +519,4 @@ Los resets entre filas también resultaron satisfactorios mediante el procedimie
 La conclusión que podemos defender es, por tanto:
 
 En el CatSniffer V3 evaluado con FeralRF, los PHY 0–7 superaron la matriz EV-10 a nivel de control (PASS-control 8/8) bajo las combinaciones de canal y potencia prescritas. Este resultado valida la aceptación y el recorrido básico de configuración/RX de los ocho valores de PHY, pero no constituye validación RF individual de cada PHY. PHY 7 permanece además limitado a una comprobación de control hasta configurar y validar una modulación propietaria concreta mediante configure_prop.
+````

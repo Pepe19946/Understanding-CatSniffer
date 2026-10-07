@@ -1,3 +1,58 @@
+# Registro de validación FeralRF
+
+Registro cronológico canónico y puerta de entrada a los resultados. Actualización documental: 7 de octubre de 2026. Fechas experimentales sólo cuando constan expresamente. No se usa orden de archivos ni Git como prueba de cronología o resultado.
+
+## Jerarquía documental
+
+[[FeralRF - Wiki técnica integral]] → [[Arquitectura FeralRF]] / [[Matriz de capacidades]] / [[Protocolo y API Python]] → [[FeralRF - Guía de validación experimental]] → registros EV y sus notas originales → [[Pruebas y evidencia existente]] / [[Fuentes FeralRF]] / demás recursos → [[FeralRF - Matriz de pruebas]] → [[Auditoría técnica de validación FeralRF - EV ejecutadas]]. La guía define intención; el EV demuestra ejecución; la matriz expresa cobertura; la auditoría juzga alcance y brechas.
+
+## Épocas de montaje e identidad
+
+| Época documentada | Roles | Evidencia / cautela |
+|---|---|---|
+|Etapa inicial, disponible al corte de auditoría 5-10-2026|DUT Bridge COM88/LoRa COM86/Shell COM87; guía proponía peer COM31|Preflight y EV-03/04/05/10/11; COM31 es plan, no prueba de uso|
+|Etapa OTA explícita 6-10-2026, tras sustitución de placa|DUT/TX COM33/LoRa COM34/Shell COM35; observador COM88/LoRa COM86/Shell COM87|EV-12; el papel de COM88 cambió. EV-13/14 usan este mapa, pero su día exacto no consta|
+
+`GET_INFO` retorna serial constante `FERALRF1`; no basta para identificar unidades. Faltan serial USB/HWID, binario/commit cargado, inventario de sustitución y continuidad física de placas. No se convierte la coincidencia COM88 en identidad persistente. La aritmética Bridge+2 falló para COM88, aunque COM33+2 coincide en la etapa posterior; debe descubrirse por interfaz y placa.
+
+## Cadena de preguntas y resultados
+
+| Orden respaldado / fecha | Pregunta y motivo | Prueba efectivamente realizada | Qué establece | Incertidumbre creada / siguiente paso |
+|---|---|---|---|---|
+|Preflight inicial, sin fecha|¿Cuál es el puente y qué CLI está disponible?|Catnip EXE3.3.3.0 encuentra V3#1COM88/86/87; pip no detecta instalación, import local requiere `rich`|EXE funcional y checkout/import distintos|Identidad/debug/status incompletos→EV-00/40 siguen parciales|
+|Inicio EV-01/02, sin fecha|¿Responde FeralRF y puede abrir/cerrar RX?|INIT/info/stats y RX_START/STOP en original§17|Control inicial observado|No binario fechado ni protocolo completo→03/04/05|
+|Observaciones preliminares, sin fecha|¿Hay paquetes en IEEE25?|30 s: 48 paquetes, primero timestamp 343358331/RSSI−77/LQI58/CRC true/52B; 60 s: 100 paquetes, primero timestamp 4859346/−74/60/CRC true/51B|Recepción preliminar textual|Canal negativo informal sin comando/duración/canal conocidos; no control firme|
+|[[EV-03 — Reconexión limpia entre procesos]], sin fecha|¿El cierre libera el puerto?|5 procesos independientes|Reuso limpio 5/5|No garantiza reset, interrupción o reinit en la misma instancia→04/46/47|
+|[[EV-04 — Reset y reinicialización]], después 03 por contexto|¿Se puede recuperar sin ciclo USB?|boot→timeout INIT→exit→INIT; luego selector Shell|Manual local sí; selector COM90≠87|Mapeo frágil y sólo un ciclo→reset debe fijarse antes de automatizar|
+|[[EV-05 — Primera observación RF IEEE]], después 04|¿Hay RF recibida tras recuperar control?|3×30 s canal 25:41/43/43|RX local repetido|No bytes/atribución independiente→05 no demuestra stack Zigbee, posterior 20/14|
+|[[EV-06 — Exclusión RX y TX y recuperación de estado]], tras RX funcional|¿Cómo se rechaza TX durante RX?|Dos intentos de harness inválidos, dos DUT válidos; error 0x05 y stop|Exclusión de control/recovery|RF del rechazo no medida; otras transiciones→10/41|
+|[[EV-10 — Matriz de PHY por control]], secuencia relativa|¿Responden ocho PHY?|8/8 smoke con reset entre filas|Control amplio|OTA y cambios sin reset abiertos→11/20/21/41|
+|[[EV-11 — Control de presets propietarios]], secuencia de bloques|¿El control cubre presets?|433 MHz (6)→868 MHz (6+2)→169 MHz (2)→902/915 MHz (9 resumidos)→2440 MHz (2)|27 control declarados;18 auditable individualmente|RF no observada, reset 868→169 no documentado,9 logs faltan→22–28|
+|[[EV-12 — Control preliminar y preparación de EV-13]], sin fecha|¿Se aceptan cuatro modos TX?|RAW/FRAME/BURST/CONT/STOP por ACK|Control 4/4|ACK no RF; prepara EV-13 y observador→OTA12|
+|Auditoría histórica 5-10-2026|¿Qué podía concluirse con fuentes hasta 11?|Revisión documental preservada|Corte histórico sin OTA12|No es estado actual; wiki 6-10 conserva corte de evidencia 5-10|
+|[[EV-12 — TX RAW FRAME BURST CONTINUOUS por aire]],6-10-2026|¿Los ACK corresponden a emisión/repetición?|Segunda placa; negativos/marcadores; luego conteos y variación de intervalos|RAW/FRAME observado;BURST recibe 1;CONT0 recibe 99 frente a positivos 1|Min_hits1 era débil; reloj/aborto/observador y RX_STOP abiertos→diagnóstico 12 y 13|
+|[[EV-13 — CW PRBS y TX_TEST_STOP por control]], posterior 12,sin día|¿CW/PRBS y stop son accesibles sin helper problemático?|Harness 0 dBm/0,3 s; dos stop idle; RX BLE|ACK sí; física diferida; RX_STOP timeout también con pocos paquetes|Carga alta no explica todo; instrumentación y correlación de stop pendientes→14 y diagnóstico|
+|[[EV-14 — Eventos RF asíncronos y firma RX]], posterior 13,sin día|¿Aparece error RF/firma? ¿Sobrevive transición mínima?|IEEE bytes, BLE→IEEE sin reset,3 tests FakeSerial|Sin error/firma en ventanas; transición mínima funcional;3 mocks PASS|Errorfísico no inducido; no prueba inexistencia ni ciclos completos→14 controlado/41/46|
+
+El orden inicial se apoya en dependencias y referencias de los registros; las fechas exactas entre esas pruebas no están documentadas. La secuencia de bloques de EV-11 no acredita el reset no registrado ni fechas distintas. EV-13/14 son posteriores por relación explícita, pero no se les asigna automáticamente el 6 o 7 de octubre. La sucesión 13→14 no equivale a una prueba de RX_STOP: EV-14 atiende la pregunta de error RF/firma de su propio registro; su relación causal específica con los timeouts de EV-13 no está establecida.
+
+## Roles de los registros y duplicaciones
+
+EV-03/04/05/06/10/11/12/13/14 tienen un registro canónico por ID. Los dos complementos EV-11 son evidencia de 433 y 868; el canónico conserva 169/902-915/2440 y la cobertura total. Las tres notas no son tres evaluaciones diferentes. EV-12 preliminar contiene control y preparación de EV-13; el registro OTA es canónico para resultado actual. No se crean A/B ni se cuenta el plan EV-13 como otra ejecución.
+
+Los IDs 00/01/02 permanecen embebidos en este registro. El conjunto completo de 38 ítems está contabilizado en [[FeralRF - Matriz de pruebas]]: existencia de un ítem planeado no implica que haya un fichero experimental faltante. No existe evidencia suficiente para inventar EV-07/08/09 ni continuar numeración automáticamente.
+
+## Próxima cadena de validación
+
+Primero manifest y recovery→diagnóstico intervalos y RX_STOP→OTA/STOP independiente→medición CW/PRBS y matriz PHY/bandas→lifecycle/capacidad/límites/crypto/integraciones. Preguntas, controles y observables discriminantes en la auditoría; son propuestas, no ejecuciones.
+
+## 17. Notas originales preservadas y material pendiente
+
+Fuente: `# Registro provisional de validació.md`. SHA-256 previo: `03FD375E819CAF6E2ADD7F3085D253C5DCA33D66C64441E5F96EA5FEA25BBAC9`.
+
+Transcripción íntegra, sin corregir comandos, salidas, errores ni conclusiones históricas. Sus estados y recomendaciones deben leerse con el alcance y las correcciones de la parte normalizada. Las fechas de esta auditoría no son fechas de ejecución experimental. Los comandos son evidencia histórica; no se ejecutaron durante esta revisión.
+
+````text
 # Registro provisional de validación experimental de FeralRF
 
 Este registro contiene únicamente las pruebas ejecutadas físicamente durante nuestra campaña actual. Los resultados históricos del repositorio se utilizan como referencia, pero no se consideran resultados propios.
@@ -546,3 +601,5 @@ Sí permanecen dos observaciones para investigación posterior:
 1. `GET_INFO` reporta `firmware=1.0.0`, mientras que otras capas documentales utilizan otras versiones de FeralRF. Esto debe conservarse como discrepancia de versionado, no como fallo funcional.
 
 2. La enumeración real `COM88 Bridge / COM87 Shell` no satisface el supuesto `Shell = Bridge + 2` empleado por `reset_device()`. No se probará esa función a ciegas.
+
+````

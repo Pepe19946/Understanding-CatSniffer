@@ -1,5 +1,46 @@
 # FeralRF - Guía de validación experimental
 
+> Encabezado original conservado: # FeralRF - Guía de validación experimental
+
+## Enmienda de reconciliación — 7 de octubre de 2026
+
+Esta es la guía canónica. El cuerpo previo conserva íntegros los 38 EV,35 KI, requisitos, comandos y criterios originales/operativos. Esos bloques son registro de intención y evolución, no prueba de ejecución ni un mapa universal de puertos. Para el estado actual prevalece [[FeralRF - Matriz de pruebas]]; para condiciones realizadas, el EV correspondiente. [[Registro de validación FeralRF]] explica la evolución y [[Auditoría técnica de validación FeralRF - EV ejecutadas]] fundamenta prioridades y próximos experimentos.
+
+### Precedencia y condiciones actuales
+
+1. La definición se obtiene de [[FeralRF - Wiki técnica integral]], [[Arquitectura FeralRF]], [[Matriz de capacidades]] y [[Protocolo y API Python]] con sus límites/fechas. La guía no añade soporte a funciones pendientes o retiradas.
+2. Entre tarjeta corta y procedimiento expandido, el bloque **Procedimiento operativo completo por EV** tiene la precedencia que ya declara la guía para ensayos futuros. La discrepancia y el criterio realmente adoptado se registran por corrida; no se cambian expectativas retrospectivamente para dar PASS.
+3. Puertos/roles del procedimiento corresponden a un montaje anterior. No usar los ejemplos como discovery. En EV-12 OTA del 6-10-2026: DUT COM33/Shell COM35, observador COM88/Shell COM87; antes COM88 era DUT y COM31 peer planificado. La sustitución y el serial constante requieren manifest físico/build. COM33+2 coincide localmente, COM88+2 falló; no son reglas universales.
+4. Reset automático no validado en el mapa inicial: EV-04 obtuvo COM90 en lugar de COM87. Recovery manual observada no significa tres ciclos completos ni API reset PASS. Usar identificación por interfaz/placa y comprobar la Shell efectiva antes de adoptar un reset como precondición.
+5. ACK/configuración no demuestra emisión, parámetros efectivos, repetición o cese. El smoke de control 8 PHY/27 presets no sustituye OTA. El wrapper de F22 que cambia reset no garantiza cambiar potencia+5; EV-13 usó harness adaptado 0 dBm y espera 0,3 s, con medición física diferida.
+6. Las prioridades originales permanecen como antecedente. La auditoría actual eleva manifest/recovery/criterios como P0 de validación y diagnóstico intervalos/RX_STOP/observabilidad RF como P1, por su impacto transversal.
+
+### Cambios y ejecución respecto del plan
+
+| Ítem | Intención / criterio anterior | Procedimiento o evolución posterior | Estado de reconciliación |
+|---|---|---|---|
+|EV-00/01/02|Preflight, init/stats, RX stop inicial|Evidencia embebida en registro; no archivos separados|00/01 parciales;02 PASS control, no universal|
+|EV-04|Reset por API y repetición|Manual boot/exit y selector equivocado|NOT FULLY VALIDATED; no redefinir manual como API|
+|EV-11|27 presets control excluyendo OOK/MIOTY|Tres bloques complementarios; bloque 868 MHz:6→8, nueve 902/915 sólo resumen|27 declarados/18 stdout; no A/B ni renumeración|
+|EV-12|Cuatro modos TX/STOP; etapa inicial 01020304|Dos placas, marcadores distintos; min_hits1→40/5/2; intervalos/host abierto|RAW/FRAME OTA acotado; repetición positiva falla criterio; cese no medido|
+|EV-13|CW/PRBS instrumentados|Control con harness adaptado 0 dBm/0,3 s; instrumento declarado disponible pero diferido|PARTIAL; sin frecuencia/potencia/patrón/cese medidos|
+|EV-14|Error RF/firma|Baselines bytes y transición;3 mocks SEQ|No error físico inducido; NOT FULLY VALIDATED, no “fallo eliminado”|
+|EV-21|Tarjetas 1M/Coded 10/10,2M8/10|Operativo todas≥8/10|Discrepancia explícita; declarar criterio antes del ensayo; aún sin OTA completo|
+|EV-41|Tarjeta: diez ciclos|Operativo tres ciclos|EV-14 transición mínima no cierra ninguno de los dos conjuntos|
+|EV-44|Tarjeta: burst 100/tasas progresivas|Operativo: baseline 40|Necesita generador confiable; conteo fallido EV-12 no caracteriza capacidad RX|
+|EV-46|Tarjeta: veinte init con RF|Operativo: veinte init solamente|Criterios cubren preguntas distintas;5 procesos EV-03 no 20 init en la misma instancia|
+|EV-20/41/42|Campañas dedicadas completas|Evidencia parcial proveniente de 12/14/resets 10–11|Cobertura indirecta marcada, no renombrar como EV ejecutados completos|
+|EV-29/51–54|Integración/roadmap/retirada|Dependencias o implementación pendientes;BLE stack retirado|Bloqueado/no ejecutado/no aplica no equivale a FAIL |
+
+### Registro obligatorio para nuevas corridas
+
+Adoptar las 17 secciones visibles en los EV canónicos: contexto, objetivo, capacidad, condiciones, esperado, ejecución, observado, evidencia, comparación, interpretación, límites, resultado, confianza, preguntas, seguimiento, trazabilidad y original. Definir observable y criterio antes de ejecutar. Marcar incógnitas, preservar errores de harness y cambios de procedimiento. PASS/PARTIAL/FAIL/INCONCLUSIVE/NOT FULLY VALIDATED siempre llevan alcance; High/Medium/Low llevan justificación. Fechas de auditoría, commits de fuentes y fecha experimental se informan por separado. Guardar todos los eventos, comandos y salida por caso, identidad física/USB y hashes. La ausencia de firma/error en una ventana no confirma eliminación de un fallo.
+
+Los comandos del cuerpo previo se preservan como registro y requieren verificar roles, versiones y condiciones antes de reutilizarlos. Esta auditoría no los ejecutó ni reflasheó dispositivos. Próximos experimentos discriminantes, sin nueva numeración mecánica: diagnóstico temporal EV-12, correlación RX_STOP, baseline OTA/cese, instrumento CW/PRBS y luego cobertura/lifecycle/límites/crypto/integraciones.
+
+## Registro documental previo — conservar su fecha y alcance
+
+
 > Plan ejecutable; **no se ejecutó ninguna prueba física** al preparar esta nota.
 
 ## Evidencia de versión

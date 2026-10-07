@@ -1,4 +1,25 @@
-# Capacidades FeralRF — Cómo leer afirmaciones con rigor
+# Matriz de capacidades
+
+> Encabezado original conservado: # Capacidades FeralRF — Cómo leer afirmaciones con rigor
+
+## Papel canónico y cobertura actual
+
+Esta matriz define capacidades, implementación reportada y evidencia histórica; conserva todas sus filas y límites. [[FeralRF - Matriz de pruebas]] contiene la cobertura experimental actual y reconcilia los 38 ítems de [[FeralRF - Guía de validación experimental]]. No se mezclan cifras históricas oficiales con esta campaña. [[FeralRF - Wiki técnica integral]] es la definición integral; [[Auditoría técnica de validación FeralRF - EV ejecutadas]] contiene la evaluación técnica.
+
+| Cobertura actual por familia | Evidencia | Alcance que puede afirmarse |
+|---|---|---|
+|Control/API/estados|EV-03/04/06/10|5 procesos,recovery manual local,0x05,8 PHY control; API reset no validada|
+|Presets|[[EV-11 — Control de presets propietarios]]|27 controldeclarados,18 stdout individuales,nueve resumidos; no RF por preset|
+|IEEE RX/TX|EV-05/12/14|RX local,bytes posteriores y RAW/FRAME OTA acotado; no stack/performance completo|
+|BURST/CONT/STOP|[[EV-12 — TX RAW FRAME BURST CONTINUOUS por aire]]|CONT0 repite; positivos ensayados no cumplen conteo recibido; STOP ACK no cese|
+|CW/PRBS/BLE baseline|[[EV-13 — CW PRBS y TX_TEST_STOP por control]]|Control de modos y BLE ambiental; sin caracterización RF|
+|Async error/cambio PHY|[[EV-14 — Eventos RF asíncronos y firma RX]]|3 mocks y transición mínima; errorfísico/firma no inducidos|
+|Resto implementado/roadmap|Matriz de pruebas y KI de la guía|Parcial/no ejecutado/bloqueado/retirado; crypto 9/9 histórico no HIL actual|
+
+Los nombres deprotocolos no convierten presets en stacks superiores. BLE stack retirado no es un defecto; spectrum/reactive/pattern y roadmap incompletos no se presentan como funcionalidad RF validada. La procedencia del binario cargado y revisión de placas permanece desconocida.
+
+## Registro documental previo — conservar su fecha y alcance
+
 
 ## En una frase
 

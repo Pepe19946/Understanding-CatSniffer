@@ -1,3 +1,86 @@
+# EV-11 — Evidencia de control en 433 MHz
+
+Registro complementario de EV-11, no un EV distinto ni EV-11A. Síntesis y resultado de campaña en [[EV-11 — Control de presets propietarios]].
+
+## 1. Contexto de evaluación
+
+Primer bloque documentado de presets propietarios, antes de ampliar a otras bandas.
+
+## 2. Objetivo de validación
+
+Probar seis presets de 433 MHz por control y registrar recuperación/transición.
+
+## 3. Capacidad o requisito FeralRF evaluado
+
+Presets de PHY propietario, configuración y smoke host; [[Matriz de capacidades]].
+
+## 4. Precondiciones y condiciones
+
+Bridge COM88, Shell COM87; 433920000 Hz en las salidas; seis presets (GFSK/FSK/MSK/4FSK/4GFSK y variante GFSK10k). Valores de modulación/rate específicos preservados en §17; binario/medición RF desconocidos.
+
+## 5. Resultado esperado
+
+Aceptación de selección/configuración y ciclo de control en seis filas. No se espera demostrar rendimiento RF por este procedimiento.
+
+## 6. Procedimiento y ejecución cronológica
+
+1. Ejecutar seis smoke documentados por preset.
+2. Registrar ACK/configuración/estadísticas.
+3. Un intento de reset falla por quoting/SyntaxError.
+4. Enviar boot/exit manual; hay salida host, pero no INIT/GET_STATS inmediato para acreditar la recuperación en ese punto.
+5. El bloque posterior de 868 MHz aporta continuidad funcional posterior.
+
+## 7. Resultado observado
+
+Seis filas de control satisfactorias; estadísticas registradas en cero. Ninguna recepción o emisión RF externa demostrada en este bloque.
+
+## 8. Evidencia
+
+Seis comandos/salidas y el error de quoting íntegros en §17; bloque siguiente [[EV-11 — Evidencia de control en 868 MHz]].
+
+## 9. Comparación entre lo esperado y lo observado
+
+6/6 de control; no demuestra RF en una banda que tiene antecedentes históricos de dificultades.
+
+## 10. Interpretación técnica
+
+La aceptación de `SET_PROP_CONFIG` y su ACK no prueba que todos los parámetros hayan sido aplicados al backend RF ni que haya una emisión válida.
+
+## 11. Anomalías, desviaciones y limitaciones
+
+Recuperación tras reset sin comprobación inmediata. Historial de 433 MHz y OOK no reproducido aquí. Sin capturas RF, timings ni errores TX tardíos completos.
+
+## 12. Resultado de la evaluación
+
+PASS en control de las seis filas; PARTIAL como evidencia de capacidad propietaria RF.
+
+## 13. Confianza
+
+High sobre las seis salidas de control; Low sobre comportamiento físico no observado.
+
+## 14. Preguntas abiertas
+
+¿Responden los seis presets por aire? ¿Se mantuvo el backend tras reset? ¿Qué explica el comportamiento histórico de 433?
+
+## 15. Acciones de seguimiento
+
+Integrar con cobertura de EV-11 y evaluar RF bajo EV-23 después de estabilizar recuperación y observabilidad.
+
+## 16. Trazabilidad
+
+Guía EV-11/23; [[FeralRF - Guía de validación experimental]]; [[FeralRF - Matriz de pruebas]]; [[EV-11 — Control de presets propietarios]]; [[Protocolo y API Python]]; [[Fuentes FeralRF]].
+
+Definición específica: [[FeralRF - Wiki técnica integral#12. Presets]].
+
+
+
+## 17. Notas originales preservadas y material pendiente
+
+Fuente: `## EV-11 — Presets propietarios, só.md`. SHA-256 previo: `1B036682F08AA5D2708054C6FBAFA8274893C6AD1BD4C271A3FC6F6C65B07801`.
+
+Transcripción íntegra, sin corregir comandos, salidas, errores ni conclusiones históricas. Sus estados y recomendaciones deben leerse con el alcance y las correcciones de la parte normalizada. Las fechas de esta auditoría no son fechas de ejecución experimental. Los comandos son evidencia histórica; no se ejecutaron durante esta revisión.
+
+````text
 ## EV-11 — Presets propietarios, sólo control
 
 ### Resultado parcial: bloque de 433 MHz
@@ -599,3 +682,5 @@ EV-11 completa                   → EN PROGRESO
 ```
 
 La conclusión de EV-11 todavía no debe cerrarse hasta completar los presets restantes previstos por el plan.
+
+````

@@ -1,3 +1,87 @@
+# EV-04 — Reset y reinicialización
+
+Registro canónico. Resultado manual y API diferenciados; fecha experimental no documentada.
+
+## 1. Contexto de evaluación
+
+Tras EV-03 se necesitaba saber si una orden de Shell permitía abandonar/reanudar FeralRF y si la API seleccionaba la Shell correcta.
+
+## 2. Objetivo de validación
+
+Evaluar recuperación mediante `boot`/`exit` y la selección del puerto Shell usada por `reset_device()`.
+
+## 3. Capacidad o requisito FeralRF evaluado
+
+Interacción RP2040–CC1352P7 y recuperación de estado. [[Arquitectura FeralRF]], [[Protocolo y API Python]] y [[Firmware RP2040]].
+
+## 4. Precondiciones y condiciones
+
+Bridge COM88, Shell real COM87; miniterm a 115200. Esperas controladas de 3,5 s; `init()` con timeout 2,5 s. Binario/commit instalado no identificado. Mapa correspondiente a la etapa inicial, no al mapa posterior de EV-12.
+
+## 5. Resultado esperado
+
+La entrada a bootloader impediría responder a FeralRF; `exit` debería permitir `INIT` sin reconectar USB. La API debería seleccionar COM87. La guía exige más repetición que la única secuencia completa documentada.
+
+## 6. Procedimiento y ejecución cronológica
+
+1. Abrir miniterm durante unos 5 s; el intento manual inicial de `boot` no acredita bytes efectivos.
+2. Enviar de forma controlada `boot\r\n` a COM87; registrar OPEN/SENT/CLOSED y esperar 3,5 s.
+3. Intentar `init()` en COM88: timeout.
+4. Enviar `exit\r\n`, esperar 3,5 s y recuperar `INIT`/estadísticas sin ciclo USB.
+5. Después de esa secuencia, consultar `_get_shell_port`: devuelve COM90.
+No se invierte este orden para ajustarlo a la narrativa de la auditoría histórica.
+
+## 7. Resultado observado
+
+Recuperación manual funcional en la secuencia registrada. La selección automática produjo COM90 frente a Shell real COM87. No se ejecutó como prueba completa un `reset()` de API sobre el puerto incorrecto.
+
+## 8. Evidencia
+
+Comandos, salidas del helper, traceback de timeout (`radio.py` líneas 415/336) y consulta del puerto preservados en §17.
+
+## 9. Comparación entre lo esperado y lo observado
+
+Manual: comportamiento compatible con bootloader y recuperación. API: selección discrepante; no cumple el requisito de encontrar la Shell real en este mapa.
+
+## 10. Interpretación técnica
+
+La aritmética de puertos no es universal. La secuencia confirma recuperación manual local; no demuestra qué pin físico se accionó. GPIO15 en diagramas previos y GPIO3/reset GPIO2 en descripciones de overlay requieren reconciliación de revisiones.
+
+## 11. Anomalías, desviaciones y limitaciones
+
+Un ciclo completo, no 3/3. Intento inicial ambiguo. Sin medida de pines ni prueba de todas las revisiones del puente. Versiones no fijadas.
+
+## 12. Resultado de la evaluación
+
+NOT FULLY VALIDATED: recuperación manual observada; ruta API bloqueada por selección incorrecta y cobertura de repetición insuficiente.
+
+## 13. Confianza
+
+High sobre COM90 frente a COM87 y la secuencia manual; Medium sobre generalizar la recuperación.
+
+## 14. Preguntas abiertas
+
+¿Qué identificación USB permite asociar Bridge y Shell por dispositivo? ¿Qué overlay/binario y pines corresponden a esta placa?
+
+## 15. Acciones de seguimiento
+
+Corregir descubrimiento por identidad/interfaz y comprobar por placa; repetir ciclos con registro binario y GPIO antes de usar reset como control de todos los EV.
+
+## 16. Trazabilidad
+
+Guía EV-04/EV-40; [[FeralRF - Guía de validación experimental]]; [[FeralRF - Matriz de pruebas]]; [[Matriz de capacidades]]; [[EV-03 — Reconexión limpia entre procesos]]; [[Fuentes firmware oficial]]; [[Registro de validación FeralRF]].
+
+Definición específica: [[FeralRF - Wiki técnica integral#6.2 Conexión, reset y secuencia]].
+
+
+
+## 17. Notas originales preservadas y material pendiente
+
+Fuente: `EV-04 — Reset y reinicialización.md`. SHA-256 previo: `9F3E0C4D1ED36C944E04191037B3B05C5B2776FF7CF6A52C3D183C8FAF30DDA9`.
+
+Transcripción íntegra, sin corregir comandos, salidas, errores ni conclusiones históricas. Sus estados y recomendaciones deben leerse con el alcance y las correcciones de la parte normalizada. Las fechas de esta auditoría no son fechas de ejecución experimental. Los comandos son evidencia histórica; no se ejecutaron durante esta revisión.
+
+````text
 EV-04 — Reset y reinicialización
 
 Estado final actual: BLOQUEADO para Radio.reset_device() por reproducción de KI-15.
@@ -285,3 +369,4 @@ Conclusión técnica provisional
 EV-04 no revela, hasta ahora, un fallo demostrado del mecanismo RP2040→CC1352P7 de recuperación. Lo que sí revela y reproduce es un problema de descubrimiento/selección del puerto en la capa host de FeralRF: la asociación del Shell mediante aritmética Bridge+2 no representa la enumeración USB real de nuestra CatSniffer.
 
 Esto debe conservarse para la fase posterior de evaluación/mejoras como candidato concreto: el comportamiento actual depende de una relación numérica entre puertos COM que Windows no está respetando en nuestra configuración. La solución todavía no debe implementarse durante el baseline; posteriormente habrá que estudiar cómo reemplazar esa inferencia por identificación robusta del Cat-Shell y volver a ejecutar EV-04 hasta obtener el criterio formal de recuperación reproducible.
+````

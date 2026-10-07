@@ -1,5 +1,16 @@
 # Fuentes hardware CatSniffer v3.1
 
+> Encabezado original conservado: # Fuentes hardware CatSniffer v3.1
+
+## Disponibilidad y trazabilidad de esta fuente
+
+Referencias, URL s, commits, versiones y conclusiones previas se conservan con su fecha y alcance. Esta auditoría documental no consultó de nuevo los enlaces externos, no revalidó repositorios/builds ni midió hardware. Que un origen esté citado no significa que su artefacto esté adjunto ni que corresponda al binario usado en un EV. Se encontraron repositorios hermanos fuera del Vault, pero no se inspeccionaron para atribuir resultados.
+
+El paquete de evidencia actual y sus lagunas se explican en [[Auditoría técnica de validación FeralRF - EV ejecutadas]]; cobertura en [[FeralRF - Matriz de pruebas]] y cronología en [[Registro de validación FeralRF]]. En herramientas: main/versión 3.3.2.1 de esta fuente y fix/CLI_control/3.3.3.0 del plan son cortes distintos; EXE e import local no se asumen idénticos. En firmware/hardware: revisión/overlay/hash instalados y estado CTF requieren manifest/medición; un commit de referencia no basta para afirmarlos.
+
+## Registro documental previo — conservar su fecha y alcance
+
+
 **Conocimiento derivado:** [[Arquitectura CatSniffer v3.1]], [[RP2040, CC1352P7 y SX1262 - Quién hace qué]], [[RP2040 - El procesador de interfaz]], [[CC1352P7 - El procesador de radio programable]] y [[SX1262 - El transceptor controlado por RP2040]].
 
 ## Línea base Git

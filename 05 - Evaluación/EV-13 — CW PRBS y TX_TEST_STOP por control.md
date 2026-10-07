@@ -1,3 +1,85 @@
+# EV-13 — CW PRBS y TX_TEST_STOP por control
+
+Registro canónico. Fecha experimental no documentada; dependencia posterior a EV-12 explícita. La instrumentación se declaró disponible pero deliberadamente diferida; modelo y calibración desconocidos.
+
+## 1. Contexto de evaluación
+
+Después de las anomalías de EV-12 se separaron los modos RF de prueba (CW/PRBS) de la repetición de paquetes y se evitó depender del helper upstream sin adaptación.
+
+## 2. Objetivo de validación
+
+Comprobar aceptación de CW, PRBS15/PRBS32 y TX_TEST_STOP, incluido stop repetido en idle; documentar lo que todavía falta medir físicamente.
+
+## 3. Capacidad o requisito FeralRF evaluado
+
+Comandos 0x55–0x57 de modos RF de prueba; no son RAW/BURST ni una demostración de PRBS9. [[Protocolo y API Python]], [[Matriz de capacidades]].
+
+## 4. Precondiciones y condiciones
+
+DUT COM33; observador COM88. CW BLE1M canal 37, 0 dBm, espera host 0,3 s; PRBS15/32 SUB_GHZ_868 canal 0, 0 dBm, espera 0,3 s. `finally` invoca stop. El helper F22 no se usó directamente: puertos derivados y potencia +5 dBm documentados incompatibles con la adaptación local. Instrumento disponible según nota, pero sin modelo/calibración/mediciones.
+
+## 5. Resultado esperado
+
+ACK de inicio y stop; stop repetido en idle aceptado. La validación completa requiere energía/frecuencia/patrón y cese físicos, no satisfechos por ACK. El criterio RX ambiental de más de 30 paquetes era exploratorio, no un test válido de interferencia CW completado.
+
+## 6. Procedimiento y ejecución cronológica
+
+1. Ejecutar harness adaptado: CW BLE1M/37/0, espera 0,3 s, stop en finally.
+2. Ejecutar PRBS15 y PRBS32 sub 868/0/0, con la misma espera y stop.
+3. Ejecutar dos stops consecutivos en idle.
+4. Observar BLE ambiental con receptor COM88; registrar baseline y timeouts de RX_STOP. No consta una comparación CW on/off completa con instrumento.
+
+## 7. Resultado observado
+
+ACK para CW, ambas variantes PRBS y sus stops; dos stops idle con ACK. RX BLE inicial: dos paquetes y timeout RX_STOP con cinco inesperados/último 0x90. Repeticiones reportadas 10/11/11; una salida completa de 11 registra cuatro inesperados/último 0x90. No se superó el umbral exploratorio 30.
+
+## 8. Evidencia
+
+Comandos/harness, ACK, salidas BLE y recomendaciones íntegras en §17. Cantidades repetidas parcialmente narradas; no tres stdout completos. No hay espectro, potencia, frecuencia o patrón PRBS capturado.
+
+## 9. Comparación entre lo esperado y lo observado
+
+Objetivo estrecho de control logrado. Energía/patrón y cese quedan abiertos. Baseline BLE insuficiente para atribuir variación a CW; comparación de interferencia INCONCLUSIVE.
+
+## 10. Interpretación técnica
+
+Se demuestra idempotencia de ACK de stop idle bajo este caso. RX_STOP puede fallar incluso con pocas tramas, por lo que la carga alta de CONT0 no es una explicación suficiente por sí sola. No se demuestra que RX siguiera activo físicamente tras timeout ni que CW haya interferido.
+
+## 11. Anomalías, desviaciones y limitaciones
+
+ACK no acredita emisión; tiempo 0,3 s es espera host, no duración RF medida. Mismo firmware en observador. Bytes BLE completos no documentados. La disponibilidad declarada del instrumento no equivale a una medición realizada.
+
+## 12. Resultado de la evaluación
+
+PARTIAL: control PASS; CW/PRBS y cese físicos NOT FULLY VALIDATED; interferencia exploratoria INCONCLUSIVE.
+
+## 13. Confianza
+
+High para ACK y timeout literal; Medium para repetición narrada; Low para comportamiento físico y causa del timeout.
+
+## 14. Preguntas abiertas
+
+¿Hubo portadora/patrón correcto? ¿STOP cesa inmediatamente por aire? ¿Por qué RX_STOP no recibe/correlaciona ACK con cargas bajas? ¿El helper F22 conserva potencia +5 tras el wrapper de reset?
+
+## 15. Acciones de seguimiento
+
+Registrar instrumento y medir CW/PRBS/cese con parámetros justificados; auditar helper de potencia; trazar serial de stop y estados del firmware antes de atribuir el timeout a saturación.
+
+## 16. Trazabilidad
+
+Guía EV-13 y EV-43/44; [[FeralRF - Guía de validación experimental]]; [[FeralRF - Matriz de pruebas]]; [[Arquitectura FeralRF]]; [[EV-12 — TX RAW FRAME BURST CONTINUOUS por aire]]; [[EV-14 — Eventos RF asíncronos y firma RX]]; [[Registro de validación FeralRF]]; [[Fuentes herramientas PC]].
+
+Definición específica: [[FeralRF - Wiki técnica integral#9.6 CW y PRBS]].
+
+
+
+## 17. Notas originales preservadas y material pendiente
+
+Fuente: `# EV-13 — Registro técnico consolid.md`. SHA-256 previo: `FDB7D55707C88F12B14A1202E65747947502C9FD45A0307ACA8CE54668B748CE`.
+
+Transcripción íntegra, sin corregir comandos, salidas, errores ni conclusiones históricas. Sus estados y recomendaciones deben leerse con el alcance y las correcciones de la parte normalizada. Las fechas de esta auditoría no son fechas de ejecución experimental. Los comandos son evidencia histórica; no se ejecutaron durante esta revisión.
+
+````text
 # EV-13 — Registro técnico consolidado de CW, PRBS y `TX_TEST_STOP`
 
 ## 1. Identificación
@@ -1094,3 +1176,5 @@ Adicionalmente, EV-13 volvió a reproducir el timeout de `RX_STOP` mientras cont
 Por tanto:
 
 > **EV-13 demuestra funcionalidad de control de CW/PRBS/STOP, pero la caracterización física RF permanece pendiente. La principal anomalía adicional observada no pertenece directamente a CW/PRBS, sino al manejo host de RX_STOP frente a eventos RX asíncronos.**
+
+````

@@ -1,3 +1,85 @@
+# EV-11 — Evidencia de control en 868 MHz
+
+Registro complementario/revisión del bloque 868 de EV-11; no EV-11B. Conserva el estado inicial 6/8 y el agregado posterior que cierra 8/8.
+
+## 1. Contexto de evaluación
+
+La campaña amplió el bloque 433 a presets de 868 MHz. El propio registro evoluciona de cobertura parcial a cierre del bloque.
+
+## 2. Objetivo de validación
+
+Cubrir ocho presets de 868 MHz por control, distinguiendo ejecuciones repetidas de presets únicos.
+
+## 3. Capacidad o requisito FeralRF evaluado
+
+Presets GFSK/FSK/WMBus (PHY, no pila WMBus). [[Matriz de capacidades]].
+
+## 4. Precondiciones y condiciones
+
+COM88 y mapa Shell COM87 de la etapa inicial. Frecuencias, rates y modulaciones según las ocho salidas de §17; no se infiere misma configuración para todos. Firmware exacto y entorno RF no fijados.
+
+## 5. Resultado esperado
+
+Control satisfactorio para los ocho presets incluidos en el plan de EV-11, excluyendo OOK y MIOTY según su alcance.
+
+## 6. Procedimiento y ejecución cronológica
+
+1. Ejecutar el bloque que registra seis presets únicos; `gfsk868_50k` aparece más de una vez.
+2. Documentar inicialmente 6/8 y los dos pendientes.
+3. Añadir las ejecuciones `gfsk868_100k` y WMBus C, completando ocho únicos.
+La repetición de `gfsk868_50k` permanece, pero no suma un noveno preset.
+
+## 7. Resultado observado
+
+Ocho presets únicos con salidas individuales de control. El estado pendiente del cuerpo inicial es histórico y queda resuelto por las adiciones del mismo registro.
+
+## 8. Evidencia
+
+Todos los comandos y stdout preservados en §17, incluidos duplicados de ejecución y conclusiones provisionales.
+
+## 9. Comparación entre lo esperado y lo observado
+
+8/8 control al cierre documental; ninguna prueba de interoperabilidad WMBus ni cobertura RF de la banda por este bloque.
+
+## 10. Interpretación técnica
+
+Es una revisión/complemento de una sola evaluación. Las conclusiones parciales y finales difieren por expansión de cobertura, no por cambio arbitrario de ID.
+
+## 11. Anomalías, desviaciones y limitaciones
+
+Sin observador RF ni confirmación de TX completado. Reset 868→169 no tiene evidencia explícita en la cadena disponible; desconocido no equivale a omitido.
+
+## 12. Resultado de la evaluación
+
+PASS para control de ocho presets; PARTIAL respecto de capacidad RF propietaria.
+
+## 13. Confianza
+
+High para las ocho salidas individuales; la continuidad sin reset no está validada.
+
+## 14. Preguntas abiertas
+
+¿Qué parámetros se aplican efectivamente? ¿Los presets WMBus interoperan con equipos de referencia?
+
+## 15. Acciones de seguimiento
+
+Consolidar cobertura sin contar repeticiones; completar EV-22/EV-25 con recepción controlada y evidencia binaria.
+
+## 16. Trazabilidad
+
+Guía EV-11/22/25; [[FeralRF - Guía de validación experimental]]; [[FeralRF - Matriz de pruebas]]; [[EV-11 — Control de presets propietarios]]; [[EV-11 — Evidencia de control en 433 MHz]]; [[Fuentes FeralRF]].
+
+Definición específica: [[FeralRF - Wiki técnica integral#12. Presets]].
+
+
+
+## 17. Notas originales preservadas y material pendiente
+
+Fuente: `# EV-11 — Presets propietarios, sól.md`. SHA-256 previo: `F1A68745BB2C15A93DAAD33565136BF4EE9AC242A9B7B6538E8513DC1CFFEEFB`.
+
+Transcripción íntegra, sin corregir comandos, salidas, errores ni conclusiones históricas. Sus estados y recomendaciones deben leerse con el alcance y las correcciones de la parte normalizada. Las fechas de esta auditoría no son fechas de ejecución experimental. Los comandos son evidencia histórica; no se ejecutaron durante esta revisión.
+
+````text
 # EV-11 — Presets propietarios, sólo control
 
 ## Resultado parcial: bloque de 868 MHz
@@ -672,3 +754,5 @@ Con estos dos resultados, el bloque queda completo:
 Los ocho presets no excluidos completaron satisfactoriamente `SET_PROP_CONFIG`, RX, TX y `GET_STATS`, sin timeout ni error visible. La ejecución duplicada de `gfsk_868_50k` se conserva como repetición adicional, pero no altera el conteo de cobertura.
 
 El resultado sigue siendo exclusivamente de control: **no se asigna PASS-RF a ninguno de estos presets con la evidencia actual**.
+
+````

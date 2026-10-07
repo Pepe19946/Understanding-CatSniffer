@@ -1,3 +1,85 @@
+# EV-05 — Primera observación RF IEEE
+
+Registro canónico del ensayo formal. Las observaciones preliminares anteriores permanecen en el registro cronológico; no se mezclan con estas tres corridas.
+
+## 1. Contexto de evaluación
+
+Después de la recuperación de control se buscó la primera recepción RF IEEE 802.15.4 registrada por FeralRF.
+
+## 2. Objetivo de validación
+
+Determinar si RX entrega paquetes en PHY IEEE 802.15.4, canal 25, durante tres ventanas de 30 s.
+
+## 3. Capacidad o requisito FeralRF evaluado
+
+Recepción de paquetes, metadatos y stop de RX; no valida una pila Zigbee ni TX. [[Arquitectura FeralRF]], [[Matriz de capacidades]].
+
+## 4. Precondiciones y condiciones
+
+CatSniffer V3 (RP2040 + CC1352P7), Cat-Bridge COM88 a 921600, PHY4 IEEE 802.15.4, canal 25, tres ventanas de 30 s. Fuente declarada por el registro: dispositivo Zigbee conocido que genera tráfico continuo en canal 25 e independiente de FeralRF. No se documentan modelo/identidad física del emisor ni captura concurrente independiente para verificar la atribución. Antena, distancia y hash/versión exacta del firmware no especificados. Estado posterior a EV-04 según la relación documental.
+
+## 5. Resultado esperado
+
+El plan requería al menos una trama CRC-válida atribuible y reproducible (PASS-RF), en tres corridas de `examples\smoke_phy4_ieee154.py --port COM88 --channel 25 --duration 30`. Se esperaban paquetes y metadatos de la fuente Zigbee declarada. La asociación a la red no era requisito. La atribución específica y una comparación controlada entre canales no tienen captura concurrente suficiente en el registro formal.
+
+## 6. Procedimiento y ejecución cronológica
+
+1. Inicializar/configurar IEEE y canal 25.
+2. Iniciar RX, observar durante 30 s, detener y registrar cantidad/primer paquete.
+3. Repetir otras dos ventanas siguiendo los comandos originales.
+No se incorpora como paso realizado un sniffer independiente que no consta aquí.
+
+## 7. Resultado observado
+
+Corridas: 41, 43 y 43 paquetes. Primeros paquetes: timestamp 780546602, RSSI −85, LQI 52, longitud 52; timestamp 487488162, RSSI −79, LQI 57, longitud 5; timestamp 540904925, RSSI −83, LQI 56, longitud 52. La primera salida acredita `crc_ok=True`; no documenta CRC de todos los paquetes.
+
+## 8. Evidencia
+
+Tres salidas y comandos en §17. No hay bytes completos ni PCAP adjunto de estas corridas. Las ventanas preliminares de 48/100 paquetes están en [[Registro de validación FeralRF]], con distinto alcance.
+
+## 9. Comparación entre lo esperado y lo observado
+
+Se observó recepción reiterada con metadatos. No se midieron sensibilidad, PER, exactitud de RSSI ni identidad del emisor; las salidas no bastan para afirmar recepción completa de un protocolo superior.
+
+## 10. Interpretación técnica
+
+Hallazgo confirmado: la ruta RX local entregó paquetes bajo esa configuración. Clasificar toda la captura como Zigbee específico excede la evidencia disponible. Los bytes posteriores de EV-14 no completan retroactivamente estas capturas.
+
+## 11. Anomalías, desviaciones y limitaciones
+
+Entorno ambiental, sin emisor controlado, capturas binarias ni observador independiente concurrente; CRC general no demostrado. Fechas y versiones exactas ausentes.
+
+## 12. Resultado de la evaluación
+
+PARTIAL global frente al criterio original de atribución: PASS para observación local de RX IEEE en tres ventanas; NOT FULLY VALIDATED para atribución verificada e interoperabilidad/caracterización RF. Se conserva el PASS-RF original como conclusión histórica del autor; esta auditoría acota su alcance, sin cambiar lo observado.
+
+## 13. Confianza
+
+Medium: tres resultados consistentes, pero control ambiental y evidencia de bytes incompletos.
+
+## 14. Preguntas abiertas
+
+¿Cuál era el emisor? ¿Se decodifican las tramas con herramienta independiente? ¿Cómo cambia la recepción con tráfico controlado y canal negativo conocido?
+
+## 15. Acciones de seguimiento
+
+Guardar bytes/PCAP y parámetros, usar marcador y control sin TX, medir con segundo receptor; completar EV-20.
+
+## 16. Trazabilidad
+
+Guía EV-05/EV-20; [[FeralRF - Guía de validación experimental]]; [[FeralRF - Matriz de pruebas]]; [[Protocolo y API Python]]; [[EV-04 — Reset y reinicialización]]; [[EV-14 — Eventos RF asíncronos y firma RX]]; [[Pruebas y evidencia existente]].
+
+Definición específica: [[FeralRF - Wiki técnica integral#8. Arquitectura RX]].
+
+
+
+## 17. Notas originales preservadas y material pendiente
+
+Fuente: `EV-05 — Primera observación RF IEEE.md`. SHA-256 previo: `81981613E61FBB71719E60078DF2FE3CBEBB44BC238FAB9FD497FEF702542A3F`.
+
+Transcripción íntegra, sin corregir comandos, salidas, errores ni conclusiones históricas. Sus estados y recomendaciones deben leerse con el alcance y las correcciones de la parte normalizada. Las fechas de esta auditoría no son fechas de ejecución experimental. Los comandos son evidencia histórica; no se ejecutaron durante esta revisión.
+
+````text
 EV-05 — Primera observación RF IEEE 802.15.4
 
 Estado final: PASS-RF
@@ -410,3 +492,4 @@ El resultado obtenido concuerda con el esperado por la documentación y no se ob
 La conclusión técnica consolidada para esta fase es:
 
 En la CatSniffer V3 evaluada, con FeralRF ejecutándose sobre el CC1352P7 y utilizando COM88 como Cat-Bridge, se validó físicamente y de forma reproducible la recepción IEEE 802.15.4 en canal 25. Tres ejecuciones independientes de 30 s recibieron 41, 43 y 43 paquetes respectivamente, mostrando tramas con CRC válido y metadata RSSI/LQI. La prueba valida la ruta de recepción PHY IEEE 802.15.4 hasta la API Python del host; no valida un stack Zigbee ni caracteriza cuantitativamente el rendimiento RF.
+````

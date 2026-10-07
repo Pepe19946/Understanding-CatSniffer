@@ -1,3 +1,99 @@
+# EV-12 — TX RAW FRAME BURST CONTINUOUS por aire
+
+Registro canónico de EV-12. Etapa OTA fechada explícitamente el 6 de octubre de 2026; control preliminar preservado en archivo complementario. Anomalía observada y causa hipotética separadas.
+
+## 1. Contexto de evaluación
+
+Los ACK de la etapa preliminar no demostraban RF. Una segunda placa sustituyó el montaje anterior y permitió observar marcadores; la repetición insuficiente obligó a revisar criterios y variar intervalos.
+
+## 2. Objetivo de validación
+
+Comprobar por aire RAW/FRAME y conteo/repetición de BURST/CONTINUOUS, manteniendo separado el ACK de STOP del cese físico.
+
+## 3. Capacidad o requisito FeralRF evaluado
+
+Transmisión de paquetes y programación temporal en [[Protocolo y API Python]] y [[Arquitectura FeralRF]]. FRAME es alias de RAW según documentación estática; RAW programa TX sin evento TX_DONE expuesto; BURST/CONTINUOUS dependen del scheduler.
+
+## 4. Precondiciones y condiciones
+
+6-10-2026: DUT/TX Bridge COM33, LoRa COM34, Shell COM35; observador/RX Bridge COM88, LoRa COM86, Shell COM87. IEEE 802.15.4 canal 25, potencia configurada 0 dBm. Ambos con FeralRF: receptor físico distinto, implementación compartida. Identidad física de la sustitución, hashes, distancia y calibración no documentados. Los intervalos/conteos se indican por corrida.
+
+## 5. Resultado esperado
+
+RAW/FRAME: marcador ausente sin TX y presente con TX. BURST: número solicitado de marcadores cuando se eleva el umbral a 40/5. CONTINUOUS: repetición, no un único paquete; STOP debería cesarla físicamente, pero ese último observable no se midió. Un criterio inicial `min_hits=1` es insuficiente para validar burst/continuous.
+
+## 6. Procedimiento y ejecución cronológica
+
+1. RAW `DEADBEEF`: ventana negativa sin TX y ventana sincronizada con TX.
+2. FRAME: primer intento con marcadores incompatibles; repetir RX/TX con `A1B2C3D4` coincidente.
+3. BURST: 40/25000 µs `C0FFEE01`; exigir luego 40 hits. Repetir cinco/250000 µs `C0FFEE02`; exigir cinco hits. Mantener host abierto 3 s para cinco/250000 µs `C0FFEE03`.
+4. CONTINUOUS durante 1 s: 250000 µs `C0FFEE04`; luego intervalo cero `C0FFEE05` con umbral ≥2; luego 1 µs `C0FFEE06` con umbral ≥2.
+5. Registrar STOP/estadísticas y revisar hipótesis. Los errores del primer harness no se cuentan como fallo del DUT.
+
+## 7. Resultado observado
+
+| Caso | RX total / marcador | Resultado observable |
+|---|---|---|
+|RAW negativo, 15 s|23 / 0|Ausencia del marcador; FAIL del helper es el control negativo esperado|
+|RAW sincronizado|23 / 1|`deadbeef1519`, CRC válido, timestamp 76657725, RSSI −52|
+|FRAME primer intento|marcador distinto RX/TX / 0|Ensayo inválido por configuración del harness|
+|FRAME corregido|30 / 1|`a1b2c3d417f1`, CRC válido, timestamp 984904095, RSSI −63|
+|BURST40/25000|29 / 1; luego 24 / 1 con umbral 40|ACK programa 40; no cumple conteo observado|
+|BURST5/250000|26 / 1, repetido con umbral 5|No cumple conteo observado|
+|BURST5/250000, host 3 s|25 / 1|Mantener host abierto no restaura conteo|
+|CONT250000/1 s|21 / 1|ACK start/stop; umbral 1 no prueba repetición|
+|CONT0/1 s|102 / 99|102 CRC válidos; repetición observada|
+|CONT1/1 s|24 / 1|No cumple umbral 2; 3/3 declarado, una salida completa disponible|
+
+CONT0 registró timeout de RX_STOP, nueve paquetes inesperados y último ID 0x90. STOP de TX recibió ACK; no se midió el instante de cese por aire.
+
+## 8. Evidencia
+
+Comandos, stdout completos, timestamps/bytes de los casos, criterios y propuestas originales en §17. CONT0: primeros timestamps 44636903, 44637948, 44638985, 44640010, 44641050; RSSI −64 y bytes `c0ffee050ed9`. Los dos bytes finales de las tramas no se clasifican como FCS sin verificación. Las otras dos repeticiones declaradas de CONT1 no tienen stdout individual disponible.
+
+## 9. Comparación entre lo esperado y lo observado
+
+RAW/FRAME alcanzan evidencia OTA de un paquete marcador. BURST incumple los umbrales solicitados de 40/5 en el observador. CONT0 repite; CONT con intervalos positivos ensayados produce un hit, sin demostrar repetición. STOP sólo probado por ACK. No puede inferirse “39 paquetes perdidos” porque no existe conteo independiente de paquetes efectivamente emitidos.
+
+## 10. Interpretación técnica
+
+Confirmado: diferencia entre aceptación de programación y repetición observada; frontera experimental intervalo 0 frente a positivos 1/25000/250000 bajo estos casos. Hipótesis: integración de reloj/`ControlTask_getTimeUs`/SysTick con TI-RTOS; alternativa: aborto silencioso del backend/scheduler o limitación del observador. Los 99 hits debilitan “RF nunca repite” y “RX nunca recibe repetidos”; host 3 s debilita cierre prematuro como explicación suficiente. No hay causa raíz confirmada.
+
+## 11. Anomalías, desviaciones y limitaciones
+
+Receptor comparte firmware, sin contador TX efectivo ni instrumentación temporal interna. No hay intercambio completo de roles, medición de potencia/frecuencia o cese. Conteo RF de cada modo insuficiente para pérdidas/PER. Se conserva el PASS inicial de umbral 1 como criterio débil histórico, no como validación funcional completa. Mapa COM cambia de época; no demuestra identidad física de placas.
+
+## 12. Resultado de la evaluación
+
+PARTIAL global. RAW/FRAME: PASS OTA acotado. BURST: FAIL respecto del conteo recibido requerido; atribución del fallo aún abierta. CONT0: repetición demostrada, cese NOT FULLY VALIDATED. CONT positivos: FAIL del criterio de repetición ensayado. Control start/STOP: PASS de ACK.
+
+## 13. Confianza
+
+High en salidas y diferencia de conteos disponibles; Medium en reproducibilidad global por repeticiones incompletas y observador compartido; Low en causa raíz y caracterización física.
+
+## 14. Preguntas abiertas
+
+¿Avanza correctamente el reloj usado por el scheduler? ¿Cuántos comandos RF se ejecutan y completan? ¿Se cancela burst sin evento? ¿Cuándo se aplica STOP y cómo se correlaciona RX_STOP? ¿Qué ocurre al intercambiar roles y usar receptor independiente?
+
+## 15. Acciones de seguimiento
+
+Instrumentar reloj/estado/retornos antes de modificar implementación; registrar captura serial y contador RF independiente. Repetir variables ya documentadas con manifest de binarios. Medir cese y correlación de STOP. Plan discriminante en [[Auditoría técnica de validación FeralRF - EV ejecutadas]].
+
+## 16. Trazabilidad
+
+Guía EV-12, cobertura parcial EV-20 y cuestiones EV-43/44; [[FeralRF - Guía de validación experimental]]; [[FeralRF - Matriz de pruebas]]; [[Matriz de capacidades]]; [[EV-12 — Control preliminar y preparación de EV-13]]; [[EV-13 — CW PRBS y TX_TEST_STOP por control]]; [[Registro de validación FeralRF]]; [[Fuentes FeralRF]].
+
+Definición específica: [[FeralRF - Wiki técnica integral#9. Arquitectura TX]].
+
+
+
+## 17. Notas originales preservadas y material pendiente
+
+Fuente: `# EV-12 — Informe técnico y auditor.md`. SHA-256 previo: `50D42B43D84879840F37CEB86F0803EC24930979E695C48163628E5A1EE72366`.
+
+Transcripción íntegra, sin corregir comandos, salidas, errores ni conclusiones históricas. Sus estados y recomendaciones deben leerse con el alcance y las correcciones de la parte normalizada. Las fechas de esta auditoría no son fechas de ejecución experimental. Los comandos son evidencia histórica; no se ejecutaron durante esta revisión.
+
+````text
 # EV-12 — Informe técnico y auditoría de TX RAW / FRAME / BURST / CONTINUOUS en FeralRF
 
 ## 1. Identificación de la validación
@@ -1523,3 +1619,5 @@ En consecuencia, EV-12 debe clasificarse como:
 **PASS PARCIAL CON DEFECTO FUNCIONAL REPRODUCIBLE Y ACCIÓN CORRECTIVA PENDIENTE.**
 
 Este hallazgo deberá conservarse como baseline para comparar cualquier corrección futura y formar parte del diagnóstico final de FeralRF.
+
+````

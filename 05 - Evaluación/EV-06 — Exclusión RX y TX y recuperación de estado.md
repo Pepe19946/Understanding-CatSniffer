@@ -1,3 +1,87 @@
+# EV-06 — Exclusión RX y TX y recuperación de estado
+
+Registro canónico de EV-06. Los errores de PowerShell y de inspección de excepciones se conservan como fallos del procedimiento, separados de respuestas del dispositivo.
+
+## 1. Contexto de evaluación
+
+La recepción funcional de EV-05 permitió plantear qué sucede al pedir TX mientras RX está activo y si el estado sigue siendo recuperable.
+
+## 2. Objetivo de validación
+
+Provocar una transición TX no permitida durante RX y comprobar la respuesta `ERR_INVALID_STATE` y la recuperación mediante RX_STOP/estadísticas.
+
+## 3. Capacidad o requisito FeralRF evaluado
+
+Exclusión de estados RF, errores de protocolo y `CommandError` de Python. [[Protocolo y API Python]].
+
+## 4. Precondiciones y condiciones
+
+CatSniffer V3 (RP2040 + CC1352P7), Cat-Bridge COM88 a921600; PHY IEEE 802.15.4, canal 25, RX activo; TX de `01` a −20 dBm en la prueba válida. Firmware FeralRF en CC1352P7; hash/binario instalado y tiempos exactos no documentados. No hay medición RF de TX durante el rechazo.
+
+## 5. Resultado esperado
+
+Rechazo explícito por estado inválido, sin convertirlo en éxito; posibilidad de detener RX y continuar usando el control.
+
+## 6. Procedimiento y ejecución cronológica
+
+1. Primer intento: fallo de quoting de PowerShell, sin prueba válida del DUT.
+2. Segundo: importación `Phy` incorrecta frente a `PHY`, sin prueba válida del DUT.
+3. Primera ejecución válida: RX_START, TX, excepción; el helper consultó `e.code` y mostró `None`; RX_STOP/estadísticas siguieron funcionando.
+4. Inspeccionar la API/atributo real de `CommandError` según la nota.
+5. Repetir consultando `error_code`: valor 5/0x05; detener RX y leer estadísticas en cero.
+Dos ejecuciones válidas, no cuatro pruebas de hardware.
+
+## 7. Resultado observado
+
+Error explícito 0x05 en la ejecución correctamente instrumentada; control recuperado mediante stop. `None` fue una lectura del atributo incorrecto del harness, no ausencia probada de error del firmware.
+
+## 8. Evidencia
+
+Tracebacks, comandos, salida y examen de `Radio.transmit`/`CommandError` en §17. La captura de `error_code` conserva la interpretación de `payload[0]`.
+
+## 9. Comparación entre lo esperado y lo observado
+
+El rechazo y la recuperación cumplen la expectativa de control. No se observó de forma independiente ausencia de emisión RF durante el intento.
+
+## 10. Interpretación técnica
+
+Hallazgo confirmado: rechazo por estado y continuidad del control bajo la secuencia registrada. No permite afirmar ausencia absoluta de RF ni robustez de todas las transiciones.
+
+## 11. Anomalías, desviaciones y limitaciones
+
+Dos intentos iniciales no llegaron a medir el DUT. Sin trazas de RF ni estrés/repetición amplia. Estadísticas en cero no equivalen a ausencia de errores en todas las colas internas.
+
+## 12. Resultado de la evaluación
+
+PASS para exclusión por control y recuperación local; RF física del rechazo no validada.
+
+## 13. Confianza
+
+High para código 0x05 y recuperación registrada; limitado a esta transición.
+
+## 14. Preguntas abiertas
+
+¿Se rechazan del mismo modo CW/PRBS/BURST durante RX? ¿Se produce algún evento tardío después del rechazo?
+
+## 15. Acciones de seguimiento
+
+Extender transiciones sólo con control de estado, captura de eventos y evidencia física; mantener `error_code` como contrato del harness.
+
+## 16. Trazabilidad
+
+Guía EV-06; [[FeralRF - Guía de validación experimental]]; [[FeralRF - Matriz de pruebas]]; [[Matriz de capacidades]]; [[EV-05 — Primera observación RF IEEE]]; [[EV-10 — Matriz de PHY por control]]; [[Registro de validación FeralRF]].
+
+Definición específica: [[FeralRF - Wiki técnica integral#6.3 Métodos RF públicos y semántica real]].
+
+
+
+## 17. Notas originales preservadas y material pendiente
+
+Fuente: `# EV-06 — Validación de exclusión R.md`. SHA-256 previo: `69798410C4E0B4495A0120180BDFF01A83768D7B9F6E99B36ADE9746818D8E52`.
+
+Transcripción íntegra, sin corregir comandos, salidas, errores ni conclusiones históricas. Sus estados y recomendaciones deben leerse con el alcance y las correcciones de la parte normalizada. Las fechas de esta auditoría no son fechas de ejecución experimental. Los comandos son evidencia histórica; no se ejecutaron durante esta revisión.
+
+````text
 # EV-06 — Validación de exclusión RX/TX y recuperación ante `ERR_INVALID_STATE`
 
 **Estado final:** `PASS`
@@ -1238,3 +1322,5 @@ No se requirió power-cycle, reset, reconexión USB ni recuperación manual.
 La conclusión consolidada para el registro experimental es:
 
 > **En la CatSniffer V3 evaluada, con FeralRF ejecutándose sobre el CC1352P7 y utilizando COM88 como Cat-Bridge, se reprodujo satisfactoriamente el comportamiento documentado de exclusión RX/TX. Después de configurar IEEE 802.15.4 en canal 25 e iniciar RX, una solicitud `TX_RAW` realizada mediante `r.transmit(b"\x01", power_dbm=-20)` fue rechazada con `CommandError('Transmit failed')` y `error_code=5`, equivalente a `0x05`, cumpliendo el `ERR_INVALID_STATE` esperado. Después del rechazo, `r.stop_rx()` respondió correctamente y `r.get_stats()` devolvió `DeviceStats(rx_ok=0, rx_crc_err=0, rx_drop=0, rx_overflow=0, ll_kind_unknown=0, ll_kind_adv=0, ll_kind_scan=0, ll_kind_connect=0, ll_kind_data=0)`, sin reset ni reconexión. EV-06 queda por tanto validada como `PASS` bajo el criterio `ERROR 0x05 + recovery` definido en la documentación actual.**
+
+````

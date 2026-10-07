@@ -1,3 +1,85 @@
+# EV-14 — Eventos RF asíncronos y firma RX
+
+Registro canónico. Fecha experimental no documentada; posterior a EV-13 por dependencia. Tests host registrados separados de observaciones del hardware.
+
+## 1. Contexto de evaluación
+
+El historial de errores RF y una firma sintética motivaron observar eventos y bytes sin descartarlos, incluyendo una transición BLE→IEEE sin reset.
+
+## 2. Objetivo de validación
+
+Buscar errores asíncronos y coincidencia exacta con firma `8e89be`, evaluar transición mínima y verificar con FakeSerial el contrato de errores asíncronos host.
+
+## 3. Capacidad o requisito FeralRF evaluado
+
+`rx_packets`, `RxStreamError` y correlación de ERROR con SEQ0/FF; estado multi-PHY. [[Protocolo y API Python]], [[Arquitectura FeralRF]].
+
+## 4. Precondiciones y condiciones
+
+DUT COM33. IEEE canal 25 durante 10 s. Transición BLE1M canal 37 RX2 s /STOP→IEEE25 RX10 s /STOP sin reset. Hashes/identidad binaria no documentados. Test host en el registro: Python 3.14.7, pytest 9.1.1, FakeSerial; no ejecutado de nuevo en esta auditoría.
+
+## 5. Resultado esperado
+
+El objetivo completo requiere provocar/observar un error RF físico y demostrar su propagación. Para la búsqueda negativa se esperaba registrar cualquier evento y comparar bytes con la firma exacta; ausencia no prueba imposibilidad. Mock: SEQ0 y FF deben emerger como error asíncrono, mientras ERROR con FF esperado como respuesta se devuelve normalmente.
+
+## 6. Procedimiento y ejecución cronológica
+
+1. Ejecutar IEEE10 s, imprimir todos los bytes y metadatos, contar eventos/firma exacta, detener.
+2. Ejecutar transición mínima BLE2 s →IEEE10 s sin reset, declarada tres veces; una corrida completa disponible.
+3. Registrar ejecución de `python -m pytest .\tests\test_async_error_surfacing.py -v` con tres casos de FakeSerial.
+No se inventa un estímulo de ERR_RF_INIT_FAILED ni una firma realmente observada.
+
+## 7. Resultado observado
+
+IEEE inicial: ocho paquetes con bytes completos, RSSI−72, CRC válido, cero errores asíncronos y cero coincidencias exactas; STOP ACK. Transición corrida literal: BLE10 paquetes/eventos 0; IEEE10 con bytes y CRC válidos, RSSI mayormente−73 y uno−92, eventos 0/firma 0; ambos STOP ACK. Tres repeticiones declaradas, una salida completa. Tests host: 3 PASSED en 0,25 s.
+
+## 8. Evidencia
+
+Bytes, salidas y reporte pytest íntegros en §17. La comparación es `data == firma`, no búsqueda de subcadena ni exclusión de todas las firmas sintéticas posibles. Los mocks son evidencia host, no provocación HIL de fallo RF.
+
+## 9. Comparación entre lo esperado y lo observado
+
+Baseline y transición mínima no presentaron anomalía buscada. El contrato host ensayado se cumple en tres mocks. El objetivo de error RF físico propagado no se alcanzó porque no se desencadenó el error.
+
+## 10. Interpretación técnica
+
+La transición mínima contradice que BLE→IEEE falle inevitablemente; no demuestra ausencia universal de problemas de estado. El test host acredita manejo de tres casos concretos de SEQ, no el comportamiento de una cola RF real ni todos los paquetes.
+
+## 11. Anomalías, desviaciones y limitaciones
+
+Sin estímulo de error físico, sin reproducción de firma, sin campañas de 20 reinicializaciones ni canary de 300 s. Dos repeticiones sólo narradas. Los bytes actuales no corrigen capturas anteriores incompletas.
+
+## 12. Resultado de la evaluación
+
+NOT FULLY VALIDATED para error RF real/firma; PASS para tres mocks y baseline local; PARTIAL para cambio PHY sin reset. La observación negativa queda INCONCLUSIVE respecto de inexistencia del fallo.
+
+## 13. Confianza
+
+High para salida literal y tres mocks; Medium para transición global; Low para excluir un error que no se provocó.
+
+## 14. Preguntas abiertas
+
+¿Qué estímulo controlado provoca ERR_RF_INIT_FAILED? ¿La firma aparece en otra configuración/estado? ¿Qué secuencia de SEQ/error coexiste con una respuesta pendiente real?
+
+## 15. Acciones de seguimiento
+
+Diseñar estímulo de error reproducible y no destructivo con captura serial/estado; ampliar ciclos conforme EV-41/46 después de estabilizar recuperación. Conservar eventos sin filtrarlos en el harness.
+
+## 16. Trazabilidad
+
+Guía EV-14/41/46; [[FeralRF - Guía de validación experimental]]; [[FeralRF - Matriz de pruebas]]; [[Matriz de capacidades]]; [[EV-13 — CW PRBS y TX_TEST_STOP por control]]; [[EV-12 — TX RAW FRAME BURST CONTINUOUS por aire]]; [[Pruebas y evidencia existente]]; [[Registro de validación FeralRF]].
+
+Definición específica: [[FeralRF - Wiki técnica integral#7.4 ERROR síncrono y asíncrono]].
+
+
+
+## 17. Notas originales preservadas y material pendiente
+
+Fuente: `# EV-14 — Error RF asíncrono y firm.md`. SHA-256 previo: `97C1F00FDA60CC5FE3557DD16923316AA8D7581B2D6012410D1B761CE613ADCF`.
+
+Transcripción íntegra, sin corregir comandos, salidas, errores ni conclusiones históricas. Sus estados y recomendaciones deben leerse con el alcance y las correcciones de la parte normalizada. Las fechas de esta auditoría no son fechas de ejecución experimental. Los comandos son evidencia histórica; no se ejecutaron durante esta revisión.
+
+````text
 # EV-14 — Error RF asíncrono y firma sintética
 
 ## 1. Identificación de la prueba
@@ -1097,3 +1179,5 @@ La discrepancia histórica sobre el backend sintético permanece como una ruta n
 **Resultado global:**
 
 > **EV-14 — PASS-HW para recepción/switching normal + PASS-SW para manejo de errores asíncronos. `ERR_RF_INIT_FAILED` físico no reproducido. Firma sintética `8E 89 BE` no observada.**
+
+````

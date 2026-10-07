@@ -1,5 +1,16 @@
 # Fuentes FeralRF
 
+> Encabezado original conservado: # Fuentes FeralRF
+
+## Disponibilidad y trazabilidad de esta fuente
+
+Referencias, URL s, commits, versiones y conclusiones previas se conservan con su fecha y alcance. Esta auditoría documental no consultó de nuevo los enlaces externos, no revalidó repositorios/builds ni midió hardware. Que un origen esté citado no significa que su artefacto esté adjunto ni que corresponda al binario usado en un EV. Se encontraron repositorios hermanos fuera del Vault, pero no se inspeccionaron para atribuir resultados.
+
+El paquete de evidencia actual y sus lagunas se explican en [[Auditoría técnica de validación FeralRF - EV ejecutadas]]; cobertura en [[FeralRF - Matriz de pruebas]] y cronología en [[Registro de validación FeralRF]]. En herramientas: main/versión 3.3.2.1 de esta fuente y fix/CLI_control/3.3.3.0 del plan son cortes distintos; EXE e import local no se asumen idénticos. En firmware/hardware: revisión/overlay/hash instalados y estado CTF requieren manifest/medición; un commit de referencia no basta para afirmarlos.
+
+## Registro documental previo — conservar su fecha y alcance
+
+
 Registro verificado nuevamente el `2026-09-28` después de la ejecución interrumpida de Fase 4.
 
 **Conocimiento derivado:** [[Arquitectura FeralRF]], [[Protocolo y API Python]], [[Matriz de capacidades]] y [[Pruebas y evidencia existente]].

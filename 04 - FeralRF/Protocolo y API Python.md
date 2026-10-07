@@ -1,4 +1,17 @@
-# FeralRF desde la PC — Protocolo y API Python
+# Protocolo y API Python
+
+> Encabezado original conservado: # FeralRF desde la PC — Protocolo y API Python
+
+## Contrato documentado y cobertura actual
+
+El contrato de referencia del cuerpo previo permanece íntegro. La existencia deun comando/handler no significa que esté validado por hardware actual. Cobertura: [[FeralRF - Matriz de pruebas]]; juicio: [[Auditoría técnica de validación FeralRF - EV ejecutadas]]; definición integral: [[FeralRF - Wiki técnica integral]].
+
+ACK se interpreta como aceptación de control/programación bajo el contrato, no como emisión/repetición/cese probado. EV-12 aporta una divergencia concreta entre conteo solicitado y recibido; EV-13 sólo ACKCW/PRBS. EV-06 valida código 0x05 con `error_code`, mientras `e.code` fue un error del harness. EV-14 registra tres mocks SEQ0/FF, pero no error RF real inducido. RX_STOP tuvo timeouts EV-12/13 y ACK en otros casos; su ruta/correlación debe investigarse, no declararse defecto RF por ausencia ACK.
+
+Pendientes explícitos: contador SEQ de RX frente a frase SEQ0 genérica en Wiki; disponibilidad de `get_info` público frente a `init()` que incluyeGET_INFO; default/clamping de potencia y límites del binario real. TX125/RX239/BLE31/SHA-TRNG240 son límites de componentes distintos y faltan fronteras HIL actuales. El selector Shell aritmético falló en EV-04; mapas COM se interpretan por época/placa, no pororden. Estas discrepancias no se resuelven inventando una API o comportamiento nuevos.
+
+## Registro documental previo — conservar su fecha y alcance
+
 
 > Verificado nuevamente el `2026-09-28` contra `FeralRF@0178721cbd4f0d0f6f8eba5ae919ca46066d5dea`; no se ejecutó código ni hardware.
 

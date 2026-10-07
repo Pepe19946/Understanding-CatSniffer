@@ -1,3 +1,95 @@
+# EV-11 — Control de presets propietarios
+
+Registro canónico de EV-11. Consolida la cobertura de tres documentos complementarios sin suprimir las fuentes ni crear nuevos IDs.
+
+## 1. Contexto de evaluación
+
+Después de EV-10 se amplió PHY7 genérico a presets propietarios por bandas. Los tres documentos homónimos corresponden a bloques de una misma evaluación.
+
+## 2. Objetivo de validación
+
+Establecer cobertura de control para 27 presets planificados, con recuperación entre bloques cuando está registrada, sin atribuirles validación RF.
+
+## 3. Capacidad o requisito FeralRF evaluado
+
+Configuración propietaria y presets PHY. GFSK/FSK/MSK/4FSK/4GFSK y familias WMBus, Wi-SUN, Sidewalk; esos nombres no implican una pila de protocolo superior implementada. [[Matriz de capacidades]], [[FeralRF - Wiki técnica integral]].
+
+## 4. Precondiciones y condiciones
+
+Mapa inicial Bridge COM88/Shell COM87; baudrate 921600. Las salidas individuales del smoke registran potencia 0 dBm, duración 3,0 s, `min_packets=0`, `auto_reset=no`; ver cada fila en las fuentes, sin reconstruir las nueve salidas resumidas como si estuvieran disponibles. INFO reportado 1.0.0/capabilities 0x07/serial FERALRF1, no hash binario. Configuraciones propietarias específicas en las fuentes; se excluyen tres OOK y MIOTY del objetivo 27. Hashes cargados, distancia y entorno no fijados.
+
+## 5. Resultado esperado
+
+27 presets únicos con respuestas de control; cobertura RF posterior separada. No se exige recepción por aire al smoke de esta evaluación.
+
+## 6. Procedimiento y ejecución cronológica
+
+1. Bloque 433: seis presets.
+2. Bloque 868: seis únicos inicialmente, luego dos adicionales; ocho al cierre.
+3. Bloque 169: dos presets.
+4. Bloque 902/915: nueve presets declarados en resumen, sin nueve stdout individuales.
+5. Bloque 2440: dos presets con stdout.
+Se conservan errores de quoting y recuperaciones manuales. La transición 868→169 no tiene reset acreditado; 169→902/915 tiene salida host de boot/exit. Las fechas exactas no constan.
+
+## 7. Resultado observado
+
+27/27 de control declarados. Calidad desigual: 18 presets tienen salidas individuales (6+8+2+2); nueve de 902/915 sólo resumen. 169450000 Hz con rates 2400/4800; 2440 con variantes 250k/50k. Wi-SUN915 se configura a 902,2 MHz según la fuente, aunque su nombre diga 915.
+
+## 8. Evidencia
+
+| Bloque | Únicos | Evidencia | Alcance |
+|---|---:|---|---|
+|433|6|[[EV-11 — Evidencia de control en 433 MHz]] §17|Comandos/stdout individuales|
+|868|8|[[EV-11 — Evidencia de control en 868 MHz]] §17|Comandos/stdout individuales; una repetición no suma cobertura|
+|169|2|§17 de este archivo|Comandos/stdout individuales|
+|902/915|9|§17 de este archivo|Resumen, no nueve capturas individuales|
+|2440|2|§17 de este archivo|Comandos/stdout individuales|
+
+Ninguno aporta emisión/recepción externa para cada preset. El registro original identifica cada preset y sus valores; no se pierden en la tabla agrupada.
+
+## 9. Comparación entre lo esperado y lo observado
+
+El cierre declarado cubre los 27 de control, con evidencia verificable individual para 18. No cumple un criterio RF ni permite asignar a los nueve resumidos la misma confianza que a los otros.
+
+## 10. Interpretación técnica
+
+Hallazgo: amplia aceptación del camino de configuración/control. Hipótesis de aplicación efectiva o interoperabilidad RF requieren medición. ACK de `SET_PROP_CONFIG` no certifica físicamente frecuencia/modulación. El smoke puede filtrar errores de RX y no acredita completitud TX.
+
+## 11. Anomalías, desviaciones y limitaciones
+
+Nueve stdout ausentes, reset interbloque incompleto, sin medición independiente, tasas/duración limitadas. Contadores cero con carga baja no caracterizan saturación ni todas las colas. Los fallos históricos OOK/433 y MIOTY pendiente no se resolvieron aquí.
+
+## 12. Resultado de la evaluación
+
+PARTIAL como registro consolidado: cierre declarado de control 27/27; PASS de control auditable para 18 filas; nueve con soporte narrativo; RF NOT FULLY VALIDATED. Esto no contradice el PASS de control histórico, sino que explicita su alcance y calidad de evidencia.
+
+## 13. Confianza
+
+Medium global; High para las 18 salidas de control, Low para inferir RF y menor confianza en reproducibilidad de las nueve filas resumidas.
+
+## 14. Preguntas abiertas
+
+¿Dónde están las nueve salidas de 902/915? ¿Qué binario aplicó cada preset? ¿La recuperación 868→169 ocurrió? ¿Qué presets funcionan por aire con controles independientes?
+
+## 15. Acciones de seguimiento
+
+Recuperar los nueve artefactos o repetirlos sin sustituir silenciosamente el registro original; completar EV-22 a EV-28 por prioridad de incertidumbre RF, no por nombre de banda.
+
+## 16. Trazabilidad
+
+Guía EV-11/22–28; [[FeralRF - Guía de validación experimental]]; [[FeralRF - Matriz de pruebas]]; [[Matriz de capacidades]]; [[Arquitectura FeralRF]]; [[Protocolo y API Python]]; [[EV-10 — Matriz de PHY por control]]; [[Registro de validación FeralRF]]; [[Fuentes FeralRF]].
+
+Definición específica: [[FeralRF - Wiki técnica integral#12. Presets]].
+
+
+
+## 17. Notas originales preservadas y material pendiente
+
+Fuente: `# EV-11 — Presets propietarios, sól(1)..md`. SHA-256 previo: `F672B25DC3ECBF66542AF1B21FABE197946207B6416A15ECEC66F806FDA4215C`.
+
+Transcripción íntegra, sin corregir comandos, salidas, errores ni conclusiones históricas. Sus estados y recomendaciones deben leerse con el alcance y las correcciones de la parte normalizada. Las fechas de esta auditoría no son fechas de ejecución experimental. Los comandos son evidencia histórica; no se ejecutaron durante esta revisión.
+
+````text
 # EV-11 — Presets propietarios, sólo control
 
 ## Cierre: 169 MHz, 902/915 MHz y 2.4 GHz
@@ -546,3 +638,5 @@ Errores de control observados:   0
 
 EV-11:                           CERRADA — PASS-control
 ```
+
+````
