@@ -1,5 +1,14 @@
 # Estado y siguientes pasos
 
+## Foco inmediato corregido — 2026-10-07
+
+> **Immediate validation focus: physical TX/RX of known RF frames/bytes using two CatSniffer V3 boards running FeralRF. ACK/control-only results do not count as RF validation. Higher-layer stacks and unrelated capabilities are deferred unless directly useful to this objective.**
+
+- La campaña inmediata usa dos CatSniffer V3: `COM33` (TX inicial) → RF → `COM88` (RX inicial), y repite la línea base en sentido inverso. Los Shell son explícitamente `COM35` para `COM33` y `COM87` para `COM88`; no se permite inferir Shell como `Bridge+2`.
+- La fuente autoritativa de conocimiento e historial es este Vault, `Understanding-CatSniffer`, junto con el HEAD actual de `FeralRF`. La guía ejecutable es [[Guía enfocada OTA FeralRF - TX RX con dos CatSniffer]] y la hoja de banco es [[Checklist OTA FeralRF - dos CatSniffer]].
+- Una ejecución anterior de Codex usó por error el Vault obsoleto `CatSniffer-Understanding`. La guía OTA enfocada y el checklist generados allí **no son autoritativos** para el estado actual; no deben usarse ni fusionarse sin revalidación independiente.
+- Se conserva el plan amplio y todo el historial que sigue. Este cambio reduce únicamente la prioridad inmediata: demostrar bytes/tramas conocidos sobre el aire, separar ACK de evidencia RF y registrar cada dirección sin promediar asimetrías.
+
 ## Preparación de evaluación física — 2026-10-01
 
 - Se crearon [[FeralRF - Guía de validación experimental]] y [[FeralRF - Matriz de pruebas]] en `05 - Evaluación`.
