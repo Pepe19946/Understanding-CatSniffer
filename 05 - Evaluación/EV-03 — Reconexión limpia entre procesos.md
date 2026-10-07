@@ -37,6 +37,10 @@ Cinco inicializaciones devolvieron información coincidente: versión 1.0.0, cap
 
 Cinco resultados textuales del registro original, §17. `464552414c524631` corresponde a la constante `FERALRF1`; no identifica inequívocamente una placa física.
 
+**Nivel de evidencia:** C: cinco inicializaciones/respuestas entre procesos independientes. No acredita desconexión USB ni ciclo de vida de una misma instancia.
+
+Modelo: [[FeralRF - Matriz de pruebas#Modelo de evidencia A–F]]. Nivel, resultado, confianza y procedencia son dimensiones separadas.
+
 ## 9. Comparación entre lo esperado y lo observado
 
 La respuesta y cierre observados cumplen el objetivo estrecho de cinco aperturas entre procesos. No se comprobó continuidad USB ni latencia de recuperación.
@@ -51,7 +55,7 @@ Sin hash binario, tiempos ni trazas seriales completas. No ensaya la misma insta
 
 ## 12. Resultado de la evaluación
 
-PASS para reconexión limpia entre cinco procesos; fuera de ese alcance, no validado.
+PASS + C para reconexión limpia entre cinco procesos independientes. Fuera de ese alcance, no validado.
 
 ## 13. Confianza
 

@@ -37,6 +37,10 @@ Ocho presets únicos con salidas individuales de control. El estado pendiente de
 
 Todos los comandos y stdout preservados en §17, incluidos duplicados de ejecución y conclusiones provisionales.
 
+**Nivel de evidencia:** C: ocho presets únicos con salidas individuales. F: RF e interoperabilidad del bloque; repetir un preset no incrementa cobertura.
+
+Modelo: [[FeralRF - Matriz de pruebas#Modelo de evidencia A–F]]. Nivel, resultado, confianza y procedencia son dimensiones separadas.
+
 ## 9. Comparación entre lo esperado y lo observado
 
 8/8 control al cierre documental; ninguna prueba de interoperabilidad WMBus ni cobertura RF de la banda por este bloque.
@@ -51,7 +55,7 @@ Sin observador RF ni confirmación de TX completado. Reset 868→169 no tiene ev
 
 ## 12. Resultado de la evaluación
 
-PASS para control de ocho presets; PARTIAL respecto de capacidad RF propietaria.
+PASS + C para control de 8 presets. RF NOT FULLY VALIDATED: no hay subconjunto físico demostrado en este bloque ni caracterización/interoperabilidad.
 
 ## 13. Confianza
 

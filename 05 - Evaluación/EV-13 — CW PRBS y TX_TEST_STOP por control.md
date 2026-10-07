@@ -31,11 +31,15 @@ ACK de inicio y stop; stop repetido en idle aceptado. La validación completa re
 
 ## 7. Resultado observado
 
-ACK para CW, ambas variantes PRBS y sus stops; dos stops idle con ACK. RX BLE inicial: dos paquetes y timeout RX_STOP con cinco inesperados/último 0x90. Repeticiones reportadas 10/11/11; una salida completa de 11 registra cuatro inesperados/último 0x90. No se superó el umbral exploratorio 30.
+ACK para CW, ambas variantes PRBS y sus stops; dos stops idle con ACK. RX BLE inicial: dos paquetes y timeout host de RX_STOP con cinco respuestas inesperadas/último ID 0x90. Repeticiones reportadas 10/11/11; una salida completa de 11 registra cuatro respuestas inesperadas/último ID 0x90; no se preservan todos sus IDs. No se superó el umbral exploratorio 30.
 
 ## 8. Evidencia
 
 Comandos/harness, ACK, salidas BLE y recomendaciones íntegras en §17. Cantidades repetidas parcialmente narradas; no tres stdout completos. No hay espectro, potencia, frecuencia o patrón PRBS capturado.
+
+**Nivel de evidencia:** C: ACK de CW/PRBS15/PRBS32 y STOP, incluidos dos stops en idle. B: entrega local BLE del receptor. C: timeout de confirmación RX_STOP; E: causa. F: forma de onda/patrón, frecuencia, potencia y cese físicos.
+
+Modelo: [[FeralRF - Matriz de pruebas#Modelo de evidencia A–F]]. Nivel, resultado, confianza y procedencia son dimensiones separadas.
 
 ## 9. Comparación entre lo esperado y lo observado
 
@@ -43,7 +47,7 @@ Objetivo estrecho de control logrado. Energía/patrón y cese quedan abiertos. B
 
 ## 10. Interpretación técnica
 
-Se demuestra idempotencia de ACK de stop idle bajo este caso. RX_STOP puede fallar incluso con pocas tramas, por lo que la carga alta de CONT0 no es una explicación suficiente por sí sola. No se demuestra que RX siguiera activo físicamente tras timeout ni que CW haya interferido.
+Se demuestra aceptación de dos stops consecutivos en idle (C), no idempotencia física. El host no obtuvo una respuesta exitosa correlacionada a RX_STOP dentro del timeout en sesiones con dos y once paquetes BLE reportados. Esos totales no miden tasa instantánea, backlog serial o ocupación interna; no permiten excluir saturación. Último ID 0x90 identifica la última respuesta inesperada, no todas las respuestas ni RX físico nuevo después del stop. No se demuestra que RX siguiera activo ni que CW haya interferido. Cadena y vacíos: [[Auditoría técnica de validación FeralRF - EV ejecutadas#Cadena causal de RX_STOP]].
 
 ## 11. Anomalías, desviaciones y limitaciones
 
@@ -51,7 +55,7 @@ ACK no acredita emisión; tiempo 0,3 s es espera host, no duración RF medida. M
 
 ## 12. Resultado de la evaluación
 
-PARTIAL: control PASS; CW/PRBS y cese físicos NOT FULLY VALIDATED; interferencia exploratoria INCONCLUSIVE.
+PARTIAL global: control PASS + C; CW/PRBS y cese físicos NOT FULLY VALIDATED/F; interferencia exploratoria INCONCLUSIVE. Entrega BLE B; timeout de confirmación RX_STOP C observado, causa E no localizada.
 
 ## 13. Confianza
 
@@ -59,7 +63,7 @@ High para ACK y timeout literal; Medium para repetición narrada; Low para compo
 
 ## 14. Preguntas abiertas
 
-¿Hubo portadora/patrón correcto? ¿STOP cesa inmediatamente por aire? ¿Por qué RX_STOP no recibe/correlaciona ACK con cargas bajas? ¿El helper F22 conserva potencia +5 tras el wrapper de reset?
+¿Hubo portadora/patrón correcto? ¿STOP cesa inmediatamente por aire? ¿Dónde se interrumpe la confirmación de RX_STOP en las sesiones con pocos paquetes reportados? ¿El helper F22 conserva potencia +5 tras el wrapper de reset?
 
 ## 15. Acciones de seguimiento
 
@@ -72,6 +76,8 @@ Guía EV-13 y EV-43/44; [[FeralRF - Guía de validación experimental]]; [[Feral
 Definición específica: [[FeralRF - Wiki técnica integral#9.6 CW y PRBS]].
 
 
+
+Nota sobre §17: las alusiones históricas a alta/baja tasa o causa host de RX_STOP no localizan el fallo. Prevalece timeout de confirmación host; los totales observados no miden carga interna.
 
 ## 17. Notas originales preservadas y material pendiente
 

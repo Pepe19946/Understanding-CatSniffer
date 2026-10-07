@@ -38,6 +38,10 @@ Seis filas de control satisfactorias; estadísticas registradas en cero. Ninguna
 
 Seis comandos/salidas y el error de quoting íntegros en §17; bloque siguiente [[EV-11 — Evidencia de control en 868 MHz]].
 
+**Nivel de evidencia:** C: seis filas con comandos/stdout individuales. F: recepción/emisión RF y parámetros físicos del bloque.
+
+Modelo: [[FeralRF - Matriz de pruebas#Modelo de evidencia A–F]]. Nivel, resultado, confianza y procedencia son dimensiones separadas.
+
 ## 9. Comparación entre lo esperado y lo observado
 
 6/6 de control; no demuestra RF en una banda que tiene antecedentes históricos de dificultades.
@@ -52,7 +56,7 @@ Recuperación tras reset sin comprobación inmediata. Historial de 433 MHz y OOK
 
 ## 12. Resultado de la evaluación
 
-PASS en control de las seis filas; PARTIAL como evidencia de capacidad propietaria RF.
+PASS + C para control de 6 presets. RF NOT FULLY VALIDATED: no hay subconjunto físico demostrado en este bloque ni caracterización/interoperabilidad.
 
 ## 13. Confianza
 

@@ -39,6 +39,10 @@ Recuperación manual funcional en la secuencia registrada. La selección automá
 
 Comandos, salidas del helper, traceback de timeout (`radio.py` líneas 415/336) y consulta del puerto preservados en §17.
 
+**Nivel de evidencia:** C: selector COM90 frente a COM87 y respuestas/timeout INIT. B/C: una secuencia manual boot/exit con pérdida y recuperación de respuesta. F: ciclo completo de reset de API sobre COM90, deliberadamente no ejecutado; pines físicos no medidos.
+
+Modelo: [[FeralRF - Matriz de pruebas#Modelo de evidencia A–F]]. Nivel, resultado, confianza y procedencia son dimensiones separadas.
+
 ## 9. Comparación entre lo esperado y lo observado
 
 Manual: comportamiento compatible con bootloader y recuperación. API: selección discrepante; no cumple el requisito de encontrar la Shell real en este mapa.
@@ -53,7 +57,7 @@ Un ciclo completo, no 3/3. Intento inicial ambiguo. Sin medida de pines ni prueb
 
 ## 12. Resultado de la evaluación
 
-NOT FULLY VALIDATED: recuperación manual observada; ruta API bloqueada por selección incorrecta y cobertura de repetición insuficiente.
+NOT FULLY VALIDATED global. Requisito de asociación Shell: FAIL + C en el mapa COM88→COM90 frente a COM87. Una recuperación manual B/C fue observada; no cumple por sí sola la repetición formal. El ciclo completo de reset de API sobre COM90 no se ejecutó y no se presenta como un fallo físico de recuperación.
 
 ## 13. Confianza
 

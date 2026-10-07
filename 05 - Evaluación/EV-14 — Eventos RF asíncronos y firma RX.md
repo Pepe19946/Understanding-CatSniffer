@@ -37,6 +37,10 @@ IEEE inicial: ocho paquetes con bytes completos, RSSI−72, CRC válido, cero er
 
 Bytes, salidas y reporte pytest íntegros en §17. La comparación es `data == firma`, no búsqueda de subcadena ni exclusión de todas las firmas sintéticas posibles. Los mocks son evidencia host, no provocación HIL de fallo RF.
 
+**Nivel de evidencia:** B: paquetes/bytes y observación negativa en ventanas y transición mínima. C: control y tres casos host/mock FakeSerial; los mocks no son evidencia del dispositivo. F: error RF real inducido y propagado. E: cualquier inferencia de eliminación universal del fallo.
+
+Modelo: [[FeralRF - Matriz de pruebas#Modelo de evidencia A–F]]. Nivel, resultado, confianza y procedencia son dimensiones separadas.
+
 ## 9. Comparación entre lo esperado y lo observado
 
 Baseline y transición mínima no presentaron anomalía buscada. El contrato host ensayado se cumple en tres mocks. El objetivo de error RF físico propagado no se alcanzó porque no se desencadenó el error.
@@ -51,7 +55,7 @@ Sin estímulo de error físico, sin reproducción de firma, sin campañas de 20 
 
 ## 12. Resultado de la evaluación
 
-NOT FULLY VALIDATED para error RF real/firma; PASS para tres mocks y baseline local; PARTIAL para cambio PHY sin reset. La observación negativa queda INCONCLUSIVE respecto de inexistencia del fallo.
+NOT FULLY VALIDATED para el objetivo de error RF real/firma. PASS + C para tres casos host/mock y PASS + B para baseline local de entrega; PARTIAL + B/C para cambio PHY sin reset. La observación negativa es INCONCLUSIVE respecto de inexistencia del fallo: no hubo estímulo de error RF real. Cero coincidencias exactas no excluye otras firmas o variantes.
 
 ## 13. Confianza
 

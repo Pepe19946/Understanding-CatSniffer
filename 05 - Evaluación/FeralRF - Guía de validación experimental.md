@@ -12,8 +12,14 @@ Esta es la guía canónica. El cuerpo previo conserva íntegros los 38 EV,35 KI,
 2. Entre tarjeta corta y procedimiento expandido, el bloque **Procedimiento operativo completo por EV** tiene la precedencia que ya declara la guía para ensayos futuros. La discrepancia y el criterio realmente adoptado se registran por corrida; no se cambian expectativas retrospectivamente para dar PASS.
 3. Puertos/roles del procedimiento corresponden a un montaje anterior. No usar los ejemplos como discovery. En EV-12 OTA del 6-10-2026: DUT COM33/Shell COM35, observador COM88/Shell COM87; antes COM88 era DUT y COM31 peer planificado. La sustitución y el serial constante requieren manifest físico/build. COM33+2 coincide localmente, COM88+2 falló; no son reglas universales.
 4. Reset automático no validado en el mapa inicial: EV-04 obtuvo COM90 en lugar de COM87. Recovery manual observada no significa tres ciclos completos ni API reset PASS. Usar identificación por interfaz/placa y comprobar la Shell efectiva antes de adoptar un reset como precondición.
-5. ACK/configuración no demuestra emisión, parámetros efectivos, repetición o cese. El smoke de control 8 PHY/27 presets no sustituye OTA. El wrapper de F22 que cambia reset no garantiza cambiar potencia+5; EV-13 usó harness adaptado 0 dBm y espera 0,3 s, con medición física diferida.
-6. Las prioridades originales permanecen como antecedente. La auditoría actual eleva manifest/recovery/criterios como P0 de validación y diagnóstico intervalos/RX_STOP/observabilidad RF como P1, por su impacto transversal.
+5. ACK/configuración no demuestra emisión, parámetros efectivos, repetición o cese. EV-10 es PASS+C para ocho secuencias aceptadas, no transición física RX ni RF de ocho PHY. EV-11 reporta control de 27 presets:18 transcripciones individuales y nueve resúmenes, sin OTA por preset. El wrapper de F22 que cambia reset no garantiza cambiar potencia+5; EV-13 usó harness adaptado 0 dBm y espera 0,3 s, con medición física diferida.
+6. Las prioridades del cuerpo previo son históricas y no vigentes. No hay P0 incondicional aprobado. P1: identidad actual/interfaz, corregir Shell, calificar observador/conteo, diagnosticar repetición, localizar RX_STOP, medir cese TX y definir aceptación/completitud. P2: procedencia histórica/transcripciones y cobertura/contratos secundarios. P3: naming/usabilidad/roadmap. P1 no significa causa conocida.
+
+### Evidencia y criterios actuales
+
+Modelo canónico: [[FeralRF - Matriz de pruebas#Modelo de evidencia A–F]]. A=RF física independiente; B=comportamiento directo del dispositivo; C=control/API (mocks identificados); D=fuente/documentación; E=inferencia/hipótesis; F=dimensión no evaluada. Nivel, estado, confianza y procedencia se informan por separado. D no demuestra conducta del binario instalado; F no es FAIL.
+
+Un umbral receptor puede FAIL mientras la semántica de conteo/repetición del DUT es INCONCLUSIVE. C sólo acredita aceptación; A acredita la dimensión RF observada, no automáticamente conteo, precisión o cese. El observador FeralRF separado aporta A aunque comparta implementación. Los reportes locales del DUT aportan B; FakeSerial aporta C host/mock.
 
 ### Cambios y ejecución respecto del plan
 
@@ -21,22 +27,23 @@ Esta es la guía canónica. El cuerpo previo conserva íntegros los 38 EV,35 KI,
 |---|---|---|---|
 |EV-00/01/02|Preflight, init/stats, RX stop inicial|Evidencia embebida en registro; no archivos separados|00/01 parciales;02 PASS control, no universal|
 |EV-04|Reset por API y repetición|Manual boot/exit y selector equivocado|NOT FULLY VALIDATED; no redefinir manual como API|
-|EV-11|27 presets control excluyendo OOK/MIOTY|Tres bloques complementarios; bloque 868 MHz:6→8, nueve 902/915 sólo resumen|27 declarados/18 stdout; no A/B ni renumeración|
-|EV-12|Cuatro modos TX/STOP; etapa inicial 01020304|Dos placas, marcadores distintos; min_hits1→40/5/2; intervalos/host abierto|RAW/FRAME OTA acotado; repetición positiva falla criterio; cese no medido|
+|EV-05|RXIEEE local repetible|41/43/43 en 3×30s; primer paquete crc_ok=True en las tres salidas|PASS+B; atribución independiente/bytes completos/rendimiento pendientes; observador concurrente suplementario|
+|EV-11|27 presets control excluyendo OOK/MIOTY|Tres bloques complementarios; bloque 868 MHz:6→8, nueve 902/915 sólo resumen|27 control reportados/18 stdout individuales/9 resúmenes; PARTIAL; sin OTA por preset; no sufijos A/B ni renumeración|
+|EV-12|Cuatro modos TX/STOP; etapa inicial 01020304|Dos placas, marcadores distintos; min_hits1→40/5/2; intervalos/host abierto|RAW/FRAME PASS+A/C marcador, conteo exacto no establecido; umbral receptor FAIL y semántica DUT INCONCLUSIVE; CONT0:99 registros coincidentes CRC-válidos, conteo físico no establecido; cese F|
 |EV-13|CW/PRBS instrumentados|Control con harness adaptado 0 dBm/0,3 s; instrumento declarado disponible pero diferido|PARTIAL; sin frecuencia/potencia/patrón/cese medidos|
 |EV-14|Error RF/firma|Baselines bytes y transición;3 mocks SEQ|No error físico inducido; NOT FULLY VALIDATED, no “fallo eliminado”|
 |EV-21|Tarjetas 1M/Coded 10/10,2M8/10|Operativo todas≥8/10|Discrepancia explícita; declarar criterio antes del ensayo; aún sin OTA completo|
 |EV-41|Tarjeta: diez ciclos|Operativo tres ciclos|EV-14 transición mínima no cierra ninguno de los dos conjuntos|
-|EV-44|Tarjeta: burst 100/tasas progresivas|Operativo: baseline 40|Necesita generador confiable; conteo fallido EV-12 no caracteriza capacidad RX|
+|EV-44|Tarjeta: burst 100/tasas progresivas|Operativo: baseline 40|Necesita emisión/conteo conocidos; umbral receptor fallido de EV-12 no caracteriza capacidad RX|
 |EV-46|Tarjeta: veinte init con RF|Operativo: veinte init solamente|Criterios cubren preguntas distintas;5 procesos EV-03 no 20 init en la misma instancia|
 |EV-20/41/42|Campañas dedicadas completas|Evidencia parcial proveniente de 12/14/resets 10–11|Cobertura indirecta marcada, no renombrar como EV ejecutados completos|
 |EV-29/51–54|Integración/roadmap/retirada|Dependencias o implementación pendientes;BLE stack retirado|Bloqueado/no ejecutado/no aplica no equivale a FAIL |
 
 ### Registro obligatorio para nuevas corridas
 
-Adoptar las 17 secciones visibles en los EV canónicos: contexto, objetivo, capacidad, condiciones, esperado, ejecución, observado, evidencia, comparación, interpretación, límites, resultado, confianza, preguntas, seguimiento, trazabilidad y original. Definir observable y criterio antes de ejecutar. Marcar incógnitas, preservar errores de harness y cambios de procedimiento. PASS/PARTIAL/FAIL/INCONCLUSIVE/NOT FULLY VALIDATED siempre llevan alcance; High/Medium/Low llevan justificación. Fechas de auditoría, commits de fuentes y fecha experimental se informan por separado. Guardar todos los eventos, comandos y salida por caso, identidad física/USB y hashes. La ausencia de firma/error en una ventana no confirma eliminación de un fallo.
+Adoptar las 17 secciones visibles en los EV canónicos: contexto, objetivo, capacidad, condiciones, esperado, ejecución, observado, evidencia, comparación, interpretación, límites, resultado, confianza, preguntas, seguimiento, trazabilidad y original. Definir observable y criterio antes de ejecutar. Marcar incógnitas, preservar errores de harness y cambios de procedimiento. PASS/PARTIAL/FAIL/INCONCLUSIVE/NOT FULLY VALIDATED siempre llevan alcance; nivel A–F se añade en Evidencia, separado de High/Medium/Low y procedencia. Fechas de auditoría, commits de fuentes y fecha experimental se informan por separado. Guardar todos los eventos, comandos y salida por caso, identidad física/USB y hashes. La ausencia de firma/error en una ventana no confirma eliminación de un fallo.
 
-Los comandos del cuerpo previo se preservan como registro y requieren verificar roles, versiones y condiciones antes de reutilizarlos. Esta auditoría no los ejecutó ni reflasheó dispositivos. Próximos experimentos discriminantes, sin nueva numeración mecánica: diagnóstico temporal EV-12, correlación RX_STOP, baseline OTA/cese, instrumento CW/PRBS y luego cobertura/lifecycle/límites/crypto/integraciones.
+Los comandos del cuerpo previo se preservan como registro y requieren verificar roles, versiones y condiciones antes de reutilizarlos. Esta auditoría no los ejecutó ni reflasheó dispositivos. Camino crítico aprobado, sin nuevos EV ni roadmap adicional: **Identidad actual → observación calificada → localización de repetición y STOP → caracterización RF representativa → cobertura más amplia.** La observación se califica antes de atribuir el conteo al DUT; repetición y STOP pueden investigarse en ramas. Recuperar todo el historial no es prerrequisito para fijar la sesión actual. Plan acotado en [[Auditoría técnica de validación FeralRF - EV ejecutadas#Próximas evaluaciones que reducen más incertidumbre]].
 
 ## Registro documental previo — conservar su fecha y alcance
 

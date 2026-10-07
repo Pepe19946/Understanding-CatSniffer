@@ -4,9 +4,9 @@ Evaluación técnica consolidada y canónica. Auditoría documental del 7 de oct
 
 ## Dictamen de alcance
 
-La documentación demuestra un sistema de control host–firmware funcional en varios casos concretos: cinco reconexiones entre procesos, exclusión RX/TX con error 0x05, ocho selecciones PHY y aceptación declarada de 27 presets (18 con salidas individuales). Hay recepción local IEEE repetida y TX IEEE RAW/FRAME observado por una segunda placa. También hay repetición con CONTINUOUS a intervalo cero. Estos resultados permiten afirmar funcionamiento parcial de esas rutas, bajo las condiciones registradas.
+La documentación demuestra un sistema de control host–firmware funcional en varios casos concretos: cinco reconexiones entre procesos, exclusión RX/TX con error 0x05, ocho selecciones PHY y aceptación declarada de 27 presets (18 con salidas individuales). Hay recepción local IEEE repetida y TX IEEE RAW/FRAME observado por una segunda placa. El observador reportó 99 registros coincidentes CRC-válidos con CONTINUOUS a intervalo cero; apoyan actividad repetida, sin establecer el conteo físico exacto. Estos resultados permiten afirmar funcionamiento parcial de esas rutas, bajo las condiciones registradas.
 
-No permiten afirmar validación integral de FeralRF multi-PHY, de los 27 presets por aire, de los protocolos superiores, de los límites/crypto actuales, del cese físico de TX, ni de estabilidad prolongada. EV-12 muestra una anomalía funcional de repetición observada con intervalos positivos; EV-12/13 muestran timeouts de RX_STOP; EV-04 demuestra selección incorrecta de Shell en el mapa inicial. La causa del scheduler y de los timeouts permanece abierta. EV-14 prueba tres casos host y una transición mínima, pero no reproduce un fallo RF físico.
+No permiten afirmar validación integral de FeralRF multi-PHY, de los 27 presets por aire, de los protocolos superiores, de los límites/crypto actuales, del cese físico de TX, ni de estabilidad prolongada. EV-12 muestra una anomalía de conteos del observador en los casos de intervalos positivos ensayados; la semántica de repetición/conteo del DUT es INCONCLUSIVE; EV-12/13 muestran timeouts de RX_STOP; EV-04 demuestra selección incorrecta de Shell en el mapa inicial. La causa de la anomalía de repetición y de los timeouts permanece abierta. EV-14 prueba tres casos host y una transición mínima, pero no reproduce un fallo RF físico.
 
 ## Alcance, disponibilidad y jerarquía de evidencia
 
@@ -14,7 +14,13 @@ Se leyeron completos los 25 Markdown de las tres carpetas, incluyendo la extensi
 
 La evidencia disponible en el Vault consiste en texto, comandos, stdout, tracebacks, tablas históricas y análisis estáticos previos. No se encontraron archivos adjuntos de logs crudos, PCAP, imágenes RF, binarios o medidas independientes en las tres carpetas. Las rutas `C:\Users\Support\...`, repositorios de firmware, scripts, tests y enlaces externos mencionados no fueron reejecutados ni verificados contra hardware en esta auditoría. Hay repositorios hermanos en el disco, pero no se inspeccionaron como una nueva fuente de implementación: presencia no demuestra correspondencia con el firmware cargado. No se verificaron fuentes web.
 
-Se distinguen cuatro niveles: (1) intención/contrato en Wiki/arquitectura/guía, (2) implementación reportada por análisis estático con commit de referencia, (3) observación experimental literal o narrada en EV, (4) interpretación/hipótesis de esta auditoría. Las salidas literales sustentan mejor la reproducción que un resumen; mocks sustentan contrato host, no RF; datos históricos de validación oficial sin artefactos/commit no se trasladan al montaje actual. No se usa Git como prueba experimental.
+Se distinguen cuatro estratos de fuente, independientes del modelo A–F: (1) intención/contrato en Wiki/arquitectura/guía, (2) implementación reportada por análisis estático con commit de referencia, (3) observación experimental literal o narrada en EV, (4) interpretación/hipótesis de esta auditoría. Las salidas literales sustentan mejor la reproducción que un resumen; mocks sustentan contrato host, no RF; datos históricos de validación oficial sin artefactos/commit no se trasladan al montaje actual. No se usa Git como prueba experimental.
+
+## Evidencia, estado, confianza y procedencia
+
+Modelo canónico: [[FeralRF - Matriz de pruebas#Modelo de evidencia A–F]]. A: RF física independiente; B: comportamiento directo del dispositivo; C: control/API (mocks identificados); D: fuente/documentación; E: inferencia/hipótesis; F: dimensión no evaluada. El nivel no es PASS/FAIL, confianza ni procedencia. Un observador FeralRF físico separado aporta A para el transmisor aunque comparta implementación; entrega local ambiental del DUT aporta B. D no acredita que el binario cargado ejecute la fuente referenciada.
+
+Corrección aprobada del segundo pase: se preserva la evidencia experimental; cambian únicamente interpretación, estados acotados, clasificación y prioridades. EV-05 tiene crc_ok=True en el primer paquete de las tres corridas, no en todos los paquetes. Un umbral receptor FAIL puede coexistir con una semántica DUT INCONCLUSIVE.
 
 ## Organización canónica y preservación
 
@@ -70,18 +76,22 @@ La nota externa al alcance `Estado y siguientes pasos` contiene un corte anterio
 
 ## A. Alcance actualmente respaldado
 
-| Afirmación permitida | Base | Condición y confianza |
-|---|---|---|
-|El host reabre e inicializa entre cinco procesos sin error registrado|[[EV-03 — Reconexión limpia entre procesos]]|COM88 y secuencia registrada; High|
-|Boot/exit manual puede recuperar INIT sin USB cycle; selector automático discrepante|[[EV-04 — Reset y reinicialización]]|Una secuencia ymapa inicial; High observación/Medium para generalización|
-|RXIEEE25 entrega paquetes en tres ventanas 30 s y otras ventanas posteriores|[[EV-05 — Primera observación RF IEEE]],EV-12/14|Sin medida de sensibilidad ni captura concurrente independiente para verificar el emisor declarado de EV-05; Medium|
-|TX durante RX fue rechazado 0x05 y control reanudó|[[EV-06 — Exclusión RX y TX y recuperación de estado]]|Transición concreta; High|
-|Ocho PHY responden al smoke con reset;27 presets control declarados|[[EV-10 — Matriz de PHY por control]],[[EV-11 — Control de presets propietarios]]|High 8 PHY y 18 presets literales; Medium global 27|
-|RAW/FRAME IEEE emiten marcadores recibidos por segunda placa|[[EV-12 — TX RAW FRAME BURST CONTINUOUS por aire]]|IEEE25/0 dBm configurado,control negativo RAW; High en el alcance acotado|
-|CONT intervalo 0 repitió 99 marcadores; positivos ensayados sólo 1|EV-12|Observador/montaje específico; High para el síntoma, no causa|
-|CW/PRBS15/32 y stop idle aceptados por control|[[EV-13 — CW PRBS y TX_TEST_STOP por control]]|0 dBm/0,3 s host; High ACK, no RF|
-|Transición mínima BLE1M→IEEE sin reset funcionó en ventanas registradas|[[EV-14 — Eventos RF asíncronos y firma RX]]|Tres declaradas/un stdout; Medium; no matriz lifecycle|
-|Tres casos SEQ/error host cumplen contrato mock|EV-14|FakeSerial, no error RF físico; High en el alcance acotado|
+| Afirmación permitida | Base | Nivel | Estado, alcance y confianza |
+|---|---|---|---|
+|El host reabre e inicializa entre cinco procesos sin error registrado|[[EV-03 — Reconexión limpia entre procesos]]|C|PASS; COM88, cinco procesos, no unplug/misma instancia; High|
+|Boot/exit manual recuperó INIT sin USB cycle; selector COM90≠87|[[EV-04 — Reset y reinicialización]]|B/C|Una secuencia manual; selector FAIL; API reset no ejecutado; global NOT FULLY VALIDATED. High secuencia/Medium generalización|
+|RXIEEE25 entrega paquetes en tres ventanas30s; primer paquete CRC-válido en cada una|[[EV-05 — Primera observación RF IEEE]], EV-12/14|B local; A observador12|EV-05 PASS local. High entrega/Medium atribución; sin bytes completos, correlación independiente del emisor ni rendimiento RF|
+|Solicitud TX tras RX_START fue rechazada0x05 y control reanudó|[[EV-06 — Exclusión RX y TX y recuperación de estado]]|C|PASS rechazo/recovery; no ausencia RF medida; High|
+|Ocho secuencias PHY fueron aceptadas con reset entre filas|[[EV-10 — Matriz de PHY por control]]|C|PASS control; no transición física ni RF de ocho PHY; High|
+|Control reportado en 27 presets,18 con transcripción y nueve sólo resumen|[[EV-11 — Control de presets propietarios]] y complementos|C|PARTIAL consolidado; High18 y menor auditabilidad nueve; RF no validada|
+|Marcadores asociados a RAW/FRAME IEEE fueron recibidos por segunda placa|[[EV-12 — TX RAW FRAME BURST CONTINUOUS por aire]]|A/C|PASS entrega OTA acotada, IEEE25/0dBm configurado; negativo RAW; conteo exacto no establecido/completitud/frecuencia/potencia. High entrega|
+|CONT0 reportó 99 registros coincidentes CRC-válidos; casos positivos ensayados reportaron un match|EV-12|A/C; E conteo/causa|PARTIAL; actividad repetida apoyada, conteo físico exacto no establecido; semántica DUT INCONCLUSIVE. High registros/Low causa|
+|CW/PRBS15/32 y dos stops idle aceptados|[[EV-13 — CW PRBS y TX_TEST_STOP por control]]|C|PARTIAL global; PASS control0dBm/0,3s host; High ACK, onda/cese sin medir|
+|Transición mínima BLE1M→IEEE sin reset entregó paquetes|[[EV-14 — Eventos RF asíncronos y firma RX]]|B/C|PARTIAL; tres declaradas/un stdout; Medium global; no matriz lifecycle|
+|Tres casos SEQ/error host cumplen contrato mock|EV-14|C host/mock|PASS subconjunto FakeSerial; no error RF físico; High|
+|Sin error ni coincidencia exacta8e89be en ventanas registradas|EV-14|B|Observación negativa acotada; INCONCLUSIVE para eliminación del fallo; High registro/Low exclusión|
+
+Se demuestra un enlace físico limitado de paquetes entre dos endpoints FeralRF, sin certificar interoperabilidad externa ni todas las propiedades IEEE. El resultado global de EV-14 sigue NOT FULLY VALIDATED para error RF real/firma; sus subsets positivos se mantienen.
 
 ## B. Alcance pendiente o sólo indirecto
 
@@ -89,27 +99,46 @@ La [[FeralRF - Matriz de pruebas]] enumera todas las capacidades, incluidos RX/T
 
 ## C. Problemas confirmados por la evidencia disponible
 
-Severidad expresa impacto si persiste bajo el alcance observado, no diagnóstico de causa. Los issues históricos reportados conservan su categoría histórica en el original y KI; no se presentan como reproducción actual.
+La severidad expresa impacto del observable, no localización de causa. El defecto localizado es la selección Shell. Los demás síntomas no prueban un defecto de implementación RF concreto.
 
-| Problema confirmado / capacidad | Evidencia y EV | Impacto práctico | Reproducibilidad disponible | Severidad / confianza |
+| Tipo / problema | Evidencia y EV | Impacto práctico | Repetición disponible | Severidad / confianza |
 |---|---|---|---|---|
-|Selección Shell COM90 frente a COM87 real|EV-04 consulta `_get_shell_port`|Reset API no puede darse por fiable; bloquea baseline/reset automático en ese mapa|Una consulta literal; no todos los dispositivos|Alta / High local|
-|Conteo recibido BURST menor que criterio solicitado|EV-12,40/25000 y 5/250000;host abierto 3 s sigue 1|No se puede usar burst como generador fiable ni afirmar conteo TX|Varias condiciones con 1 hit; no contador TX independiente|Alta / High para el síntoma, Medium para generalización|
-|CONT positivos ensayados no acredita repetición, frente a 99 hits, intervalo 0|EV-12:1 µs y 250000 µs ; 25000 en burst;1µs3/3 declarado/un stdout|Cadencia RF configurable no demostrada; resultados dependen del intervalo|Salida literal y repetición parcial narrada|Alta / High para la observación, Low para la causa|
-|TimeoutRX_STOP con paquetes inesperados 0x90|EV-12 CONT0:9;EV-13 BLE:5/4; EV-14 otros stops ACK|Host no puede confirmar stop uniformemente; puede limitar recuperación y medición|Alta y baja carga; número de repeticiones limitado|Alta / High literal; fallo físico de stop no demostrado|
-|Evidencia/proveniencia incompleta|EV-11 nueve filas resumidas;hashes/dates/identidad/capturas RF ausentes|Reduce reproducibilidad y atribución; dificulta comparar compilaciones/placas|Verificable en el conjunto documental|Alta para validación / High|
+|Defecto host localizado: selectorCOM90 frente a ShellCOM87|EV-04 consulta y asociación manual|Reset automático no fiable en ese mapa; manual explícito disponible|Una consulta y un ciclo; reset API sobreCOM90 no ejecutado|Alta para automatización/High local|
+|Fallo de confirmación extremo a extremo: RX_STOP timeout|EV-12:9 respuestas inesperadas; EV-13:5/4; sólo último ID 0x90 preservado|Host no obtuvo respuesta exitosa correlacionada dentro del timeout; estado RF desconocido|Varias sesiones, con 99 matches o2/11 paquetes reportados; carga interna desconocida|Alta para lifecycle/High timeout; causa no localizada|
+|Anomalía experimental: umbral receptor BURST incumplido|EV-12:40/25000 y5/250000 reportan1; host abierto3s también1|No sirve todavía como generador de conteo conocido; requisito físico DUT INCONCLUSIVE|Varias condiciones; falta contador físico independiente|Alta para validación/High observable|
+|Anomalía experimental: CONT positivos ensayados reportan1 frente a99 registros coincidentes CONT0|EV-12:CONT1 y250000; 25000 sóloBURST|Cadencia/conteo físico no demostrado; no defecto scheduler confirmado|CONT1 tres declaradas/un stdout|Alta para validación/High registros; Low causa|
 
-No se clasifican como defecto de producto los fallos de quoting/import, `e.code=None` del harness, marcador FRAME incorrecto, FAIL esperado del control negativo RAW, dependency KillerBee/`rich` ausente, o criterio BLE ambiental exploratorio no alcanzado. Sí son problemas de metodología/entorno que deben conservarse.
+Limitación de evidencia, separada de defecto de producto: nueve presets sólo resumidos, hashes/fechas/lineaje/capturas incompletos. Debilitan reproducción, comparación y enlace al código, sin invalidar automáticamente las observaciones locales. Error documental corregido: el primer paquete es crc_ok=True en las tres salidas EV-05.
+
+No son fallos del producto los errores de quoting/import, e.code=None del harness, marcador FRAME incompatible, FAIL esperado del negativo RAW, dependencias KillerBee/rich ausentes o umbral BLE exploratorio no alcanzado. Los issues RF históricos permanecen históricos.
+
+### Cadena causal de RX_STOP
+
+host request → serialization → transport → firmware handler → RF state transition → completion/error generation → response transport → host correlation → observed timeout.
+
+| Etapa | Evidencia disponible | Punto no establecido en el intento fallido |
+|---|---|---|
+|Solicitud host|C: llamada/STEP/traceback stop_rx|Tiempos por intento y registro completo de retries|
+|Serialización|D: ruta de API descrita|Bytes exactos, ID/SEQ/CRC de la solicitud|
+|Transporte hacia dispositivo|C: otros comandos funcionaron|Entrega de esa solicitud STOP al firmware|
+|Handler firmware|D: ruta documentada|Entrada efectiva al handler|
+|Transición RF|Sin evidencia directa del caso fallido|Estado/handle/backend después del request|
+|Generación completitud/error|ACK en otros intentos; contrato D|ACK/error generado en este intento|
+|Transporte de respuesta|C: diagnóstico host de respuestas inesperadas|Stream bidireccional completo y enqueue/dequeue/drop|
+|Correlación host|C: timeout y último ID 0x90|Existencia de ACK con otro SEQ, descartado o tardío|
+|Resultado|C: no respuesta exitosa correlacionada dentro del timeout|Resultado físico de RX_STOP|
+
+La evidencia se interrumpe antes de localizar el request fallido y reaparece en el diagnóstico host. Último ID 0x90 corresponde a RX_PACKET según contrato D, sin identificar todos los frames inesperados. Pueden ser eventos previos almacenados, no RX físico posterior. Totales2/11 o99 no miden tasa instantánea, backlog ni ocupación de colas. No se confirma fallo físico, pérdida de ACK, defecto firmware ni problema de correlación.
 
 ## D. Hipótesis pendientes y pruebas discriminantes
 
 | Hipótesis | Evidencia a favor | Evidencia en contra / alternativa | Lo que falta | Experimento discriminante |
 |---|---|---|---|---|
-|Reloj usado por scheduler no avanza coherentemente con TI-RTOS|Intervalo 0 repitió;positivos ensayados no;comentario previo sobre `ControlTask_getTimeUs`/SysTick|No se leyó reloj interno; backend puede abortar o el observador puede perder paquetes|now/next_due/remaining/retornos RF evento efectivo y reloj RTOS|Diagnóstico 12 instrumentado antes de cambiar la fuente de reloj|
-|Scheduler/backend cancela o falla después del primer TX sin aviso host|ACK programa 40/5,observador ve1; cancelación silenciosa documentada estáticamente|CONT0 recibe 99; no log de fallo/cancelación real|Retornos y contador RF completado; errores asíncronos capturados|Comparar intervalos con log del scheduler/RF y medición independiente|
-|Observador compartido o ruta RX causa conteo insuficiente|No instrumentación independiente y misma implementación|99 marcadores CONT0 y host abierto 3 s debilitan explicación simple; positivos espaciados también fallan|Tercer receptor/captura RF y roles invertidos|Separar conteo emitido/recibido bajo mismas condiciones|
-|ACKRX_STOP perdido/descartado por cola de salida o correlación host/SEQ|Timeout con ID 0x90 inesperado, límites de colas documentados|También pocos paquetes; EV-14STOP ACK; no evidencia de enqueue/dequeue/wire|Trama TX/RX serial cruda,SEQ,CRC, timestamps y estado FW|Saber si ACK se generó/envió/recibió pero descartó; luego carga controlada|
-|Backend no aplica realmenteRX_STOP/TX_STOP|Timeout o ACK no tiene medición física de cese|ACK observado en otras corridas; ausencia ACK no prueba recepción RF continua|Estado RF interno y prueba física post stop|Medir RF/conteo antes de spués STOP con observador independiente|
+|Reloj usado por scheduler no avanza coherentemente con TI-RTOS|CONT0 reportó 99 coincidencias; positivos ensayados reportaron1; análisis previo sobre `ControlTask_getTimeUs`/SysTick|No se leyó reloj interno; backend puede abortar o el observador puede perder paquetes|now/next_due/remaining/retornos RF evento efectivo y reloj RTOS|Diagnóstico 12 instrumentado antes de cambiar la fuente de reloj|
+|Scheduler/backend cancela o falla después del primer TX sin aviso host|ACK programa 40/5, observador ve1; cancelación silenciosa documentada estáticamente|CONT0 reporta99 registros; no log de fallo/cancelación real|Retornos y contador RF completado; errores asíncronos capturados|Comparar intervalos con log del scheduler/RF y medición independiente|
+|Observador compartido o ruta RX causa conteo insuficiente|Sin conteo RF independiente calificado; observador separado con misma implementación|99 registros CONT0 y host abierto3s debilitan explicaciones simples; positivos espaciados reportan1|Tercer receptor/captura RF y roles invertidos|Separar conteo emitido/recibido bajo mismas condiciones|
+|ACKRX_STOP perdido/descartado por cola de salida o correlación host/SEQ|Timeout con ID 0x90 inesperado, límites de colas documentados|También pocos paquetes reportados, sin carga interna medida; EV-14STOP ACK; no evidencia de enqueue/dequeue/wire|Trama TX/RX serial cruda, SEQ, CRC, timestamps y estado FW|Saber si ACK se generó/envió/recibió pero descartó; luego carga controlada|
+|Backend no aplica realmenteRX_STOP/TX_STOP|Timeout o ACK no tiene medición física de cese|ACK observado en otras corridas; ausencia ACK no prueba recepción RF continua|Estado RF interno y prueba física post stop|RX: estado/handle/callback nuevo bajo estímulo verificado; TX: cese por observación RF independiente|
 |Estado de CTF/U2 o GPIO explica limitaciones de bandas/potencia|Dependencia RP2040 documentada fuera de API y antecedentes 433/unidad débil|No medida CTF ni falla OTA actual multibanda; no puede inferirse defecto de ruta|Revisión/overlay/estado band y medición RF|Comparar estado CTF registrado y frecuencia/potencia por preset|
 |Quedan fallos intermitentes de cambio PHY/reinit o firma sintética|Deadlocks/firma históricos|EV-14 transición mínima sin error/firma; no inevitabilidad|Ciclos completos/errores estimulados/bytes wire y binario fijado|EV-41/42/46 y EV-14 con control de estado, sin extrapolar una ventana|
 |Potencia por defecto RAW −128 y clamping modifica RF|Valor documentado y posible clamping del backend|EV-12 potencia explícita 0; no potencia medida|Contrato default y medición conducida|Validar defaults por API y medida después de fijar montaje|
@@ -118,15 +147,30 @@ No se clasifican como defecto de producto los fallos de quoting/import, `e.code=
 
 La programación periódica y la observabilidad de completitud son centrales para RAW/BURST/CONT y herramientas de carga. La divergencia ACK/conteo hace prioritario medir el recorrido completo solicitud→scheduler→comando RF→finalización→señal. La documentación sobre SysTick no basta para cambiar el reloj sin validar que el fallo está allí. Antes de corregir, fijar binarios e instrumentar estados/retornos con coste y perturbación registrados.
 
-Los timeouts STOP requieren separar cuatro capas: recepción de la orden por firmware, cambio de estado RF, generación/salida del ACK, y correlación del host. La profundidad de colas y ausencia de backpressure justifican estudiar pérdida, pero la observación a baja carga impide tratar saturación como explicación confirmada. El contrato actual no debe prometer completitud RF a partir de ACK; un nuevo evento/counter sólo sería una mejora propuesta que debe especificarse y verificarse.
+Los timeouts STOP requieren separar cuatro capas: recepción de la orden por firmware, cambio de estado RF, generación/salida del ACK, y correlación del host. La profundidad de colas y ausencia de backpressure justifican estudiar pérdida, pero los pocos reportes no miden carga interna ni excluyen saturación; ésta tampoco es una explicación confirmada. El contrato actual no debe prometer completitud RF a partir de ACK; un nuevo evento/counter sólo sería una mejora propuesta que debe especificarse y verificarse.
 
 El reset depende de la asociación de interfaces USB y revisión del puente; una suma COM fija no satisface esa asociación. El frontend CTF y los pines HighPA no pertenecen al mismo plano de control que la selección PHY del CC; documentar y verificar ese estado es necesario para interpretar bandas/potencia, sin declarar una falla física aún no medida. Workarounds históricos de `RF_close`, `RF_runCmd` y OOK son riesgos de lifecycle reportados, no causas actuales probadas.
+
+### Clasificación del análisis de código
+
+| Hallazgo | Clasificación aprobada | Relación experimental pendiente |
+|---|---|---|
+|ACK previo a trabajo RF diferido|D: comportamiento reportado en fuente referenciada|EV-12/14 son compatibles; medir orden handler/backend/wire en build trazado|
+|Cancelación backend BURST/CONT sin aviso|D: ruta reportada; riesgo arquitectónico|EV-12 no prueba que ocurrió; registrar retorno RF y razón de cancelación|
+|SysTick/timebase no progresa como supone scheduler|E: hipótesis runtime apoyada por descripción D|EV-12 requiere now/next_due, invocaciones y referencia temporal independiente|
+|Colas limitadas y STATS incompletos|D: limitación reportada; riesgo|Ningún EV prueba pérdidas responsables; trazar generación/entrega/drop/wire|
+|ACK RX_STOP perdido o mal correlacionado|E|Trama request/ACK con SEQ y etapas firmware del intento fallido|
+|Backend no detuvo RX|E|Handle/estado/callback fresco bajo estímulo externo verificado|
+|Potencia RAW default−128/resolución|D/E: código descrito e implicación física|EV-12 usó potencia explícita; medir default vs explícito|
+|CTF/GPIO/revisión, RF_close/OOK/jam|D dependencias/riesgos históricos; E causalidad actual|Reproducción localizada con build/estado conocidos|
+
+No se releyó código externo ni se vinculó el binario cargado. “Confirmado por fuente” significa en el análisis de referencia (D), no causa experimental confirmada. Los tres mocks EV-14 no prueban RX_PACKET backlog con una respuesta STOP real. Ninguna causa raíz RF se da por confirmada.
 
 ## F. Debilidades del método
 
 Faltan manifests por corrida y hashes del binario/API/bridge; serial constante confunde identidad; fechas iniciales y sustitución física incompletas. Numerosos ensayos miden sólo aceptación, con reset entre filas; eso valida poco el estado continuo. El smoke no captura todos los eventos/completitud; leer stats después de INIT puede reiniciar métricas. Contadores cero con carga pequeña no establecen pérdida cero.
 
-EV-05 carece de bytes/emisor concurrente;EV-12 usa receptor mismo firmware y umbrales 1 originalmente insuficientes para repetición; nueve presets sólo tienen resumen. Corridas narradas no siempre tienen stdout individual. TX_STOP y CW/PRBS carecen de criterio físico medido. La comparación CW/BLE ambiental no tiene baseline controlado adecuado. Falta control negativo parametrizado de EV-05, baseline bidireccional, tasa emitida efectiva, distribución temporal y repetición definida antes de concluir.
+EV-05 carece de bytes y correlación concurrente del emisor, que era un suplemento; conserva PASS+B local y CRC del primer paquete en tres corridas; EV-12 usa receptor mismo firmware y umbrales 1 originalmente insuficientes para repetición; nueve presets sólo tienen resumen. Corridas narradas no siempre tienen stdout individual. TX_STOP y CW/PRBS carecen de criterio físico medido. La comparación CW/BLE ambiental no tiene baseline controlado adecuado. Falta control negativo parametrizado de EV-05, baseline bidireccional, tasa emitida efectiva, distribución temporal y repetición definida antes de concluir.
 
 Tests Host, históricos oficiales y ejecución local física se deben informar por separado. Criterios nuevos pueden revelar limitaciones del criterio anterior, pero no cambiar qué acciones se realizaron ni crear replicaciones. Bloqueos de dependencia y ausencia de implementación son estados de alcance, no fallos RF.
 
@@ -138,64 +182,63 @@ La integridad textual se verifica contra una copia anterior de los 25 notas, inc
 
 ## H. Alcance y límites del proyecto
 
-Actualmente aparece viable como plataforma de control y RF raw con algunas rutas IEEE y BLE locales y amplia selección/control PHY. Esa viabilidad es condicional a los montajes, estados y configuración registrados. No demuestra precisión RF, robustez temporal, interoperabilidad total, escalabilidad, capacidades crypto actuales ni compatibilidad de otras placas. Las funcionalidades retiradas/pendientes no deben mezclarse con las rutas que sí existen. Las dos anomalías operativas principales y la recuperación frágil impiden convertir un smoke aceptado en una garantía de funcionamiento general.
+Actualmente aparece viable como plataforma de control y RF raw con algunas rutas IEEE y BLE locales y amplia selección/control PHY. Esa viabilidad es condicional a los montajes, estados y configuración registrados. No demuestra precisión RF, robustez temporal, interoperabilidad total, escalabilidad, capacidades crypto actuales ni compatibilidad de otras placas. Las funcionalidades retiradas/pendientes no deben mezclarse con las rutas que sí existen. Las dos anomalías operativas principales y la selección Shell incorrecta impiden convertir un smoke aceptado en una garantía de funcionamiento general.
 
 ## Ajustes priorizados
 
-P0: bloquea validación confiable de funciones centrales o clases amplias de resultados. P1: capacidad importante/varios EV o reproducibilidad. P2: defecto acotado, gap o método/documentación sin invalidar todo. P3: conveniencia/pulido u opcionalidad con poco impacto actual. La prioridad puede subir respecto del plan original: medir cese o reloj tiene ahora valor por la anomalía y el alcance completo, no sólo por visibilidad. Severidad de síntoma y prioridad de reducción de incertidumbre son conceptos distintos.
+La revisión aprobada elimina asignaciones P0 incondicionales. No se demuestra invalidación global de evidencia. P1 puede designar un defecto importante o un vacío que limita interpretar una capacidad central; no significa causa conocida. Validar → localizar → corregir → revalidar.
 
-| Prioridad / categoría | Problema u oportunidad | Evidencia | Capacidad afectada | Por qué importa | Ajuste recomendado | Beneficio esperado | Validación posterior | Confianza |
-|---|---|---|---|---|---|---|---|---|
-|P0 metodología|No vínculo binario–fuente–placa ni identidad persistente|Todos EV; sustitución 12; serial FERALRF1|Toda campaña|Impide atribuir cambios/reproducir clases de resultados|Manifest por corrida: fecha,roles,USB HWID,puertos,hash FW/API/bridge,config,comando y salida completa; registrar origen de fuente|Comparaciones atribuibles|Reproducir caso base sin cambiar estado y recuperar artefactos faltantes|High|
-|P0 metodología/arquitectura de validación|ACK y min_hits1 producen falso cierre de repetición|EV-12;18vs27 logs EV-11|TX periódico y generadores de prueba|Invalidaría usar burst para medir capacidad o decir RF validado|Separar aceptación/completitud/conteo/cese; capturar todo evento; criterios declarados antes de la prueba; contador independiente|Validación funcional confiable|RAW/FRAME baseline y burst/CONT conteo temporal con control negativo|High|
-|P0 protocolo/API/recuperación|Selección Shell incorrecta bloquea reset/baseline|EV-04 COM90≠87; mapa EV-12 cambia|Recovery/reset y EV40|Reset entre EV es precondición amplia de campaña|Descubrimiento por identidad/interfaz verificado, sin suma COM universal; preservar ruta manual registrada|Estado inicial reproducible|EV-00/04 por placa, ciclos y puertos enumerados|High local|
-|P1 firmware/software|Repetición a intervalos positivos no cumple el observable|EV-12|BURST/CONT y stress|Cadencia es parte funcional central|Instrumentar now/next_due/remaining/retornos RF; comparar reloj RTOS; corregir sólo mecanismo demostrado|Cadencia correcta y fallos visibles|Mismos 0/1/25000/250000 según modo y conteos documentados, roles/observador|High para el síntoma, Low para una corrección específico|
-|P1 protocolo/API|Timeout/correlación RX_STOP a alta y baja carga|EV-12/13|RX ciclo estado y capturas|Host puede quedar sin confirmación fiable|Captura wire crudo ID/SEQ/CRC ylogs ACK/state; corregir ruta responsable cuando discriminada|Stop correlacionado y recuperación observable|Carga baja/alta y stops concurrentes; comprobar estado RF|High para el síntoma, Medium para prioridad|
-|P1 producto/arquitectura|No contrato/evidencia de completitud TX/cese|API y EV-12/13|Todos TX y modos test|Limita afirmación fundamental de emisión/fin|Precisar semántica ACK y definir observabilidad de TX real/fallo/cancelación; evaluar evento/counter compatible|Errores ya no se confunden con éxito|Compatibilidad wire +medición independiente inicio/repetición/cese|High gap; Medium para el diseño|
-|P1 RF/PHY|OTA actual acotada y receptor compartido|EV-05/12/13|IEEE/otros PHY/STOP|Multibanda/multi PHY es alcance central aúnno probado|Baseline bidireccional con negativos/markers y receptor o instrumento independiente; frecuencia/potencia/cese medidos|Separa TX/RX/harness y califica RF|EV-20/21 y EV-13 instrumentado; no saltar a 27 preset PASS|High gap|
-|P1 metodología|Generador BURST no fiable para capacidad|EV-12 yguía EV44|Soak/colas/RX drops|Conteo recibido sólo es pérdida si emisión conocida|Posponer inferencia PER/capacidad; usar emisor con conteo/verificado después de fix|Caracterización válida de colas|EV-43/44 con tasa emitida, todas las colas ywire|High|
-|P2 RF/PHY|CTF/banda/HighPA/potencia default sin medida|Fuentes HW/API; KI07/32; no anomalía medida CTF|Multibanda y potencia|Confunde frontend con firmware; no defecto actual probado|Registrar revisión/overlay y estado CTF; medir frecuencia/potencia/ruta por preset|Atribución y límites RF correctos|EV-22/23/27; +5/+14 sólo tras especificación/modelo|Medium|
-|P2 firmware/software|Lifecycle/close/OOK histórico y transición mínima insuficiente|KI01/02/10/11;EV-14|Estado/reinit/cambio PHY|Puede afectar varios casos pero no prueba actual de defecto|Ciclos controlados con logs y recovery; OOK último; cambios sólo cuando falla reproducible|Confianza en sesiones|EV-41/42/46, matriz estados y criterios explícitos|Medium|
-|P2 RF/PHY|433/169/WMBus/WiSUN/Sidewalk/2440 sin OTA actual|EV-11 y KI04/08/20|Presets/modulaciones/interop|Cobertura importante del alcance del proyecto sin confundir stack|Matriz por preset y banda priorizada por riesgo con equipos de referencia|Claims de PHY/interop delimitados|EV-22–28; recuperar nueve logs 902/915|High gap|
-|P2 protocolo/API|Bounds/wrap/error RF real no cerrados|KI29/31;EV-14 mocks|Wire, host y errores|Robustez no se establece por ACK normales|Fronteras y malformados con raw serial,300 comandos para SEQ, estímulo de error seguro definido|Contrato de error y límites reproducible|EV-15/45/14HIL; no contar mock como HIL|High gap|
-|P2 metodología/integración|Crypto/KillerBee actual no validado|Histórico 9/9;422/1 skip|Crypto/integraciones|Son capacidades declaradas, no cerradas por RF smoke|Fijar dependencias; vectores independientes; artefactos HIL sin skips asumidos|Cobertura real de host y hardware|EV-29/30/31, autenticación/bounds/curvas y capturas RF|High gap|
-|P2 documentación|Contratos inconsistentes/criterios evolutivos|Tabla de discrepancias|SEQ,GPIO,API,potencia/plan|Dificulta esperado vs observado y reproducibilidad|Vincular definición a commit/build real; registrar criterios versionados; resolver inconsistencias con prueba o inspección|Expectativas verificables|Revisión contratos vs wire/binario; matrices EV consistentes|High|
-|P3 producto/documentación|Roadmap incompleto confundido con soporte|KI16/18/19/21/23|Scans,MIOTY,RSA,etc|No impide núcleo demostrado si alcance claro|Mantener pendiente/retirado explícito; promover prioridad sólo con requisito nuevo|Evita promesas infundadas|Contrato e implementación antes de HIL|High documental|
-|P3 API/UX/documentación|Nombres/identidad mostrada y conveniencia|Versiones/canonicalización|Lectura y operación|Mejora el uso sin corregir por sí solo RF|Mostrar componente/versión/ID físico diferenciados y mantener enlaces; pulir formatos|Menos confusión|Chequeo de enlaces/manifest; rutina ya normalizada|High|
+| Prioridad / categoría | Problema / evidencia | Capacidad y motivo | Ajuste / beneficio | Validación posterior / confianza |
+|---|---|---|---|---|
+|P1 metodología|Endpoints/interfaces actuales y roles insuficientemente fijados; sustituciónEV-12/serial constante|Atribución de futuras pruebas|Verificar asociación USB/placa y registrar despliegue actual; evitar ambigüedad|Discovery y asociación funcional por placa; High vacío|
+|P1 host/API|SelectorCOM90≠COM87; EV-04|Recovery/automatización, defecto localizado; manual disponible|Corregir discovery por identidad/interfaz, no suma COM; preservar workaround|Selección correcta y ciclos de recovery por enumeración; High local|
+|P1 RF/metodología|Observador/conteo físico no calificados; EV-12|Distinguir emisión de entrega; generador aún no fiable para pérdidas RX|Calificar observación con requests individuales, negativos y roles; comparar captura RF/serial|Correspondencia eventos/capturas y pérdidas/duplicados; High vacío|
+|P1 investigación firmware/RF|Repetición no demostrada en positivos ensayados; EV-12|BURST/CONT y generación de carga, semántica DUT INCONCLUSIVE|Reproducir y trazar scheduling/retornos antes de elegir corrección|Caso original y discriminante revalidados; High síntoma/Low causa|
+|P1 protocolo/API/integración|RX_STOP no obtiene respuesta exitosa correlacionada en ciertos intentos; EV-12/13|Confirmación lifecycle importante|Wire bidireccional/SEQ, handler, estado RF, generación/salida ACK; localizar|Stops con estímulo controlado y evidencia por etapa; High timeout/Low causa|
+|P1 RF/lifecycle|TX_STOP/TX_TEST_STOP sólo ACK; EV-12/13|Cese físico central no medido|Medir actividad/energía relativa a request/respuesta; distinguir backlog|Cese bajo criterio explícito y montaje calificado; High vacío|
+|P1 contrato/metodología|ACK, completitud y conteo confundidos por harness|Validación de TX/errores|Precisar semánticas/criterios; evento TX_DONE/counter sería diseño posterior, no corrección ya demostrado|Criterios acotados y compatibilidad si se implementa; High gap|
+|P2 procedencia histórica|Hashes/fechas/lineaje/manifests faltantes|Reproducción/regresión|Recuperar donde sea posible, marcar incógnitas, sin fabricar ni retirar observaciones|Artefacto+despliegue asociados; High vacío|
+|P2 evidencia|Nueve presets902/915 sólo resumen; EV-11|Auditabilidad individual|Recuperar transcripciones o repetir con nueva procedencia conservando historia|Nueve registros individuales y tabla sin doble conteo; High vacío|
+|P2 RF/PHY|Presets/bandas no caracterizados OTA; EV-10/11, CTF/potencia/defaults|Cobertura y parámetros/interoperabilidad|Expandir después de observación calificada; registrar frontend; no asumir stack|Capturas/medidas por configuración; High gap|
+|P2 firmware/protocolo/integración|Lifecycle, bounds, soak, SEQ, crypto yKillerBee sin cierre actual|Robustez e integración|Cobertura existente con generador fiable/dependencias/vectores; fixes sólo localizados|EV existentes41–47/15/29–31 según alcance; High gap|
+|P2 contrato/documentación|SEQ/GPIO/API/potencia/criterios secundarios discrepantes|Esperados y vínculo fuente/build|Resolver con artefacto/inspección/prueba, preservar variantes históricas|Contrato vswire/despliegue y consistencia; High discrepancia|
+|P3 documentación/usabilidad/producto|Naming, conveniencia yroadmap|Poco impacto en interpretación del núcleo actual|Polish y alcance pending/retirado explícito; sin roadmap nuevo|Revisión de enlaces/contrato; High documental|
 
-Estas son recomendaciones, no cambios realizados al firmware. Se agrupan explícitamente por producto/arquitectura, firmware/software, RF/PHY, protocolo/API, método e integración, documentación. Ninguna corrección de raíz se da por autorizada técnicamente sólo por esta auditoría.
+Una validación de capacidad RX con BURST no calificado debe esperar conteo emitido conocido. Ese bloqueo de un experimento dependiente no es un P0 incondicional de la campaña. Implementar un nuevo evento de completitud no está justificado como reparación antes de localizar la necesidad.
+
+### Impacto de identidad Shell y procedencia
+
+EV-04 detuvo el resetAPI antes de ejecutarlo enCOM90. EV-10/11 utilizaron COM87 explícito; smoke presets auto_reset=no. EV-12 documenta roles/puertos explícitos; EV-13 adaptó harness yEV-14 evitó el helper completo con la suposición. La posibilidad de actuar sobre interfaz/unidad equivocada no demuestra que ocurrió. Catnip y efectoCOM87→respuestaCOM88 apoyan asociación funcional; FERALRF1 no identifica unidad. El cambio de rolesCOM88 y la sustitución limitan comparación de placas entre épocas, no borran el enlace OTA observado.
+
+| Falta | Validez histórica | Reproducción | Comparación de regresión | Fiabilidad futura |
+|---|---|---|---|---|
+|Hash FW y despliegue|No borra observaciones; impide atribuir a implementación específica|Exactitud limitada|Comparación build limitada|Importante antes de diagnóstico ligado al código|
+|Hash/versión API|Respuestas quedan evidenciadas|Host exacto no fijado|Atribución host limitada|Importante para correlación/lifecycle|
+|Hash/revisión bridge|Ruta funcional observada|Reset/transporte no fijados|Comparación de interfaz limitada|Importante al localizar esas rutas|
+|Lineaje de placa|Local válido; comparación entreEV incierta|Unidad no recuperable con certeza|Confusión hardware posible|Resolver endpoints actuales|
+|Fecha exacta|Habitualmente no invalida observable|Contexto limitado|Importa si cambia despliegue|Registrar prospectivamente|
+
+Hash de archivo no demuestra instalación: necesita registro de despliegue o enlace adecuado por readback. La recuperación histórica completa no es prerrequisito de cada nueva observación; fijar la sesión actual es distinto.
 
 ## Próximas evaluaciones que reducen más incertidumbre
 
-Son propuestas vinculadas al plan existente, sin asignar EV nuevos automáticamente. Parámetros nuevos deberán justificarse; los valores abajo provienen de pruebas o recomendaciones ya documentadas. Orden dependiente: provenance/recovery primero; diagnóstico intervalos y stop puede hacerse en sesiones independientes; capacidad espera un generador confiable.
+Camino crítico aprobado, sin crear EV ni ampliar el roadmap:
 
-### 1. Manifest y recuperación verificable — P0; completar EV-00/01/04/40
+**Identidad actual → observación calificada → localización de repetición y STOP → caracterización RF representativa → cobertura más amplia.**
 
-**Pregunta y motivo:** ¿Qué unidad/binario/API/bridge produjo cada resultado y se recupera sin depender del orden COM? Afecta toda validación. **Prerrequisito:** enumeración USB y discovery por placa, acceso al hash binario/versión o marcarlo ausente; no inventarlo. **Controles:** mismas placas, builds, roles y estado inicial; registrar época/sustitución,HWID/location, puertos reales; no usar serial FERALRF1 como identidad. **Resultados observables:** INIT/info/stats yboot/exit secuenciado cumplen o no; Shell asociada correctamente. **Discrimina:** error de mapeo frente a fallo real de init/estado. **Evidencia:** manifest, comando/salida completa,timestamps y ciclos según guía; diferencias entre lo planeado/real registradas.
+Repetición y STOP pueden investigarse en ramas después de calificar observación. No requieren reconstruir todos los manifests históricos.
 
-### 2. Reloj, scheduler y TX efectivo — P1; profundizar EV-12
+| Paso / prioridad | Pregunta y motivo | Setup, controles y evidencia requerida | Resultado discriminante / nivel | Dependencia |
+|---|---|---|---|---|
+|1. Endpoints/recovery actuales — P1|¿Qué unidad/interfaz/build participa y recupera? Evita ambigüedad futura|Endpoints etiquetados; USB/location/interfaces; despliegue/API actuales cuando disponibles; Shell explícito; mismo estado. Comandos/salidas/tiempos completos|Asociación/recovery correctos:C/B. Selector discrepante:host localizado. Recovery fallido requiere traza, no asumir pin|Sin dependencia; EV-00/04 existentes|
+|2. Calificar OTA/conteo — P1|¿Requests, paquetes RF y eventos entregados se distinguen fiablemente?|IEEE25/potencia configurada documentada; marcador por ensayo; sinTX; requests RAW individuales; roles; serial crudo; receptor/captura capaz de discriminar paquetes|Acuerdo valida observador acotado. RF presente sin entrega apunta aRX/salida. Duplicados invalidan conteo directo. A+C/B|Paso1; EV-12/20|
+|3. Reproducir/localizar repetición — P1|¿SiguienteTX se agenda, intenta, completa, emite o pierde en observación?|CasosBURST40/25000,5/250000; CONT0/1/250000. Controles pareados por modo, estado/roles/potencia fijados y host abierto; primero reproducción sinfix, luego instrumentación mínima now/next_due/retornos con coste registrado|Reloj/due sin avanzar apoya timebase; fallo backend apoya cancelación; RF repetido sin reportes apunta a observación/entrega; llamadas repetidas sinRF requieren backend. A+B+C|1–2; no asumir causa común|
+|4. STOP extremo a extremo — P1|¿Dónde falta confirmaciónRX y cesaTX físicamente?|Wire bidireccionalID/SEQ/CRC, handler/estado RF/generación ACK/colas; tráfico cero/conocido; callbacks nuevos vsbuffer; estímuloRX externo que continúa; observaciónTX independiente; no INIT antes de medir|ACK en wire sin match:correlación. ACK generado sinwire:entrega. Request sintransición:lifecycle. handle RX/callback fresco evalúa estado; RF despuésTXSTOP evalúa cese. C/B paraRX; A paraTX|1–2; alta carga sólo con generador verificado|
+|5. RF representativa, luego ampliar — P2|¿Parámetros documentados se producen físicamente?|Instrumento/decoder calificado; frontend/montaje/roles; IEEE probado y CW/PRBS con settings registrados; BLE/sub-G/prop representativos. Archivar settings, raw, criterio; no inventar tolerancias|Onda/paquete medido acredita dimensión ensayada. Frecuencia/modulación/patrón incorrectos localizan mismatch. Sin señal con medición no calificada:INCONCLUSIVE. A|Observación/lifecycle fiables; luego plan existente|
 
-**Pregunta:** ¿Por qué intervalo cero repite y positivos ensayados muestran un hit? **Motivo/capacidad:** funcionalidad periódica y generadores de validación. **Prerrequisitos:** manifest/recovery y firmware instrumentable; baseline RAW/FRAME; receptor con conteo independiente cuando sea posible. **Controles:** IEEE25,0 dBm configurado, mismos roles y payload marcador por caso; contrastar 0/1/25000/250000 µs en los modos a los que aplica; conteos documentados 1/2/5/40 sin extrapolar generalidad; host abierto como control y estado previo registrados. **Observables:** now/next_due/remaining, frecuencia de ejecución del scheduler, reloj RTOS, retorno RF y contador transmitido/completado; timestamps/cantidad por aire. **Discrimina:** reloj estancado o comparación errónea frente a cancelación RF/scheduler frente a pérdida RX. Si TX completado coincide con la solicitud pero RX no, investigar recepción; si no se lanza siguiente TX con reloj incorrecto, investigar timebase; si retorno de error cancela, investigar aborto y reporte. **Evidencia:** log sincronizado FW/wire/RF, coste de instrumentación,conteo independiente y repeticiones definidas.
+Analizador espectral no prueba automáticamente bitpattern PRBS ni conteo de paquetes: hace falta demodulación/correlación/captura apropiada. Observador RF externo no confirma por sí solo que un receptor dejó de recibir internamente; RX_STOP requiere estado/handle/callback bajo estímulo verificado. cese TX sí puede observarse por aire.
 
-### 3. Ruta completa de RX_STOP — P1; EV-12/13 y metodología EV-43/44
-
-**Pregunta:** ¿Se pierde el ACK, el host no lo correlaciona, o el estado RF no se detiene? **Capacidad/motivo:** recovery y confianza de cese. **Prerrequisito:** mapa/build fijados; para carga alta, generador fiable o medido independientemente. **Controles:** BLE1M37 bajo carga ambiental registrada e IEEE25 con flujo controlado, condición sin tráfico y con tráfico; mismas duraciones comparables, sin INIT que borre estado antes de medir. **Observables:** orden wire STOP con ID/SEQ/CRC yhora; recepción FW, aplicación de estado, encolado/salida ACK, trama ACK en wire y reacción host; paquetes poststop y cese RF. **Discrimina:** ACK nunca generado, ACK drop/cola, ACK recibido pero descartado/correlación SEQ, backend RF no detenido. **Evidencia:** bytes seriales bidireccionales completos ylogs FW correlacionados, RX independiente y contadores de todas las colas. No atribuir 0x90 inesperado automáticamente a hardware defectuoso.
-
-### 4. Baseline OTA y cese independiente — P1; completar EV-20 y parte de EV-12
-
-**Pregunta:** ¿TX y RX son reproducibles en ambas direcciones y STOP cesa por aire? **Motivo:** separa deficiencia del generador/observador y fundamenta RF core. **Prerrequisito:** recuperación/evidencia y manifest y observador independiente apropiado; scheduler diagnosticado para repetir. **Controles:** IEEE25/0 dBm y marcadores ya usados, control sin TX y marcador coincidente; invertir roles,sin cambiar otros parámetros; distancias/antenas registradas, no supuestas. **Observables:** bytes/timestamps/CRC/conteo según serie EV-20; tráfico marcador cesa tras STOP en ventana definida antes de la prueba. **Discrimina:** fallo de unidad/ruta TX frente a RX compartido/harness/criterio. **Evidencia:** capturas raw/PCAP, scripts/CLI exactos, salida individual de cada ensayo, referencia del instrumento y criterio de latencia sin inventar un límite del producto.
-
-### 5. CW/PRBS y frontend/potencia — P1 para CW/STOP, P2 para cobertura; EV-13/22/23/27
-
-**Pregunta:** ¿CW/PRBS tienen energía/frecuencia/patrón esperado y cesan; el frontend corresponde a la banda? **Motivo/capacidad:** modos RF y multibanda requieren medida física. **Prerrequisito:** inventario del instrumento(modelo,calibración,banda/ancho,acoplamiento),montaje y recovery; potencia justificada por contrato. **Controles:** repetir CWBLE1M37/0 dBm y PRBS15/32 sub 868/0/0 dBm del registro; adaptar duración de observación explícitamente, no afirmar queya se midió 0,3 s. Registrar CTF/pines/revisión por banda. **Observables:** emisión/frecuencia,potencia/patrón ycese medidos, configuración del frontend. **Discrimina:** ACK sin RF, señal incorrecta, error del frontend o limitación de medida. **Evidencia:** capturas instrumentales con settings,timestamps y estado Shell; no asignar una banda nueva/parámetro RF sin fuente.
-
-### 6. Estado y error real controlado — P2; EV-14/41/42/46
-
-**Pregunta:** ¿Qué secuencia reproduce fallo RF/firmas o estado intermitente? **Motivo:** transiciones mínimas exitosas no prueban lifecycle. **Prerrequisito:** reset fiable/manifest,captura de todos los eventos y estímulo seguro definido; no forzar hang por comando driver no autorizado. **Controles:** misma instancia/ciclos init frente a procesos nuevos; BLE37→IEEE25 registrados y resto de la matriz según guía; reset vs sin reset; criterio de ciclos explícito (tarjetas/operativo). **Observables:** eventos async/error code, bytes, firmas exactas y otros datos, retorno INIT, estado RF y timebase. **Discrimina:** fallo condicional de estado frente a inevitabilidad BLE→IEEE, error host mock frente a error real; no observar no elimina. **Evidencia:** tramas/SEQ/timestamps,10 o 3 ciclos según criterio declarado y 20 init cuando aplica; no registrar planeado como realizado.
-
-### 7. Cobertura restante de alto valor — P2; EV-15/21–31/43–47
-
-**Pregunta:** ¿Dónde están las fronteras y las capacidades pendientes realmente utilizables? **Motivo:** completa alcance del proyecto sin distraer diagnóstico central. **Prerrequisitos:** núcleo confiable y generador medido; dependencias KillerBee/equipos de referencia. **Controles:** matriz por PHY/preset y datos inválidos/bounds definidos; secuencias de 300 comandos ya previstas, vectores crypto independientes y curvas/modos documentados. **Observables:** cumplimiento o error explícito sin corrupción,interop RF,soak/drop ywrap; skips/roadmap separados. **Discrimina:** soporte efectivo frente a presencia en API/nombre del preset, defecto RF frente a falta de implementación/dependencia. **Evidencia:** capturas/bytes/vectores/resultados completos por caso y build, no nuevos RF parámetros inventados.
+Conservar solicitud, raw bidireccional, eventos completos, identidad/estado/trial, ajustes instrumentales y criterio explícito. Validar → localizar → corregir → revalidar. No se ejecutó ningún paso durante esta corrección documental.
 
 ## Trazabilidad de los 35 KI del plan
 
@@ -259,7 +302,7 @@ Inventario cerrado antes de reorganizar:25 notas primarias. Títulos/fechas de e
 | `# EV-12 — Informe técnico y auditor.md` → [[EV-12 — TX RAW FRAME BURST CONTINUOUS por aire]] | EV-12 — Informe técnico y auditoría de TX RAW / FRAME / BURST / CONTINUOUS en FeralRF | EV-12 etapa OTA | 06-10-2026 explícita | RAW/FRAME/BURST/CONT | Canónico resultado actual | Bytes/conteos/negativo/intervalos | EV-12 preliminar/13 | Criterios evolucionan; causa abierta |
 | `# EV-12 — Validación de TX rawframe..MD` → [[EV-12 — Control preliminar y preparación de EV-13]] | EV-12 — Validación de TX raw/frame/burst/continuous y STOP | EV-12 control y plan EV-13 | No explícita | 4 modos TX/STOP | Complementario histórico | 4/4ACK; segunda H1es plan | EV-12 OTA/13 | No prueba RF ni EV-13 realizada |
 | `# EV-13 — Registro técnico consolid.md` → [[EV-13 — CW PRBS y TX_TEST_STOP por control]] | EV-13 — Registro técnico consolidado de CW, PRBS y `TX_TEST_STOP` | EV-13 control CW/PRBS | No explícita; después de 12 | CW/PRBS/STOP/BLE | Canónico parcial | ACK+BLE/timeouts, no instrumento | EV-12/14 | Disponibilidad instrumental≠medición |
-| `# EV-14 — Error RF asíncrono y firm.md` → [[EV-14 — Eventos RF asíncronos y firma RX]] | EV-14 — Error RF asíncrono y firma sintética | EV-14 errores y firma | No explícita; después de 13 | RX bytes/error/estado | Canónico parcial | IEEE bytes,transición,3 mocks | EV-13/41/46 | Errorfísico no inducido |
+| `# EV-14 — Error RF asíncrono y firm.md` → [[EV-14 — Eventos RF asíncronos y firma RX]] | EV-14 — Error RF asíncrono y firma sintética | EV-14 errores y firma | No explícita; después de 13 | RX bytes/error/estado | Canónico normalizado; objetivo NOT FULLY VALIDATED | IEEE bytes, transición,3 mocks | EV-13/41/46 | Errorfísico no inducido |
 | `# Registro provisional de validació.md` → [[Registro de validación FeralRF]] | Registro provisional de validación experimental de FeralRF | Registro inicial y preflight | No explícita | EV-00/01/02 y RX preliminar | Canónico cronológico actualizado | CLI/mapa/outputs 48/100 | Guía,EV-03/05 | No tercer EV-05 formal |
 | `## EV-11 — Presets propietarios, só.md` → [[EV-11 — Evidencia de control en 433 MHz]] | EV-11 — Presets propietarios, sólo control | EV-11 bloque 433 | No explícita | Presets 433 | Complementario | 6 stdout,reset y quoting/logs host | EV-11 canónico/868 | Mismo ID, no EV distinto |
 | `Auditoría técnica de validación FeralRF - EV ejecutadas.md` → [[Auditoría técnica de validación FeralRF - EV ejecutadas]] | Auditoría técnica de las validaciones FeralRF realizadas | Juicio técnico global | 05-10-2026 histórico | EV hasta 11 yplan 12 | Canónico actualizado; original histórico | Análisis, no nueva ejecución | Wiki,guía,matrix,EV | Corte antiguo preservado |
@@ -283,7 +326,9 @@ Las notas EV tenían escasos enlaces activos y no figuraban uniformemente en mat
 
 La revisión comprueba originales completos preservados, conteo 25, H1/filename,17 secciones por registro, enlaces Wiki y Markdown locales,38 ítems EV y 35 KI contabilizados, consenso entre matriz/EV/assessment, ydiff Git (incluido Wiki previamente sin seguimiento). Git no aporta resultados RF. Las conclusiones se acotan por configuración; hipótesis nunca se promueven a causa. Las cronologías inciertas y el plan pendiente permanecen explícitos. No se realizaron pruebas hardware ni cambios de firmware/software.
 
-Resultado de la comprobación final:25/25 textos de origen preservados;25 notas primarias conservadas;12 archivos EV con 17 secciones (nueve IDs canónicos y tres complementos);38 ítems del plan y 35 KI contabilizados;493 wikilinks activos y 14 anclas de encabezado resueltos en 44Markdown del Vault. No se encontraron enlaces Markdown locales activos en ese conjunto. H1 y nombres coinciden en las 25 notas. `git diff --check` del alcance pasa con la configuración de finales de línea Windows. La comparación de cada renombrado contra su transcripción previa incluye archivos nuevos aún sin seguimiento, que el diff ordinario de Git no muestra como destino. No se creó commit ni se preparó el índice Git. Las copias de comprobación son temporales; el inventario y las fuentes originales permanecen en estas notas.
+Resultado histórico de la comprobación del primer pase (no es el conteo de enlaces posterior a estas correcciones):25/25 textos de origen preservados; 25 notas primarias conservadas; 12 archivos EV con 17 secciones (nueve IDs canónicos y tres complementos); 38 ítems del plan y 35 KI contabilizados; 493 wikilinks activos y 14 anclas de encabezado resueltos en 44Markdown del Vault. No se encontraron enlaces Markdown locales activos en ese conjunto. H1 y nombres coinciden en las 25 notas. `git diff --check` del alcance pasa con la configuración de finales de línea Windows. La comparación de cada renombrado contra su transcripción previa incluye archivos nuevos aún sin seguimiento, que el diff ordinario de Git no muestra como destino. No se creó commit ni se preparó el índice Git. Las copias de comprobación son temporales; el inventario y las fuentes originales permanecen en estas notas.
+
+Comprobación de las correcciones aprobadas del segundo pase: 21 notas actualizadas en interpretación; 25 fuentes originales y cuerpos históricos preservados; cuatro recursos sin cambios; 12 registros EV mantienen 17 secciones; 38 ítems del plan, 35 KI y 35 capacidades contabilizados. Se resolvieron 520 wikilinks activos y 41 anclas en 44 Markdown; H1/nombres consistentes y git diff --check sin errores. No hubo renombres, nuevos documentos del Vault, experimentos, investigación externa, cambios de firmware, commit ni staging.
 
 ## 17. Notas originales preservadas y material pendiente
 

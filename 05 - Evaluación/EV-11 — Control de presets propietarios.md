@@ -47,9 +47,13 @@ Se conservan errores de quoting y recuperaciones manuales. La transición 868→
 
 Ninguno aporta emisión/recepción externa para cada preset. El registro original identifica cada preset y sus valores; no se pierden en la tabla agrupada.
 
+**Nivel de evidencia:** C: 18 presets con comandos/stdout individuales y nueve con soporte resumido, sin la misma auditabilidad. D: inventario de presets. F: OTA y parámetros RF efectivos por preset.
+
+Modelo: [[FeralRF - Matriz de pruebas#Modelo de evidencia A–F]]. Nivel, resultado, confianza y procedencia son dimensiones separadas.
+
 ## 9. Comparación entre lo esperado y lo observado
 
-El cierre declarado cubre los 27 de control, con evidencia verificable individual para 18. No cumple un criterio RF ni permite asignar a los nueve resumidos la misma confianza que a los otros.
+Se reporta éxito de control en 27 presets; 18 tienen evidencia verificable individual y nueve sólo resumen. No cumple un criterio RF ni permite asignar a los nueve resumidos la misma confianza que a los otros.
 
 ## 10. Interpretación técnica
 
@@ -57,11 +61,11 @@ Hallazgo: amplia aceptación del camino de configuración/control. Hipótesis de
 
 ## 11. Anomalías, desviaciones y limitaciones
 
-Nueve stdout ausentes, reset interbloque incompleto, sin medición independiente, tasas/duración limitadas. Contadores cero con carga baja no caracterizan saturación ni todas las colas. Los fallos históricos OOK/433 y MIOTY pendiente no se resolvieron aquí.
+Nueve stdout ausentes, reset interbloque incompleto, sin medición independiente, tasas/duración limitadas. Contadores cero y pocos reportes no establecen carga instantánea, saturación ni pérdidas en todas las colas. Los fallos históricos OOK/433 y MIOTY pendiente no se resolvieron aquí.
 
 ## 12. Resultado de la evaluación
 
-PARTIAL como registro consolidado: cierre declarado de control 27/27; PASS de control auditable para 18 filas; nueve con soporte narrativo; RF NOT FULLY VALIDATED. Esto no contradice el PASS de control histórico, sino que explicita su alcance y calidad de evidencia.
+PARTIAL como registro consolidado. Se reportan 27 pruebas de control: 18 filas PASS + C con transcripción individual y nueve con soporte C resumido y menor auditabilidad. No existe validación OTA actual por preset; estado/backend efectivos, parámetros RF e interoperabilidad NOT FULLY VALIDATED. La falta de nueve transcripciones no demuestra que esas pruebas no se ejecutaran.
 
 ## 13. Confianza
 

@@ -37,6 +37,10 @@ El canal 9 de BLE2M es el valor efectivamente usado; no se sustituye por 37 del 
 
 Comandos y salidas por PHY en §17, incluyendo resets. El smoke no establece completitud RF de TX ni ausencia de todo error asíncrono tardío.
 
+**Nivel de evidencia:** C: ocho secuencias aceptadas de configuración/RX_START/RX_STOP con reset entre filas. D: exposición de identificadores documentada. F: TX/RX RF, frecuencia, modulación, forma de onda e interoperabilidad del conjunto de ocho PHY.
+
+Modelo: [[FeralRF - Matriz de pruebas#Modelo de evidencia A–F]]. Nivel, resultado, confianza y procedencia son dimensiones separadas.
+
 ## 9. Comparación entre lo esperado y lo observado
 
 Cumple el objetivo de control de esta matriz. ACK de programación/configuración no equivale a una señal conforme al PHY elegido.
@@ -51,7 +55,7 @@ Reset entre filas impide evaluar continuidad de estado. Sin instrumento, bytes R
 
 ## 12. Resultado de la evaluación
 
-PASS para las ocho filas de control; NOT FULLY VALIDATED para RF multi-PHY.
+PASS + C para las ocho secuencias de control con reset entre filas. NOT FULLY VALIDATED para RF multi-PHY: ACK no verifica transición interna efectiva, TX/RX por aire, frecuencia, modulación, forma de onda o interoperabilidad de los ocho PHY.
 
 ## 13. Confianza
 

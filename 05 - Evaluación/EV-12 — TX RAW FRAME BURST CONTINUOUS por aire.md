@@ -4,7 +4,7 @@ Registro canónico de EV-12. Etapa OTA fechada explícitamente el 6 de octubre d
 
 ## 1. Contexto de evaluación
 
-Los ACK de la etapa preliminar no demostraban RF. Una segunda placa sustituyó el montaje anterior y permitió observar marcadores; la repetición insuficiente obligó a revisar criterios y variar intervalos.
+Los ACK de la etapa preliminar no demostraban RF. Una segunda placa sustituyó el montaje anterior y permitió observar marcadores; los conteos del observador obligaron a revisar criterios y variar intervalos.
 
 ## 2. Objetivo de validación
 
@@ -12,7 +12,7 @@ Comprobar por aire RAW/FRAME y conteo/repetición de BURST/CONTINUOUS, mantenien
 
 ## 3. Capacidad o requisito FeralRF evaluado
 
-Transmisión de paquetes y programación temporal en [[Protocolo y API Python]] y [[Arquitectura FeralRF]]. FRAME es alias de RAW según documentación estática; RAW programa TX sin evento TX_DONE expuesto; BURST/CONTINUOUS dependen del scheduler.
+Transmisión de paquetes y programación temporal en [[Protocolo y API Python]] y [[Arquitectura FeralRF]]. FRAME es alias de RAW y la programación depende del scheduler según análisis de fuente referenciado (D); RAW no expone TX_DONE en ese contrato. Esto no confirma la ejecución de una ruta concreta del binario instalado.
 
 ## 4. Precondiciones y condiciones
 
@@ -42,22 +42,30 @@ RAW/FRAME: marcador ausente sin TX y presente con TX. BURST: número solicitado 
 |BURST5/250000|26 / 1, repetido con umbral 5|No cumple conteo observado|
 |BURST5/250000, host 3 s|25 / 1|Mantener host abierto no restaura conteo|
 |CONT250000/1 s|21 / 1|ACK start/stop; umbral 1 no prueba repetición|
-|CONT0/1 s|102 / 99|102 CRC válidos; repetición observada|
+|CONT0/1 s|102 / 99|102 registros reportados CRC-válidos, 99 coincidentes; exacto conteo físico TX no establecido|
 |CONT1/1 s|24 / 1|No cumple umbral 2; 3/3 declarado, una salida completa disponible|
 
-CONT0 registró timeout de RX_STOP, nueve paquetes inesperados y último ID 0x90. STOP de TX recibió ACK; no se midió el instante de cese por aire.
+CONT0 registró timeout de confirmación host de RX_STOP: nueve respuestas inesperadas, con último ID 0x90. No se preservan los IDs de las ocho anteriores ni se identifican como paquetes. STOP de TX recibió ACK; no se midió el instante de cese por aire.
 
 ## 8. Evidencia
 
 Comandos, stdout completos, timestamps/bytes de los casos, criterios y propuestas originales en §17. CONT0: primeros timestamps 44636903, 44637948, 44638985, 44640010, 44641050; RSSI −64 y bytes `c0ffee050ed9`. Los dos bytes finales de las tramas no se clasifican como FCS sin verificación. Las otras dos repeticiones declaradas de CONT1 no tienen stdout individual disponible.
 
+**Nivel de evidencia:** A: marcadores observados por otra radio, con implementación compartida. C: aceptación/programación y ACK de STOP. E: conteo físico exacto y localización de la discrepancia. D: descripción del backend/scheduler de fuente referenciada. F: cese físico, precisión temporal/frecuencia/potencia.
+
+Modelo: [[FeralRF - Matriz de pruebas#Modelo de evidencia A–F]]. Nivel, resultado, confianza y procedencia son dimensiones separadas.
+
 ## 9. Comparación entre lo esperado y lo observado
 
-RAW/FRAME alcanzan evidencia OTA de un paquete marcador. BURST incumple los umbrales solicitados de 40/5 en el observador. CONT0 repite; CONT con intervalos positivos ensayados produce un hit, sin demostrar repetición. STOP sólo probado por ACK. No puede inferirse “39 paquetes perdidos” porque no existe conteo independiente de paquetes efectivamente emitidos.
+RAW/FRAME alcanzan PASS + A acotado para entrega de un marcador a otra radio; no demuestran exactamente una emisión ni completitud. El criterio receptor `min_hits=40`/`min_hits=5` falló en BURST, y el umbral 2 falló en CONT1. A la vez, la semántica de repetición/conteo del DUT permanece INCONCLUSIVE: el experimento no determina si el transmisor emitió pocos paquetes o si la observación/entrega los perdió. CONT0 produjo 99 registros coincidentes reportados CRC-válidos, que apoyan actividad repetida; no equivalen a 99 transmisiones físicas independientes. CONT positivos ensayados: el observador reportó un match por caso. STOP sólo probado por ACK; no puede inferirse “39 paquetes perdidos”.
 
 ## 10. Interpretación técnica
 
-Confirmado: diferencia entre aceptación de programación y repetición observada; frontera experimental intervalo 0 frente a positivos 1/25000/250000 bajo estos casos. Hipótesis: integración de reloj/`ControlTask_getTimeUs`/SysTick con TI-RTOS; alternativa: aborto silencioso del backend/scheduler o limitación del observador. Los 99 hits debilitan “RF nunca repite” y “RX nunca recibe repetidos”; host 3 s debilita cierre prematuro como explicación suficiente. No hay causa raíz confirmada.
+Confirmado: diferencia entre programación aceptada (C) y registros del observador (A) en los casos ensayados: CONT0 reportó 99 coincidencias; CONT1 y CONT250000 reportaron una; BURST40/25000 y BURST5/250000 reportaron una. No constituye una frontera universal ni un defecto confirmado del scheduler. Los primeros timestamps distintos refuerzan actividad repetida, pero no verifican correspondencia uno a uno entre TX físico, callbacks, eventos y matches.
+
+Hipótesis E sin ranking causal justificado: host/API; transporte; scheduler; timer/timebase; ejecución/estado firmware; backend RF; generación, entrega y correlación de eventos; pérdida/duplicación del observador; número real de emisiones. La integración `ControlTask_getTimeUs`/SysTick con TI-RTOS y el aborto silencioso descrito por fuente son candidatos, no causas confirmadas. Los 99 registros debilitan que el observador nunca pueda reportar múltiples coincidencias; host abierto 3 s debilita desconexión inmediata como explicación suficiente, sin eliminar esas capas en general.
+
+RX_STOP: se observó timeout de confirmación host, no fallo físico del stop. Las respuestas 0x90 pueden estar almacenadas desde antes; no acreditan RX nuevo después de la solicitud. La cadena y los puntos sin evidencia se documentan en [[Auditoría técnica de validación FeralRF - EV ejecutadas#Cadena causal de RX_STOP]].
 
 ## 11. Anomalías, desviaciones y limitaciones
 
@@ -65,7 +73,7 @@ Receptor comparte firmware, sin contador TX efectivo ni instrumentación tempora
 
 ## 12. Resultado de la evaluación
 
-PARTIAL global. RAW/FRAME: PASS OTA acotado. BURST: FAIL respecto del conteo recibido requerido; atribución del fallo aún abierta. CONT0: repetición demostrada, cese NOT FULLY VALIDATED. CONT positivos: FAIL del criterio de repetición ensayado. Control start/STOP: PASS de ACK.
+PARTIAL global. RAW/FRAME: PASS + A/C para marcador OTA y aceptación; conteo exacto de una emisión y completitud no demostrados. BURST: FAIL del criterio receptor 40/5; repetición/conteo físicos del DUT INCONCLUSIVE. CONT0: PARTIAL + A/C, actividad repetida apoyada por 99 registros coincidentes CRC-válidos del observador, conteo TX exacto no establecido. CONT1: FAIL del criterio receptor ≥2; semántica del DUT INCONCLUSIVE. CONT250000: un match no demuestra repetición; semántica INCONCLUSIVE. Control start/STOP: PASS + C; cese físico NOT FULLY VALIDATED/F. RX_STOP: timeout host confirmado, causa E no localizada.
 
 ## 13. Confianza
 
@@ -77,7 +85,7 @@ High en salidas y diferencia de conteos disponibles; Medium en reproducibilidad 
 
 ## 15. Acciones de seguimiento
 
-Instrumentar reloj/estado/retornos antes de modificar implementación; registrar captura serial y contador RF independiente. Repetir variables ya documentadas con manifest de binarios. Medir cese y correlación de STOP. Plan discriminante en [[Auditoría técnica de validación FeralRF - EV ejecutadas]].
+Seguir el camino aprobado: identidad actual → observación calificada → localización de repetición y STOP → caracterización RF representativa → cobertura más amplia. Reproducir sin cambiar implementación, registrar serial bidireccional/observación RF y, después, estados/reloj/retornos pertinentes; corregir sólo la causa localizada y revalidar. La espera host no es duración RF medida. Plan acotado en [[Auditoría técnica de validación FeralRF - EV ejecutadas]].
 
 ## 16. Trazabilidad
 
@@ -86,6 +94,8 @@ Guía EV-12, cobertura parcial EV-20 y cuestiones EV-43/44; [[FeralRF - Guía de
 Definición específica: [[FeralRF - Wiki técnica integral#9. Arquitectura TX]].
 
 
+
+Nota sobre §17: las frases históricas que equiparan matches con transmisiones físicas, llaman al síntoma defecto de scheduling o identifican todos los inesperados como RX no son conclusiones actuales. Se conservan literalmente; prevalecen la semántica DUT INCONCLUSIVE, la clasificación A/C/E/F y el conteo de registros del observador indicados arriba.
 
 ## 17. Notas originales preservadas y material pendiente
 

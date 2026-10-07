@@ -38,6 +38,10 @@ Cuatro modos aceptados por control (4/4 declarado), STOP con ACK y estadísticas
 
 Comandos/salidas y preparación de EV-13 íntegros en §17. La segunda H1 EV-13 de la fuente es una sección de planificación, no un segundo registro ejecutado.
 
+**Nivel de evidencia:** C: ACK de cuatro modos/STOP en la etapa histórica. F: OTA, conteo, intervalo y cese de esta etapa. La planificación EV-13 no es ejecución.
+
+Modelo: [[FeralRF - Matriz de pruebas#Modelo de evidencia A–F]]. Nivel, resultado, confianza y procedencia son dimensiones separadas.
+
 ## 9. Comparación entre lo esperado y lo observado
 
 Control cumple el objetivo inicial. La misma familia de modos mostró después discrepancias de repetición por aire; aquella observación no invalida que estos ACK ocurrieran.
@@ -52,7 +56,7 @@ Sin observador, sin bytes por aire, sin cese medido y sin hash binario. Reinicia
 
 ## 12. Resultado de la evaluación
 
-PASS de control inicial; PARTIAL para los modos RF. Resultado global actualizado en el registro canónico, no en esta etapa histórica.
+PASS + C histórico para el objetivo de control inicial solamente. OTA, conteo, intervalo y cese no evaluados en esta etapa. El resultado actualizado está en el canónico OTA; la preparación EV-13 no se cuenta como una ejecución.
 
 ## 13. Confianza
 

@@ -31,11 +31,15 @@ No se incorpora como paso realizado un sniffer independiente que no consta aquí
 
 ## 7. Resultado observado
 
-Corridas: 41, 43 y 43 paquetes. Primeros paquetes: timestamp 780546602, RSSI −85, LQI 52, longitud 52; timestamp 487488162, RSSI −79, LQI 57, longitud 5; timestamp 540904925, RSSI −83, LQI 56, longitud 52. La primera salida acredita `crc_ok=True`; no documenta CRC de todos los paquetes.
+Corridas: 41, 43 y 43 paquetes. Primeros paquetes: timestamp 780546602, RSSI −85, LQI 52, longitud 52; timestamp 487488162, RSSI −79, LQI 57, longitud 5; timestamp 540904925, RSSI −83, LQI 56, longitud 52. Las tres salidas formales registran `crc_ok=True` para su primer paquete. No se documenta que todos los paquetes de cada ventana fueran CRC-válidos.
 
 ## 8. Evidencia
 
 Tres salidas y comandos en §17. No hay bytes completos ni PCAP adjunto de estas corridas. Las ventanas preliminares de 48/100 paquetes están en [[Registro de validación FeralRF]], con distinto alcance.
+
+**Nivel de evidencia:** B: entrega local de paquetes/metadatos en tres ventanas; cada salida formal registra crc_ok=True en el primer paquete. C: secuencia de control. No hay A de caracterización independiente del DUT en estas corridas.
+
+Modelo: [[FeralRF - Matriz de pruebas#Modelo de evidencia A–F]]. Nivel, resultado, confianza y procedencia son dimensiones separadas.
 
 ## 9. Comparación entre lo esperado y lo observado
 
@@ -51,11 +55,11 @@ Entorno ambiental, sin emisor controlado, capturas binarias ni observador indepe
 
 ## 12. Resultado de la evaluación
 
-PARTIAL global frente al criterio original de atribución: PASS para observación local de RX IEEE en tres ventanas; NOT FULLY VALIDATED para atribución verificada e interoperabilidad/caracterización RF. Se conserva el PASS-RF original como conclusión histórica del autor; esta auditoría acota su alcance, sin cambiar lo observado.
+PASS + B para recepción IEEE local repetible en tres ventanas formales. La atribución al transmisor declarado no está correlacionada independientemente; no se preservaron bytes/capturas completos ni se caracterizó rendimiento RF. El observador concurrente era suplemento de la guía, no requisito retrospectivo para retirar este PASS acotado. El PASS-RF histórico se conserva con su vocabulario original; el nivel B actual expresa evidencia del DUT y no caracterización independiente.
 
 ## 13. Confianza
 
-Medium: tres resultados consistentes, pero control ambiental y evidencia de bytes incompletos.
+High para la entrega y metadata registradas en las tres salidas; Medium para atribución RF a la fuente declarada. No hay confianza experimental asignable a sensibilidad, PER o calibración que no se midieron.
 
 ## 14. Preguntas abiertas
 

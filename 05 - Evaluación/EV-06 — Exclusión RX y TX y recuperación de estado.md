@@ -16,7 +16,7 @@ Exclusión de estados RF, errores de protocolo y `CommandError` de Python. [[Pro
 
 ## 4. Precondiciones y condiciones
 
-CatSniffer V3 (RP2040 + CC1352P7), Cat-Bridge COM88 a921600; PHY IEEE 802.15.4, canal 25, RX activo; TX de `01` a −20 dBm en la prueba válida. Firmware FeralRF en CC1352P7; hash/binario instalado y tiempos exactos no documentados. No hay medición RF de TX durante el rechazo.
+CatSniffer V3 (RP2040 + CC1352P7), Cat-Bridge COM88 a921600; PHY IEEE 802.15.4, canal 25, tras RX_START aceptado; TX de `01` a −20 dBm en la prueba válida. Firmware FeralRF en CC1352P7; hash/binario instalado y tiempos exactos no documentados. No hay medición RF de TX durante el rechazo.
 
 ## 5. Resultado esperado
 
@@ -39,6 +39,10 @@ Error explícito 0x05 en la ejecución correctamente instrumentada; control recu
 
 Tracebacks, comandos, salida y examen de `Radio.transmit`/`CommandError` en §17. La captura de `error_code` conserva la interpretación de `payload[0]`.
 
+**Nivel de evidencia:** C: rechazo 0x05 y recuperación del control. F: ausencia física de emisión durante el rechazo. El error del atributo del harness no es un resultado RF.
+
+Modelo: [[FeralRF - Matriz de pruebas#Modelo de evidencia A–F]]. Nivel, resultado, confianza y procedencia son dimensiones separadas.
+
 ## 9. Comparación entre lo esperado y lo observado
 
 El rechazo y la recuperación cumplen la expectativa de control. No se observó de forma independiente ausencia de emisión RF durante el intento.
@@ -53,7 +57,7 @@ Dos intentos iniciales no llegaron a medir el DUT. Sin trazas de RF ni estrés/r
 
 ## 12. Resultado de la evaluación
 
-PASS para exclusión por control y recuperación local; RF física del rechazo no validada.
+PASS + C para rechazo de la solicitud TX con 0x05 tras RX_START y recuperación local del control. No demuestra de forma independiente ausencia física de RF ni exclusión para todos los modos.
 
 ## 13. Confianza
 
