@@ -613,3 +613,31 @@ Sí permanecen dos observaciones para investigación posterior:
 ## Seguimiento Sub-GHz
 
 La interpretación documental de las cuatro corridas GFSK negativas está en [[Seguimiento documental OTA Sub-GHz - ruta RF y control de banda]] y la reconstrucción técnica en [[Sub-GHz en CatSniffer V3 - CC1352P7, ruta RF y control de banda]]. Estos enlaces no cambian resultados EV: distinguen ACK de finalización RF y estado `Band` cacheado de conmutación física.
+
+## 2026-10-08 — Segunda campaña OTA proprietary
+
+Fuente literal: [[Segunda campaña OTA proprietary FeralRF — Ampliación de presets y verificación del procedimiento]]. Continuación del corte de cuatro corridas/40 solicitudes del primer reporte.
+
+| etapa | corridas | retornos `transmit()` exitosos | presets únicos acumulados | paquetes/hits | errores asíncronos expuestos |
+|---|---:|---:|---:|---:|---:|
+| segundo reporte | 20 | 200 | 19 | 0 | 0 |
+| acumulado de ambos reportes | 24 | 240 | 19 | 0 | 0 |
+
+Los 20 ensayos nuevos incluyen 18 corridas con el helper y dos controles concurrentes. Los 19 presets únicos no se obtienen sumando corridas repetidas: `gfsk_868_50k`, `4fsk_868_50k` y `gfsk_2440_50k` tienen repeticiones bidireccionales o metodológicas.
+
+### Control concurrente timestamped
+
+- RX COM33 listo: `2026-10-08T12:34:13.916`.
+- Primer ACK TX COM88: `12:34:17.980` (`+4.064 s`).
+- Último ACK TX: `12:34:19.241` (`1.261 s` desde el primero).
+- Resultado RX: `12:34:43.931` (`24.690 s` después del último ACK).
+- Resultado: `events=0, packets=0, hits=0, errors=0`.
+
+Esto demuestra solapamiento entre lectura RX y aceptación TX; no demuestra emisiones. Los dos endpoints reportaron `rx_ok=0`, `rx_crc_err=0`, `rx_drop=0`, `rx_overflow=0` para el intervalo post-`init()` pertinente. Esos contadores no cubren toda la cadena ni prueban ausencia de RF.
+
+### Resultado cronológico acotado
+
+- GFSK/FSK en 868/902/915/2440: control aceptado, cero paquetes entregados, TX/RX físicos no confirmados.
+- `msk_868_50k`, `4fsk_868_50k`, `4gfsk_868_50k`: reclasificados como preset aceptado con modulación nombrada no demostrada por `modType` 4/5/6 reservado.
+- Wi-SUN/Sidewalk actual: `0/70`; no reprodujo `70/70` histórico, sin equivalencia suficiente para declarar regresión.
+- 433 y 169 no ejecutados; OOK y MIOTY diferidos. Se pausa la expansión de presets hasta una observación CTF/U2/J1 con `gfsk_868_50k`.

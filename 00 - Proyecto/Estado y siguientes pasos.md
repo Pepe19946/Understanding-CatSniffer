@@ -1,5 +1,13 @@
 # Estado y siguientes pasos
 
+## Actualización OTA proprietary — 2026-10-08
+
+- [[Reporte OTA Sub-GHz - GFSK 868 y 915 MHz]] y [[Segunda campaña OTA proprietary FeralRF — Ampliación de presets y verificación del procedimiento]] acumulan 24 corridas, 240 retornos exitosos de `transmit()`, 19 presets únicos y cero paquetes/hits proprietary entregados; no equivalen a 240 emisiones.
+- El control concurrente confirma que la lectura RX estuvo activa durante los ACK TX y continuó `24.690 s` tras el último. La lectura tardía del helper pierde fuerza como explicación única, sin validar RF.
+- Los casos GFSK/FSK válidos abarcan 868/902/915/2440 MHz. Los nombres MSK/4FSK/4GFSK no demuestran esas modulaciones porque el setup auditado reserva `modType` 4/5/6.
+- Los ocho presets 433 y W-MBus N169 no se ejecutarán en esta campaña; OOK y MIOTY quedan diferidos. La expansión ciega de presets está pausada.
+- Próximo paso: una observación física discriminante con `gfsk_868_50k`, niveles CTF1/2/3, selección U2 por tabla de verdad y energía RF en J1. Véase [[Seguimiento documental OTA Sub-GHz - ruta RF y control de banda#Siguiente observación física discriminante]].
+
 ## Foco inmediato corregido — 2026-10-07
 
 > **Immediate validation focus: physical TX/RX of known RF frames/bytes using two CatSniffer V3 boards running FeralRF. ACK/control-only results do not count as RF validation. Higher-layer stacks and unrelated capabilities are deferred unless directly useful to this objective.**

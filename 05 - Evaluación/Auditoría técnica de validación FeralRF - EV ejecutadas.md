@@ -789,3 +789,35 @@ La confianza apropiada en el baseline actual es moderada para transporte, sesió
 6. ¿Existe hash o manifest del `C:\Program Files\Catnip\catnip.exe` que lo vincule con un commit concreto, además del encabezado `v3.3.3.0`?
 
 ````
+
+## Addendum experimental posterior — 2026-10-08
+
+Este addendum no reescribe la auditoría del 7 de octubre ni hace parecer que ésta conocía evidencia posterior. El corte de cuatro corridas, 40 solicitudes aceptadas y cero hits de [[Reporte OTA Sub-GHz - GFSK 868 y 915 MHz]] era correcto para su fecha; ahora es un subconjunto de [[Segunda campaña OTA proprietary FeralRF — Ampliación de presets y verificación del procedimiento]].
+
+### Magnitudes verificadas
+
+- 24 corridas acumuladas: cuatro iniciales y 20 posteriores.
+- 240 retornos exitosos de `transmit()`: 40 + 200.
+- 19 presets únicos; las repeticiones bidireccionales y concurrentes no se cuentan como presets nuevos.
+- Cero paquetes/hits proprietary entregados y cero `RxStreamError` expuestos.
+
+No se promueven los retornos a emisiones ni se calcula pérdida RF.
+
+### Cambio metodológico relevante
+
+El control inverso `gfsk_2440_50k` mantuvo `read_packets()` activo desde `12:34:13.916`; los ACK TX ocurrieron entre `12:34:17.980` y `12:34:19.241`, y RX terminó a `12:34:43.931`. Quedaron `24.690 s` de observación después del último ACK y el resultado fue `events=0, packets=0, hits=0, errors=0`.
+
+Esto debilita la lectura tardía del helper como explicación única, pero no acredita TX físico ni buffering universalmente sin pérdidas. Los dos `DeviceStats` posteriores en cero solo cubren los contadores expuestos para el intervalo pertinente.
+
+### Relectura por validez técnica
+
+- Los GFSK/FSK ejecutados en 868/902.2/915/2440, incluidos W-MBus S/T/C, Sidewalk y Wi-SUN como PHY/raw, son observaciones OTA negativas interpretables: aceptación de control y ninguna entrega peer; emisión, recepción y causa siguen abiertas.
+- `msk_868_50k`, `4fsk_868_50k` y `4gfsk_868_50k` no acreditan su modulación nominal: el comando TI auditado reserva `modType` 4/5/6. Solo acreditan preset existente, solicitudes aceptadas y cero paquetes observados.
+- Los ocho presets 433 no se ejecutaron: el silicio cubre 433, U4 publicado no, y el asesor impuso una restricción operacional. W-MBus N169 queda fuera del silicio y U4.
+- OOK se difirió por lifecycle/recuperación y MIOTY por implementación pending/CPE.
+
+La campaña actual obtuvo `0/70` para los mismos cinco nombres Wi-SUN y dos Sidewalk del claim histórico `70/70`. **No reprodujo el claim bajo las condiciones actuales**, pero no demuestra regresión porque no se ha probado equivalencia de imágenes, revisiones, dispositivos y procedimiento.
+
+### Conclusión del addendum
+
+El plano de control funciona, el cache de banda cambia y el control concurrente confirma solapamiento RX/ACK TX. Ningún paquete proprietary fue entregado. El dominio de fallo sigue abarcando configuración, ejecución TX/RX, ruta externa y entrega host. Se justifica detener la expansión ciega y pasar a una observación física discriminante `gfsk_868_50k` sobre CTF/U2/J1, según [[Seguimiento documental OTA Sub-GHz - ruta RF y control de banda#Siguiente observación física discriminante]].

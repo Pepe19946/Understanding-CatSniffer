@@ -85,6 +85,8 @@ Carpeta de evidencia de esta sesión: ____________________
 
 ### Presets Tier A
 
+> **Estado 2026-10-08:** las filas siguientes se conservan como plantilla histórica. Sus ejecuciones y controles posteriores están en [[Reporte OTA Sub-GHz - GFSK 868 y 915 MHz]] y [[Segunda campaña OTA proprietary FeralRF — Ampliación de presets y verificación del procedimiento]]. La campaña acumula cero paquetes entregados y la expansión está pausada hasta observar CTF/U2/J1 con `gfsk_868_50k`. `4fsk_868_50k` no se interpreta como 4FSK efectivo porque `modType=5` está reservado en el setup auditado.
+
 - [ ] Se definió `Invoke-FeralPresetOta` exactamente como en la guía.
 - [ ] Para Sub-G se forzó `band1`→`band2` en ambos Shell.
 - [ ] Banda autorizada elegida: 868 / 915 / ninguna.

@@ -58,9 +58,23 @@
               "icon": "lucide-file",
               "title": "Reporte OTA Sub-GHz - GFSK 868 y 915 MHz"
             }
+          },
+          {
+            "id": "0be8534d52e77cbe",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "05 - Evaluación/Guía enfocada OTA FeralRF - TX RX con dos CatSniffer.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "Guía enfocada OTA FeralRF - TX RX con dos CatSniffer"
+            }
           }
         ],
-        "currentTab": 3
+        "currentTab": 4
       }
     ],
     "direction": "vertical"
@@ -227,17 +241,17 @@
       "bases:Crear nueva base": false
     }
   },
-  "active": "10b7ef404b8a5b91",
+  "active": "0be8534d52e77cbe",
   "lastOpenFiles": [
+    "06 - Experimentos/Reporte_evidencia_OTA_CONTINUOUS_STOP_FeralRF_2026-10-08.md",
+    "06 - Experimentos/Checklist OTA FeralRF - dos CatSniffer.md",
+    "06 - Experimentos/Reporte OTA Sub-GHz - GFSK 868 y 915 MHz.md",
+    "06 - Experimentos/Seguimiento documental OTA Sub-GHz - ruta RF y control de banda.md",
     "06 - Experimentos/Segunda campaña OTA proprietary FeralRF — Ampliación de presets y verificación del procedimiento.md",
     "06 - Experimentos/aaa.md",
-    "06 - Experimentos/Seguimiento documental OTA Sub-GHz - ruta RF y control de banda.md",
     "01 - Hardware/Sub-GHz en CatSniffer V3 - CC1352P7, ruta RF y control de banda.md",
     "90 - Recursos/Fuentes primarias Sub-GHz - CC1352P7 y ruta RF.md",
-    "06 - Experimentos/Reporte_evidencia_OTA_CONTINUOUS_STOP_FeralRF_2026-10-08.md",
-    "06 - Experimentos/Reporte OTA Sub-GHz - GFSK 868 y 915 MHz.md",
     "06 - Experimentos/Informe de validación OTA FeralRF — transmisión y recepción con dos CatSniffer V3.md",
-    "06 - Experimentos/Checklist OTA FeralRF - dos CatSniffer.md",
     "05 - Evaluación/Guía enfocada OTA FeralRF - TX RX con dos CatSniffer.md",
     "06 - Experimentos/DSDSA.md",
     "05 - Evaluación/Auditoría técnica de validación FeralRF - EV ejecutadas.md",

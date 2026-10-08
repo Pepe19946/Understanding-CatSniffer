@@ -396,9 +396,11 @@ Esperado: el marcador solicitado aparece contiguo dentro del PDU recibido, `crc_
 
 ## Tiers de presets recalculados
 
-- **Tier A, representativo:** un GFSK autorizado entre `gfsk_868_50k` o `gfsk_915_50k`, bidireccional; `4fsk_868_50k` si 868 está autorizado; y `gfsk_2440_50k`. Cubren banda, modulación y backend proprietary sin barrer variantes redundantes.
+> **Actualización 2026-10-08:** Tier A/B fue ejecutado parcialmente y extendido en [[Segunda campaña OTA proprietary FeralRF — Ampliación de presets y verificación del procedimiento]], con cero paquetes entregados. La expansión ciega queda pausada. Esta sección conserva el diseño del procedimiento, no un estado pendiente de barrido.
+
+- **Tier A, representativo:** un GFSK autorizado entre `gfsk_868_50k` o `gfsk_915_50k`, bidireccional, y `gfsk_2440_50k`. `4fsk_868_50k` queda fuera como prueba de 4FSK: el setup TI auditado reserva `modType=5`.
 - **Tier B, OTA ampliada:** tasas/modulaciones restantes de 868/902/915/2440 después del Tier A; presets W-MBus, Wi-SUN o Sidewalk sólo como parámetros RF y con lenguaje estricto.
-- **Tier C, diferida/riesgosa:** OOK por riesgo de lifecycle/recovery; MIOTY no ejecutado; 169 y 433 hasta tener antenas/ruta/autorización claras; cualquier banda no autorizada o cuyo selector no se pueda establecer.
+- **Tier C, bloqueada/diferida:** OOK por lifecycle/recovery; MIOTY pending; 169 fuera de silicio/U4; 433 dentro del silicio pero fuera de U4 publicado y restringido por el asesor; cualquier banda no autorizada o cuyo selector no se pueda establecer.
 
 Un éxito con preset nombrado W-MBus/Wi-SUN/Sidewalk/MIOTY sólo permite afirmar: “los endpoints FeralRF intercambiaron los bytes esperados bajo los parámetros RF asociados con ese preset”. No valida interoperabilidad.
 

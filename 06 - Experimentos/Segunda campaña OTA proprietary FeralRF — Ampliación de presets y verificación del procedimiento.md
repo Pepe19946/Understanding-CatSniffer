@@ -756,3 +756,42 @@ Qué controla el selector RF externo.
 Si las dos versiones RP2040 manejan la ruta de forma equivalente.
 Qué explicación técnica puede abarcar cero recepción en Sub-GHz y 2.4 GHz.
 Qué única observación física o modificación de procedimiento discriminaría mejor las hipótesis.
+
+25. Normalización documental posterior
+
+Esta sección interpreta la evidencia sin modificar los comandos, stdout, timestamps u observaciones literales anteriores. Véanse [[Sub-GHz en CatSniffer V3 - CC1352P7, ruta RF y control de banda]] y [[Seguimiento documental OTA Sub-GHz - ruta RF y control de banda]].
+
+25.1 Aritmética independiente
+
+La segunda campaña contiene 20 corridas de diez retornos exitosos de `transmit()`: 18 con el helper y dos controles concurrentes. Añadidas a las cuatro corridas del primer reporte, el acumulado es:
+
+| magnitud | segunda campaña | acumulado de ambos reportes |
+|---|---:|---:|
+| corridas | 20 | 24 |
+| retornos exitosos de `transmit()` | 200 | 240 |
+| presets únicos acumulados | 19 | 19 |
+| paquetes proprietary entregados / hits | 0 | 0 |
+| `RxStreamError` expuestos | 0 | 0 |
+
+Las repeticiones bidireccionales y concurrentes aumentan corridas y solicitudes, no el número de presets únicos. Los 240 retornos no equivalen a 240 emisiones RF.
+
+25.2 Control concurrente y estadísticas
+
+En el control inverso, RX estuvo listo `4.064 s` antes del primer ACK TX. Entre el primer y último ACK transcurrieron `1.261 s`; después del último ACK permanecieron `24.690 s` de observación RX. Así, las solicitudes TX ocurrieron mientras `read_packets()` estaba activo. Ejecutar TX y RX desde una sola terminal no queda sustentado como explicación única del patrón, y el consumo tardío del helper original pierde fuerza explicativa. Esto no prueba emisiones, llegada a capas internas ni ausencia universal de pérdidas.
+
+Los dos `DeviceStats(rx_ok=0, rx_crc_err=0, rx_drop=0, rx_overflow=0, ...)` indican únicamente que, en el intervalo post-`init()` pertinente, los contadores expuestos no registraron RX correcto, CRC erróneo, drop u overflow. Son consistentes con que ningún paquete proprietary alcanzara esas etapas contadas; no cubren toda la cadena ni prueban ausencia de energía RF.
+
+25.3 Clasificación válida
+
+- **A — diagnóstico OTA GFSK/FSK físicamente plausible:** `gfsk_868_50k`, `gfsk_868_100k`, `gfsk_902_50k`, `gfsk_915_50k`, `gfsk_2440_50k`, `gfsk_2440_250k`, W-MBus S/T/C, Sidewalk FSK y Wi-SUN FSK. Hubo aceptación de control y cero paquetes entregados; TX y RX físicos no quedaron confirmados.
+- **B — nombre de modulación no demostrado:** `msk_868_50k`, `4fsk_868_50k` y `4gfsk_868_50k`. El setup `CMD_PROP_RADIO_DIV_SETUP_PA` del SDK auditado reserva los `modType` 4/5/6. Las solicitudes fueron aceptadas, pero no constituyen ensayos físicos demostrados de MSK/4FSK/4GFSK.
+- **C — no ejecutar defensiblemente:** los ocho presets 433 y los dos W-MBus N de 169 MHz. El silicio sí cubre 433, pero U4 publicado no; además hubo restricción operativa del asesor. 169.45 MHz queda fuera tanto del silicio CC1352P74 como de U4.
+- **D — diferidos:** `ook_868_4k8` por lifecycle/reset y el defecto conocido de selección Shell; OOK 433 añade la limitación del frente publicado; `mioty_868_tsunb` sigue incompleto/pending, con antecedente 0/10 y posible CPE custom.
+
+Los nombres W-MBus, Sidewalk y Wi-SUN siguen describiendo parámetros PHY/raw, no interoperabilidad de sus stacks.
+
+25.4 Reconciliación histórica y cierre
+
+La campaña actual no reprodujo el antecedente Wi-SUN/Sidewalk `70/70`: los mismos cinco nombres Wi-SUN y dos Sidewalk produjeron `0/70` paquetes entregados bajo las condiciones actuales. No se declara regresión porque faltan logs crudos, hash del binario histórico, identidad de placas y condiciones suficientes para demostrar equivalencia. W-MBus S/T/C tuvo claims históricos favorables y proprietary 2.4 GHz antecedentes contradictorios; tampoco se promueven a evidencia vigente.
+
+La expansión ciega de presets queda pausada. El siguiente experimento propuesto usa una sola solicitud `gfsk_868_50k`: observar niveles CTF1/2/3 durante `band1 → band2`, interpretar U2 con la tabla del RFSW8006Q y observar RF en J1 con método apropiado. No se propone continuidad DC a través del switch como prueba de una ruta RF.

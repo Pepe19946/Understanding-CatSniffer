@@ -14,7 +14,7 @@ Esta conclusión distingue cinco niveles:
 | Implementación de firmware | FeralRF configura y llama operaciones proprietary reales del RF Core para 868/915 MHz. |
 | Compatibilidad PCB publicada | U4 documenta 862–928 MHz y U2 conecta esa rama a J1 cuando el RP2040 selecciona `band2`. |
 | Configuración en ejecución | La sesión mostró ACK y estado lógico `Band: 1`; no hubo lectura de registros RF ni de niveles CTF. |
-| Comportamiento físico validado | Las cuatro corridas no observaron el marcador; no demuestran emisión ni recepción proprietary física. |
+| Comportamiento físico validado | Las 24 corridas acumuladas no entregaron paquetes proprietary al host receptor; no demuestran emisión ni recepción proprietary física. |
 
 ## Alcance, identidad y versiones
 
@@ -204,9 +204,9 @@ Inventario de `python/feralrf/presets.py` en `0178721c…`:
 |---|---|---|---|---|---|
 | 169.45 GFSK | `wireless_mbus_n_169_2k4`, `_4k8` | **fuera de especificación** | existe rama/override, no vuelve válido el silicio | U4 no cubre 169 | ninguna; no debe ensayarse como preset soportado |
 | 433.92 | `gfsk_433_50k`, `_10k`, `fsk_433_50k`, `ook_433_*`, `msk_433_50k`, `4fsk_433_50k`, `4gfsk_433_50k` | frecuencia dentro | FSK/GFSK/OOK tienen estructuras/patches; valores 4/5/6 son reservados en el comando exacto inspeccionado | U4 no cubre 433 | no establecida para esta ruta |
-| 868 | `gfsk_868_50k`, `_100k`, `ook_868_4k8`, `msk_868_50k`, W-MBus S/T/C, `4fsk/4gfsk_868_50k`, `mioty_868_tsunb` | frecuencia dentro; esquemas dependen del caso | GFSK/FSK/OOK configurables; 4/5/6 no justificados; MIOTY marcado pendiente en fuente | U4 sí cubre 862–928; antena requerida | cuatro corridas incluyen solo 868 GFSK, sin hits |
-| 902.2/915 | `gfsk_902_50k`, `gfsk_915_50k`, Sidewalk FSK 50/250k, Wi-SUN FSK 50/100/150/200/300k | frecuencia dentro | valores FSK escriben comando; no hay stack Sidewalk/Wi-SUN probado por el nombre | U4 sí cubre; antena requerida | una corrida 915 GFSK, sin hits |
-| 2440 | `gfsk_2440_250k`, `_50k` | frecuencia dentro | código usa setup proprietary compartido; requiere evaluación específica | U4 sí cubre 2400–2500 y selección `band1` | no evaluada aquí |
+| 868 | `gfsk_868_50k`, `_100k`, `ook_868_4k8`, `msk_868_50k`, W-MBus S/T/C, `4fsk/4gfsk_868_50k`, `mioty_868_tsunb` | frecuencia dentro; esquemas dependen del caso | GFSK/FSK/OOK configurables; 4/5/6 reservados en el setup auditado; MIOTY pending | U4 sí cubre 862–928; antena requerida | GFSK y W-MBus S/T/C ejecutados, cero entregas; MSK/4-(G)FSK no demuestran modulación nominal |
+| 902.2/915 | `gfsk_902_50k`, `gfsk_915_50k`, Sidewalk FSK 50/250k, Wi-SUN FSK 50/100/150/200/300k | frecuencia dentro | `mod_type=0/1`; no hay stack Sidewalk/Wi-SUN probado por el nombre | U4 sí cubre; antena requerida | ejecutados, cero entregas; Wi-SUN/Sidewalk actual `0/70` |
+| 2440 | `gfsk_2440_250k`, `_50k` | frecuencia dentro | setup proprietary compartido | U4 sí cubre 2400–2500 y selección `band1` | ejecutados, incluidos controles concurrentes; cero eventos/paquetes |
 
 Prerrequisitos para una campaña interpretable:
 
@@ -219,7 +219,7 @@ Prerrequisitos para una campaña interpretable:
 7. Probar recuperación entre presets, en especial OOK y cualquier stop fallido, con un control conocido antes/después.
 8. Exigir una observación RF independiente o recepción del marcador para promover un caso de control a validación física.
 
-## Qué demuestran las cuatro corridas
+## Qué demuestra el primer corte de cuatro corridas
 
 Resultados literales conservados en [[Reporte OTA Sub-GHz - GFSK 868 y 915 MHz]]:
 
@@ -236,17 +236,25 @@ No demuestran 40 emisiones completadas, pérdida RF de 100 %, cero paquetes tota
 
 La condición reportada de ~2 cm y después mayor separación con antena orientada no estuvo medida en la segunda posición. Modelos, respuesta y encaminamiento de las antenas siguen sin verificar.
 
+## Actualización de la segunda campaña
+
+[[Segunda campaña OTA proprietary FeralRF — Ampliación de presets y verificación del procedimiento]] añadió 20 corridas y 200 retornos exitosos. El acumulado es 24 corridas, 240 retornos, 19 presets únicos, cero paquetes/hits y cero errores asíncronos expuestos.
+
+El control concurrente `gfsk_2440_50k` mantuvo RX activo durante los ACK TX y por `24.690 s` después del último. Esto debilita la lectura tardía como explicación única sin demostrar emisión. Los contadores expuestos `rx_ok`, `rx_crc_err`, `rx_drop` y `rx_overflow` permanecieron en cero en ambos dispositivos para el intervalo pertinente; no cubren toda la cadena.
+
+Los casos GFSK/FSK en 868/902.2/915/2440 siguen siendo aptos para diagnóstico físico, no PASS-RF. Los presets `msk_868_50k`, `4fsk_868_50k` y `4gfsk_868_50k` solo acreditan aceptación: sus `modType` 4/5/6 están reservados en el setup TI auditado. La clasificación completa está en [[Seguimiento documental OTA Sub-GHz - ruta RF y control de banda#Clasificación actual A–D]].
+
 ## Hipótesis, evidencia y discriminadores
 
 | hipótesis | evidencia que la apoya | evidencia que se opone o limita | observación mínima discriminante |
 |---|---|---|---|
-| U2 no quedó en la rama CC Sub-GHz | `set_phy()` no controla U2; `Band` es cache | transición forzada `band1→band2` ejecuta escrituras correctas en fuente | medir CTF1/2/3 y continuidad RF3–ANT durante `band2` |
+| U2 no quedó en la rama CC Sub-GHz | `set_phy()` no controla U2; `Band` es cache | transición forzada `band1→band2` ejecuta escrituras correctas en fuente | medir CTF1/2/3 e identificar el puerto seleccionado por tabla de verdad; observar la ruta con método RF apropiado |
 | el CC no ejecutó TX pese al ACK | ACK antecede `RF_runCmd()` | no se capturó `RSP_ERROR`; otros modos FeralRF tienen evidencia RF previa | observar portadora/paquete en J1 y capturar evento/estado TX posterior |
 | TX existe en pines CC pero no llega a J1 | revisión P7 exacta y ruta de PA no cerradas | esquema publicado sí ofrece ruta RF_P/N→U4→U2 para 862–928 | sondear secuencialmente salida CC/U4/U2 con equipo adecuado |
 | RX produjo datos pero se perdieron en buffering | no hay lector host durante diez TX; varias colas finitas | solo diez tramas y no hay contador que pruebe overflow; no se debe inferir pérdida | lector concurrente + métricas/counters antes/después, manteniendo RF igual |
 | configuración TX/RX no coincide efectivamente | no hay readback; backend aplica estructuras en diferido | ambos lados usan el mismo preset y código | captura de aire decodificada o lectura/telemetría de comandos/estados RF |
 | antena/ruta externa inadecuada | modelos y respuesta desconocidos | se informaron antenas multibanda y distancia corta | VNA/antena conocida o carga/cableado de laboratorio apropiado, sin radiar campaña |
-| lifecycle deja RX/estado residual | cleanup suprime errores; stop es diferido; `disconnect` no resetea | no hay evidencia de stop fallido en estas cuatro corridas | registrar excepciones y estado/métricas tras cada stop, con control conocido |
+| lifecycle deja RX/estado residual | cleanup suprime errores; stop es diferido; `disconnect` no resetea | no hay evidencia de stop fallido en la campaña | registrar excepciones y estado/métricas tras cada stop, con control conocido |
 
 Ninguna hipótesis se declara causa raíz.
 
@@ -255,7 +263,7 @@ Ninguna hipótesis se declara causa raíz.
 La observación mínima de mayor rendimiento es **correlacionar, durante una sola solicitud `gfsk_868_50k`, los niveles físicos CTF `0,0,1` con actividad RF en J1**. Opciones futuras, sin ejecutarlas aquí:
 
 1. Medir CTF1/2/3: se espera `0,0,1` para `band2`. Si no aparece, el problema precede a U2; si aparece, solo prueba control, no continuidad RF.
-2. Verificar continuidad/pérdida RF3–ANT de U2 en ese estado: distingue control correcto de switch/montaje/ruta defectuosa; no prueba modulación.
+2. Determinar el puerto seleccionado por U2 con sus niveles de control y la tabla de verdad; evaluar la transferencia con SDR, analizador, VNA o receptor acoplado apropiado. Una medición ordinaria de continuidad DC a través del switch no prueba una ruta RF.
 3. Observar J1 con analizador o receptor conocido al pedir un único TX: energía a 868 MHz con timing correlacionado demuestra actividad en el conector; demodular sync, tasa y marcador añade prueba de configuración. Ausencia en J1 aún requiere sondear antes/después de U4 para localizar la interrupción.
 4. En paralelo lógico, capturar el resultado posterior de `RF_runCmd()` y métricas antes/después. Distingue ACK de finalización interna, pero no sustituye una observación RF.
 
@@ -266,7 +274,7 @@ Estas comprobaciones requieren autorización y equipamiento en una fase experime
 - **Fabricante:** CC1352P7 sí integra radio Sub-GHz, módem, sintetizador y PA; 169 MHz no está en sus bandas.
 - **Esquema/PCB:** la rama CC Sub-GHz publicada pasa por U4 y U2 hasta J1; U2 lo gobierna el RP2040. DIO28/29/30 del CC están NC.
 - **Código:** FeralRF implementa una ruta proprietary real para 868/915; ACK TX no es finalización RF. La callback de antena es configuración LaunchPad heredada.
-- **Observación:** Shell reportó `Band: 1`, pero es cache; las cuatro corridas tuvieron diez ACK y cero hits cada una.
+- **Observación:** Shell reportó `Band: 0/1` según las transiciones, pero es cache; el acumulado actual es 24 corridas, 240 retornos `transmit()` exitosos y cero paquetes/hits proprietary entregados.
 - **Hipótesis:** switch, adaptación, revisión, antena, ejecución RF o buffering siguen como categorías abiertas.
 - **Conclusión:** la duda “¿puede modular el CC?” queda resuelta afirmativamente; “¿la ruta física funcionó en estas placas?” no quedó validada.
 - **Verificación faltante:** niveles CTF, continuidad U2, revisión exacta ensamblada, señal en J1, identidad binaria y recepción decodificada.
@@ -279,4 +287,3 @@ Estas comprobaciones requieren autorización y equipamiento en una fase experime
 - [[Protocolo y API Python]]
 - [[Seguimiento documental OTA Sub-GHz - ruta RF y control de banda]]
 - [[Fuentes primarias Sub-GHz - CC1352P7 y ruta RF]]
-
