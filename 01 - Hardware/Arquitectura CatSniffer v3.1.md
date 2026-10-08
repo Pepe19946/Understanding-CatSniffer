@@ -194,3 +194,5 @@ El cableado fija los límites del software: la PC no llega directamente al CC o 
 
 **Anterior:** [[CatSniffer - Mapa conceptual]]  
 **Siguiente:** [[RP2040, CC1352P7 y SX1262 - Quién hace qué]]
+
+**Profundización RF:** [[Sub-GHz en CatSniffer V3 - CC1352P7, ruta RF y control de banda]] traza U8→U4→U2→J1, separa la callback DIO28/29/30 del selector CTF gobernado por RP2040 y conserva la incertidumbre de revisión P1/P7.

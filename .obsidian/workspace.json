@@ -23,12 +23,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "06 - Experimentos/Informe de validación OTA FeralRF — transmisión y recepción con dos CatSniffer V3.md",
+                "file": "06 - Experimentos/Reporte_evidencia_OTA_CONTINUOUS_STOP_FeralRF_2026-10-08.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "Informe de validación OTA FeralRF — transmisión y recepción con dos CatSniffer V3"
+              "title": "Reporte_evidencia_OTA_CONTINUOUS_STOP_FeralRF_2026-10-08"
             }
           },
           {
@@ -44,9 +44,23 @@
               "icon": "lucide-file",
               "title": "Checklist OTA FeralRF - dos CatSniffer"
             }
+          },
+          {
+            "id": "10b7ef404b8a5b91",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "06 - Experimentos/Reporte OTA Sub-GHz - GFSK 868 y 915 MHz.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "Reporte OTA Sub-GHz - GFSK 868 y 915 MHz"
+            }
           }
         ],
-        "currentTab": 1
+        "currentTab": 3
       }
     ],
     "direction": "vertical"
@@ -213,10 +227,17 @@
       "bases:Crear nueva base": false
     }
   },
-  "active": "1532fc1e621875c9",
+  "active": "10b7ef404b8a5b91",
   "lastOpenFiles": [
-    "06 - Experimentos/Checklist OTA FeralRF - dos CatSniffer.md",
+    "06 - Experimentos/Segunda campaña OTA proprietary FeralRF — Ampliación de presets y verificación del procedimiento.md",
+    "06 - Experimentos/aaa.md",
+    "06 - Experimentos/Seguimiento documental OTA Sub-GHz - ruta RF y control de banda.md",
+    "01 - Hardware/Sub-GHz en CatSniffer V3 - CC1352P7, ruta RF y control de banda.md",
+    "90 - Recursos/Fuentes primarias Sub-GHz - CC1352P7 y ruta RF.md",
+    "06 - Experimentos/Reporte_evidencia_OTA_CONTINUOUS_STOP_FeralRF_2026-10-08.md",
+    "06 - Experimentos/Reporte OTA Sub-GHz - GFSK 868 y 915 MHz.md",
     "06 - Experimentos/Informe de validación OTA FeralRF — transmisión y recepción con dos CatSniffer V3.md",
+    "06 - Experimentos/Checklist OTA FeralRF - dos CatSniffer.md",
     "05 - Evaluación/Guía enfocada OTA FeralRF - TX RX con dos CatSniffer.md",
     "06 - Experimentos/DSDSA.md",
     "05 - Evaluación/Auditoría técnica de validación FeralRF - EV ejecutadas.md",
@@ -235,13 +256,6 @@
     "05 - Evaluación/EV-03 — Reconexión limpia entre procesos.md",
     "00 - Proyecto/CatSniffer - Mapa conceptual.md",
     "05 - Evaluación/FeralRF - Matriz de pruebas.md",
-    "05 - Evaluación/# EV-11 — Presets propietarios, sól.md",
-    "05 - Evaluación/# EV-13 — Registro técnico consolid.md",
-    "05 - Evaluación/## EV-11 — Presets propietarios, só.md",
-    "05 - Evaluación/EV-04 — Reset y reinicialización.md",
-    "05 - Evaluación/EV-05 — Primera observación RF IEEE.md",
-    "05 - Evaluación/EV-10 — Matriz de PHY por control.md",
-    "05 - Evaluación/Registro — EV-03 reconexión limpia.md",
     "05 - Evaluación/# EV-14 — Error RF asíncrono y firm.txt",
     "05 - Evaluación/# EV-12 — Validación de TX rawframe.txt",
     "05 - Evaluación/# EV-13 — Registro técnico consolid.txt",

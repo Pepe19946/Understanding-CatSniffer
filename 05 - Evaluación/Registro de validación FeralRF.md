@@ -609,3 +609,7 @@ Sí permanecen dos observaciones para investigación posterior:
 2. La enumeración real `COM88 Bridge / COM87 Shell` no satisface el supuesto `Shell = Bridge + 2` empleado por `reset_device()`. No se probará esa función a ciegas.
 
 ````
+
+## Seguimiento Sub-GHz
+
+La interpretación documental de las cuatro corridas GFSK negativas está en [[Seguimiento documental OTA Sub-GHz - ruta RF y control de banda]] y la reconstrucción técnica en [[Sub-GHz en CatSniffer V3 - CC1352P7, ruta RF y control de banda]]. Estos enlaces no cambian resultados EV: distinguen ACK de finalización RF y estado `Band` cacheado de conmutación física.

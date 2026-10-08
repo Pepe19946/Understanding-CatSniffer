@@ -258,3 +258,5 @@ Vuelve inspeccionable la frontera que el firmware oficial normal deja binaria: p
 **Anterior:** [[Del PC a la radio - Rutas de extremo a extremo]]  
 **Siguiente:** [[Protocolo y API Python]]  
 **Comparación previa:** [[Mapa de firmware oficial]]
+
+**Traza proprietary y ruta externa:** [[Sub-GHz en CatSniffer V3 - CC1352P7, ruta RF y control de banda]]. La configuración del RF Core en el CC no conmuta por sí sola U2; en el diseño v3.1 publicado esa selección pertenece al RP2040.

@@ -640,6 +640,8 @@ Excluir OOK fue correcto: `Radio.configure_prop`, `presets.py` y `RadioIF_setPro
 
 **PASS-control reportado 27/27, con nivel de evidencia desigual.** Hay evidencia literal sólida para 18 presets y una afirmación agregada para nueve. No hay PASS-RF. La conclusión defendible es: “los 27 objetivos fueron registrados como terminados por el script de control; el Vault permite auditar individualmente 18 y sólo resumidamente los nueve de 902/915”.
 
+**Enmienda documental 2026-10-08:** [[Sub-GHz en CatSniffer V3 - CC1352P7, ruta RF y control de banda]] verificó contra SWRS251A que 169.45 MHz queda fuera de las bandas del CC1352P7 y contra el frente U4 publicado que éste cubre 862–928/2400–2500 MHz. Además, el `rf_prop_cmd.h` exacto del SDK 8.30.01.01 reserva en el setup examinado los `modType` que FeralRF numera 4/5/6. Esto no borra el resultado histórico PASS-control: lo restringe a aceptación/continuidad del flujo y evita tratar N169, MSK o 4-(G)FSK como cobertura backend/física demostrada.
+
 ## 3.10 EV-12 — Estado de preparación
 
 La guía identifica y describe los cuatro scripts TX y sus riesgos. En los informes no existe comando ejecutado, stdout, observación RF ni resultado de EV-12. La inspección de `smoke_tx_phase1.py` o del código no constituye ejecución.
