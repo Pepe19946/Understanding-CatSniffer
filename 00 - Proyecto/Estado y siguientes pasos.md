@@ -1,8 +1,19 @@
 # Estado y siguientes pasos
 
+## Cierre de campaña OTA — 2026-10-11
+
+- La guía OTA enfocada se considera **completada con elementos `PARTIAL`/`INCONCLUSIVE` documentados**; no significa que todas las funciones estén validadas.
+- IEEE RAW fue observado 20/20 y 10/10 en direcciones opuestas; FRAME 10/10. BURST quedó 1/5 y `PARTIAL`.
+- `TX_CONTINUOUS interval_us=0` demostró repetición física. `TX_STOP` quedó validado por ACK, no por cese RF inmediato. La entrega host quedó desacoplada temporalmente de los timestamps RF; RAW post-STOP no se observó dentro de la sesión cargada y `RX_STOP` reprodujo timeouts con último tipo `0x90`. Una sesión nueva sin reset recuperó RAW 9/10 y `RX_STOP ACK`.
+- Proprietary cerró con 24 corridas, 240 retornos exitosos, 19 presets y cero paquetes entregados. Esto es `FAIL` del criterio de recepción OTA y `INCONCLUSIVE` para emisión, backend y causa física.
+- BLE de peer era opcional; KillerBee queda diferido como integración host. Tier C proprietary quedó bloqueado/diferido por hardware, lifecycle o implementación.
+- Próximo trabajo: medir CTF/U2/J1 y energía RF con `gfsk_868_50k`; después analizar scheduler/timebase BURST, cancelación `TX_STOP`, colas/eventos `RX_STOP` y procedencia del binario instalado. No repetir variantes OTA que no discriminen esas hipótesis.
+
+Fuentes de cierre: [[Auditoría final de experimentos FeralRF]], [[01 - OTA IEEE - RAW FRAME y BURST]], [[05 - OTA IEEE - CONTINUOUS STOP dirigido]] y [[Seguimiento documental OTA Sub-GHz - ruta RF y control de banda]]. Las secciones fechadas anteriores de este plan se conservan como estado histórico de su momento.
+
 ## Actualización OTA proprietary — 2026-10-08
 
-- [[Reporte OTA Sub-GHz - GFSK 868 y 915 MHz]] y [[Segunda campaña OTA proprietary FeralRF — Ampliación de presets y verificación del procedimiento]] acumulan 24 corridas, 240 retornos exitosos de `transmit()`, 19 presets únicos y cero paquetes/hits proprietary entregados; no equivalen a 240 emisiones.
+- [[03 - OTA proprietary - GFSK 868 y 915 MHz]] y [[04 - OTA proprietary - campaña ampliada]] acumulan 24 corridas, 240 retornos exitosos de `transmit()`, 19 presets únicos y cero paquetes/hits proprietary entregados; no equivalen a 240 emisiones.
 - El control concurrente confirma que la lectura RX estuvo activa durante los ACK TX y continuó `24.690 s` tras el último. La lectura tardía del helper pierde fuerza como explicación única, sin validar RF.
 - Los casos GFSK/FSK válidos abarcan 868/902/915/2440 MHz. Los nombres MSK/4FSK/4GFSK no demuestran esas modulaciones porque el setup auditado reserva `modType` 4/5/6.
 - Los ocho presets 433 y W-MBus N169 no se ejecutarán en esta campaña; OOK y MIOTY quedan diferidos. La expansión ciega de presets está pausada.

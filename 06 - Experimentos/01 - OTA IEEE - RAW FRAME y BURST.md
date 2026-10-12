@@ -1,4 +1,4 @@
-# Informe de validación OTA FeralRF — transmisión y recepción con dos CatSniffer V3
+# 01 — OTA IEEE: RAW, FRAME y BURST con dos CatSniffer V3
 
 ## 1. Objetivo y alcance
 

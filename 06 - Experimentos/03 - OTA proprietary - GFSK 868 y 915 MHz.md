@@ -1,3 +1,5 @@
+# 03 — OTA proprietary: GFSK 868 y 915 MHz
+
 Reporte de observaciones OTA y revisión conceptual de Sub-GHz en CatSniffer/FeralRF
 1. Propósito y alcance
 
@@ -609,4 +611,4 @@ El criterio OTA no se cumplió; la causa permanece sin localizar.
 
 La investigación posterior está consolidada en [[Sub-GHz en CatSniffer V3 - CC1352P7, ruta RF y control de banda]] y resumida para este experimento en [[Seguimiento documental OTA Sub-GHz - ruta RF y control de banda]]. Esos hallazgos confirman capacidad nativa del CC1352P7 y control externo de U2 por el RP2040, pero no convierten estas corridas negativas en una causa raíz ni en validación RF.
 
-**Continuación cronológica:** [[Segunda campaña OTA proprietary FeralRF — Ampliación de presets y verificación del procedimiento]]. Este reporte conserva su corte original de cuatro corridas, 40 solicitudes aceptadas y cero hits; los acumulados posteriores se mantienen en la segunda campaña y en el seguimiento documental.
+**Continuación cronológica:** [[04 - OTA proprietary - campaña ampliada]]. Este reporte conserva su corte original de cuatro corridas, 40 solicitudes aceptadas y cero hits; los acumulados posteriores se mantienen en la segunda campaña y en el seguimiento documental.

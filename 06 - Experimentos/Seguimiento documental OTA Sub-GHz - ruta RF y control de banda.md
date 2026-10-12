@@ -2,7 +2,7 @@
 
 ## Propósito y fuentes experimentales
 
-Reconciliar [[Reporte OTA Sub-GHz - GFSK 868 y 915 MHz]] y [[Segunda campaña OTA proprietary FeralRF — Ampliación de presets y verificación del procedimiento]] con la investigación consolidada en [[Sub-GHz en CatSniffer V3 - CC1352P7, ruta RF y control de banda]]. Esta nota resume evidencia; los comandos, stdout, marcadores y timestamps literales permanecen en sus reportes.
+Reconciliar [[03 - OTA proprietary - GFSK 868 y 915 MHz]] y [[04 - OTA proprietary - campaña ampliada]] con la investigación consolidada en [[Sub-GHz en CatSniffer V3 - CC1352P7, ruta RF y control de banda]]. Esta nota resume evidencia; los comandos, stdout, marcadores y timestamps literales permanecen en sus reportes.
 
 No se supone que las asociaciones de sesión `v3.1.0.0`–`8eaa84c` y `v3.1.0.1`–`c0cd5a4` prueben hashes de los binarios instalados.
 

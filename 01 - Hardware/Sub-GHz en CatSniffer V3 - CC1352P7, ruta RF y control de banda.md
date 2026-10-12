@@ -221,7 +221,7 @@ Prerrequisitos para una campaña interpretable:
 
 ## Qué demuestra el primer corte de cuatro corridas
 
-Resultados literales conservados en [[Reporte OTA Sub-GHz - GFSK 868 y 915 MHz]]:
+Resultados literales conservados en [[03 - OTA proprietary - GFSK 868 y 915 MHz]]:
 
 | # | preset y dirección | marcador | resultado disponible |
 |---:|---|---|---|
@@ -238,7 +238,7 @@ La condición reportada de ~2 cm y después mayor separación con antena orienta
 
 ## Actualización de la segunda campaña
 
-[[Segunda campaña OTA proprietary FeralRF — Ampliación de presets y verificación del procedimiento]] añadió 20 corridas y 200 retornos exitosos. El acumulado es 24 corridas, 240 retornos, 19 presets únicos, cero paquetes/hits y cero errores asíncronos expuestos.
+[[04 - OTA proprietary - campaña ampliada]] añadió 20 corridas y 200 retornos exitosos. El acumulado es 24 corridas, 240 retornos, 19 presets únicos, cero paquetes/hits y cero errores asíncronos expuestos.
 
 El control concurrente `gfsk_2440_50k` mantuvo RX activo durante los ACK TX y por `24.690 s` después del último. Esto debilita la lectura tardía como explicación única sin demostrar emisión. Los contadores expuestos `rx_ok`, `rx_crc_err`, `rx_drop` y `rx_overflow` permanecieron en cero en ambos dispositivos para el intervalo pertinente; no cubren toda la cadena.
 

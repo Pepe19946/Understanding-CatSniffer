@@ -1,12 +1,25 @@
 # Auditoría técnica de validación FeralRF - EV ejecutadas
 
-Evaluación técnica consolidada y canónica. Auditoría documental del 7 de octubre de 2026; no es una nueva sesión experimental. Incluye todos los registros disponibles hasta EV-14 y conserva íntegra al final la auditoría del 5 de octubre, cuyo corte llegaba a EV-11. Fuentes principales: [[FeralRF - Wiki técnica integral]], [[Arquitectura FeralRF]], [[Matriz de capacidades]], [[Protocolo y API Python]], [[FeralRF - Guía de validación experimental]], [[FeralRF - Matriz de pruebas]], [[Registro de validación FeralRF]] y los EV enlazados abajo.
+Evaluación técnica consolidada y canónica. Auditoría documental inicial del 7 de octubre de 2026, con cierre de la campaña OTA incorporado el 11 de octubre; no es una nueva sesión experimental. Incluye los registros EV y los informes de [[01 - OTA IEEE - RAW FRAME y BURST]] a [[05 - OTA IEEE - CONTINUOUS STOP dirigido]], y conserva íntegra al final la auditoría del 5 de octubre, cuyo corte llegaba a EV-11. Fuentes principales: [[FeralRF - Wiki técnica integral]], [[Arquitectura FeralRF]], [[Matriz de capacidades]], [[Protocolo y API Python]], [[FeralRF - Guía de validación experimental]], [[FeralRF - Matriz de pruebas]], [[Registro de validación FeralRF]] y los registros enlazados abajo.
+
+## Actualización final de campaña — 2026-10-11
+
+Esta sección tiene precedencia sobre estados pendientes del corte del 7 de octubre; los bloques históricos preservados mantienen su fecha y no se reescriben.
+
+- IEEE RAW quedó `PASS-RF` en ambas direcciones: 20/20 y 10/10 marcadores recibidos; FRAME quedó 10/10 en una dirección.
+- BURST quedó `PARTIAL`: solicitudes `count=5` produjeron 1/5 recepciones tanto con cierre ordinario como manteniendo el host abierto; el número real de emisiones no se midió.
+- `TX_CONTINUOUS interval_us=0` quedó `PASS-RF` para repetición. `TX_STOP` quedó `PASS-CONTROL`; el cese RF inmediato sigue `NOT FULLY VALIDATED`.
+- La prueba dirigida demostró que el tiempo de entrega al host no equivale al tiempo RF del receptor. RAW post-STOP fue aceptado pero no observado dentro de la misma sesión cargada; `RX_STOP` reprodujo timeouts con último tipo inesperado `0x90`, sin semántica atribuida. Una sesión reconstruida sin reset recuperó RAW 9/10 y `RX_STOP ACK`, por lo que no se demostró poisoning persistente.
+- Proprietary acumuló 24 corridas, 240 retornos `transmit()`, 19 presets, cero paquetes entregados y cero `RxStreamError` expuestos. El criterio de recepción OTA falló; emisión, recepción física y causa/backend permanecen `INCONCLUSIVE` porque U2/CTF/J1 y energía RF no se midieron.
+- KillerBee queda `DEFERRED / integración no validada`; no es un experimento RF central ausente. BLE de peer era opcional y no se ejecutó en esta campaña. CW/PRBS conservan únicamente control C y evidencia física F.
+
+Dictamen de cierre: **campaña completada con elementos `PARTIAL`/`INCONCLUSIVE` documentados**. Más repetición OTA sin instrumentar el frente RF o el lifecycle/colas no discrimina las hipótesis restantes.
 
 ## Dictamen de alcance
 
-La documentación demuestra un sistema de control host–firmware funcional en varios casos concretos: cinco reconexiones entre procesos, exclusión RX/TX con error 0x05, ocho selecciones PHY y aceptación declarada de 27 presets (18 con salidas individuales). Hay recepción local IEEE repetida y TX IEEE RAW/FRAME observado por una segunda placa. El observador reportó 99 registros coincidentes CRC-válidos con CONTINUOUS a intervalo cero; apoyan actividad repetida, sin establecer el conteo físico exacto. Estos resultados permiten afirmar funcionamiento parcial de esas rutas, bajo las condiciones registradas.
+La documentación demuestra un sistema de control host–firmware funcional en varios casos concretos: cinco reconexiones entre procesos, exclusión RX/TX con error 0x05, ocho selecciones PHY y aceptación declarada de 27 presets (18 con salidas individuales). Hay recepción local IEEE repetida y TX IEEE RAW/FRAME observado por una segunda placa; la campaña final eleva el criterio ensayado a RAW bidireccional 20/20 y 10/10 y FRAME 10/10. `TX_CONTINUOUS interval_us=0` produjo múltiples recepciones atribuibles. Estos resultados permiten afirmar funcionamiento físico de esas rutas bajo las condiciones registradas, sin establecer potencia, alcance, PER ni conteo exacto global.
 
-No permiten afirmar validación integral de FeralRF multi-PHY, de los 27 presets por aire, de los protocolos superiores, de los límites/crypto actuales, del cese físico de TX, ni de estabilidad prolongada. EV-12 muestra una anomalía de conteos del observador en los casos de intervalos positivos ensayados; la semántica de repetición/conteo del DUT es INCONCLUSIVE; EV-12/13 muestran timeouts de RX_STOP; EV-04 demuestra selección incorrecta de Shell en el mapa inicial. La causa de la anomalía de repetición y de los timeouts permanece abierta. EV-14 prueba tres casos host y una transición mínima, pero no reproduce un fallo RF físico.
+No permiten afirmar validación integral de FeralRF multi-PHY, de los presets proprietary por aire, de los protocolos superiores, de los límites/crypto actuales, del cese físico inmediato de TX, ni de estabilidad prolongada. BURST incumplió 5/5 y conserva conteo DUT `INCONCLUSIVE`; las sesiones de alta actividad reprodujeron timeouts de `RX_STOP`; EV-04 demuestra selección incorrecta de Shell en el mapa inicial. La causa de BURST y de los timeouts permanece abierta. La campaña proprietary incumplió el criterio de recepción en todos los presets ejecutados, pero no localizó emisión frente a ruta/RX/entrega. EV-14 prueba tres casos host y una transición mínima, pero no reproduce un fallo RF físico.
 
 ## Alcance, disponibilidad y jerarquía de evidencia
 
@@ -84,8 +97,8 @@ La nota externa al alcance `Estado y siguientes pasos` contiene un corte anterio
 |Solicitud TX tras RX_START fue rechazada0x05 y control reanudó|[[EV-06 — Exclusión RX y TX y recuperación de estado]]|C|PASS rechazo/recovery; no ausencia RF medida; High|
 |Ocho secuencias PHY fueron aceptadas con reset entre filas|[[EV-10 — Matriz de PHY por control]]|C|PASS control; no transición física ni RF de ocho PHY; High|
 |Control reportado en 27 presets,18 con transcripción y nueve sólo resumen|[[EV-11 — Control de presets propietarios]] y complementos|C|PARTIAL consolidado; High18 y menor auditabilidad nueve; RF no validada|
-|Marcadores asociados a RAW/FRAME IEEE fueron recibidos por segunda placa|[[EV-12 — TX RAW FRAME BURST CONTINUOUS por aire]]|A/C|PASS entrega OTA acotada, IEEE25/0dBm configurado; negativo RAW; conteo exacto no establecido/completitud/frecuencia/potencia. High entrega|
-|CONT0 reportó 99 registros coincidentes CRC-válidos; casos positivos ensayados reportaron un match|EV-12|A/C; E conteo/causa|PARTIAL; actividad repetida apoyada, conteo físico exacto no establecido; semántica DUT INCONCLUSIVE. High registros/Low causa|
+|RAW IEEE fue recibido 20/20 y 10/10 en sentidos opuestos; FRAME 10/10 en una dirección|[[01 - OTA IEEE - RAW FRAME y BURST]]|A/C|PASS-RF del criterio ensayado, IEEE25/0dBm solicitado, negativos cero, len8/CRC; no mide potencia, alcance, PER ni interoperabilidad. High entrega|
+|CONTINUOUS a intervalo cero produjo múltiples recepciones atribuibles; intervalo positivo no cumplió el umbral|[[02 - OTA IEEE - CONTINUOUS y STOP]], [[05 - OTA IEEE - CONTINUOUS STOP dirigido]]|A/C; E conteo/cadencia|PASS-RF de repetición para intervalo cero; bloque global PARTIAL; número emitido y cadencia exacta no establecidos. High registros/Low causa|
 |CW/PRBS15/32 y dos stops idle aceptados|[[EV-13 — CW PRBS y TX_TEST_STOP por control]]|C|PARTIAL global; PASS control0dBm/0,3s host; High ACK, onda/cese sin medir|
 |Transición mínima BLE1M→IEEE sin reset entregó paquetes|[[EV-14 — Eventos RF asíncronos y firma RX]]|B/C|PARTIAL; tres declaradas/un stdout; Medium global; no matriz lifecycle|
 |Tres casos SEQ/error host cumplen contrato mock|EV-14|C host/mock|PASS subconjunto FakeSerial; no error RF físico; High|
@@ -95,7 +108,7 @@ Se demuestra un enlace físico limitado de paquetes entre dos endpoints FeralRF,
 
 ## B. Alcance pendiente o sólo indirecto
 
-La [[FeralRF - Matriz de pruebas]] enumera todas las capacidades, incluidos RX/TX de BLE2M/Coded, sub 868/915,433,169,2440 y modulaciones; advertising/hopping; presets efectivos; interoperabilidad WMBus/Wi-SUN/Sidewalk/emulación; límites wire/API; crypto HIL; KillerBee; cese CW/PRBS/CONT; cambio de estado, bandas y reinit; soak/colas/SEQ wrap; errores RF reales; formato de flasheo y compatibilidad de placas. Nada de esto se cierra con ACK o un preset presente. Scans/reactive/pattern/RSA/AIS/802.15.4g/MIOTY tienen implementación o contrato insuficientes y deben distinguirse de funcionalidades implementadas pero no evaluadas. BLE stack retirado queda fuera del alcance actual.
+La [[FeralRF - Matriz de pruebas]] enumera todas las capacidades. Proprietary 868/902/915/2440 ya fue ejecutado con cero paquetes entregados: el criterio receptor falló, pero TX/RX físicos y causa siguen abiertos; 433/169 quedaron bloqueados y OOK/MIOTY diferidos. Permanecen además RX/TX BLE2M/Coded, advertising/hopping, interoperabilidad WMBus/Wi-SUN/Sidewalk/emulación, límites wire/API, crypto HIL, KillerBee, cese físico CW/PRBS/CONT, cambios de estado, soak/colas/SEQ wrap, errores RF reales, formato de flasheo y compatibilidad de placas. Nada de esto se cierra con ACK o un preset presente. Scans/reactive/pattern/RSA/AIS/802.15.4g/MIOTY tienen implementación o contrato insuficientes y deben distinguirse de funcionalidades implementadas pero no evaluadas. BLE stack retirado queda fuera del alcance actual.
 
 ## C. Problemas confirmados por la evidencia disponible
 
@@ -104,9 +117,9 @@ La severidad expresa impacto del observable, no localización de causa. El defec
 | Tipo / problema | Evidencia y EV | Impacto práctico | Repetición disponible | Severidad / confianza |
 |---|---|---|---|---|
 |Defecto host localizado: selectorCOM90 frente a ShellCOM87|EV-04 consulta y asociación manual|Reset automático no fiable en ese mapa; manual explícito disponible|Una consulta y un ciclo; reset API sobreCOM90 no ejecutado|Alta para automatización/High local|
-|Fallo de confirmación extremo a extremo: RX_STOP timeout|EV-12:9 respuestas inesperadas; EV-13:5/4; sólo último ID 0x90 preservado|Host no obtuvo respuesta exitosa correlacionada dentro del timeout; estado RF desconocido|Varias sesiones, con 99 matches o2/11 paquetes reportados; carga interna desconocida|Alta para lifecycle/High timeout; causa no localizada|
-|Anomalía experimental: umbral receptor BURST incumplido|EV-12:40/25000 y5/250000 reportan1; host abierto3s también1|No sirve todavía como generador de conteo conocido; requisito físico DUT INCONCLUSIVE|Varias condiciones; falta contador físico independiente|Alta para validación/High observable|
-|Anomalía experimental: CONT positivos ensayados reportan1 frente a99 registros coincidentes CONT0|EV-12:CONT1 y250000; 25000 sóloBURST|Cadencia/conteo físico no demostrado; no defecto scheduler confirmado|CONT1 tres declaradas/un stdout|Alta para validación/High registros; Low causa|
+|Fallo de confirmación extremo a extremo: RX_STOP timeout|EV-12/13 y [[05 - OTA IEEE - CONTINUOUS STOP dirigido]]; en la campaña dirigida hubo 16–17 respuestas inesperadas, último tipo `0x90`|Host no obtuvo respuesta exitosa correlacionada después de sesiones de alta actividad; una sesión nueva recuperó ACK|Reproducido bajo carga; recuperación sin reset; semántica `0x90` desconocida|Alta para lifecycle/High timeout; causa no localizada|
+|Anomalía experimental: umbral receptor BURST incumplido|[[01 - OTA IEEE - RAW FRAME y BURST]]: `count=5` produjo 1/5; host abierto 3 s también 1/5|No sirve todavía como generador de conteo conocido; requisito 5/5 falló y conteo físico DUT es INCONCLUSIVE|Dos variantes del punto; falta contador físico independiente|Alta para validación/High observable|
+|Anomalía experimental: CONT con intervalo positivo frente a CONT0|[[02 - OTA IEEE - CONTINUOUS y STOP]] y [[05 - OTA IEEE - CONTINUOUS STOP dirigido]]: 250000 µs produjo 1/5; intervalo cero produjo decenas/centenas de hits|Cadencia/conteo físico positivo no demostrado; intervalo cero sí repite; no se confirma causa scheduler|Varias corridas dirigidas y buffering caracterizado|Alta para validación/High registros; Low causa|
 
 Limitación de evidencia, separada de defecto de producto: nueve presets sólo resumidos, hashes/fechas/lineaje/capturas incompletos. Debilitan reproducción, comparación y enlace al código, sin invalidar automáticamente las observaciones locales. Error documental corregido: el primer paquete es crc_ok=True en las tres salidas EV-05.
 
@@ -792,7 +805,7 @@ La confianza apropiada en el baseline actual es moderada para transporte, sesió
 
 ## Addendum experimental posterior — 2026-10-08
 
-Este addendum no reescribe la auditoría del 7 de octubre ni hace parecer que ésta conocía evidencia posterior. El corte de cuatro corridas, 40 solicitudes aceptadas y cero hits de [[Reporte OTA Sub-GHz - GFSK 868 y 915 MHz]] era correcto para su fecha; ahora es un subconjunto de [[Segunda campaña OTA proprietary FeralRF — Ampliación de presets y verificación del procedimiento]].
+Este addendum no reescribe la auditoría del 7 de octubre ni hace parecer que ésta conocía evidencia posterior. El corte de cuatro corridas, 40 solicitudes aceptadas y cero hits de [[03 - OTA proprietary - GFSK 868 y 915 MHz]] era correcto para su fecha; ahora es un subconjunto de [[04 - OTA proprietary - campaña ampliada]].
 
 ### Magnitudes verificadas
 

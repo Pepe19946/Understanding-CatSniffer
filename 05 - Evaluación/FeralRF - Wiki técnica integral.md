@@ -2,6 +2,24 @@
 
 > Encabezado original conservado: # FeralRF — Wiki técnica integral
 
+## Actualización experimental final — 11 de octubre de 2026
+
+La campaña OTA enfocada alcanzó un cierre defendible; esta actualización prevalece sobre el cuerpo histórico que todavía muestra `TX RF actual: no ejecutada`.
+
+| Dimensión | Estado actual defendible |
+|---|---|
+| IEEE RX | recepción raw IEEE 802.15.4 observada; la fuente declarada en EV-05 era un dispositivo Zigbee, sin validación Zigbee superior |
+| IEEE RAW TX | `PASS-RF` bidireccional: 20/20 y 10/10 marcadores |
+| IEEE FRAME | `PASS-RF` 10/10 en una dirección; contrato distinto, backend compartido con RAW |
+| BURST | `PARTIAL`: 1/5 observado en dos variantes del mismo punto; conteo físico y causa abiertos |
+| CONTINUOUS | `PASS-RF` de repetición para `interval_us=0`; intervalos positivos `PARTIAL` |
+| TX_STOP | `PASS-CONTROL`; cese RF inmediato `NOT FULLY VALIDATED` |
+| RX_STOP / `0x90` | anomalía reproducible tras alta actividad; significado de `0x90` no establecido; nueva sesión sin reset recuperó RAW 9/10 y `RX_STOP ACK` |
+| Proprietary | 24 corridas, 240 retornos, 19 presets y cero paquetes entregados; `FAIL` del criterio OTA, causa física/backend `INCONCLUSIVE` |
+| KillerBee | `DEFERRED / integración no validada`; no es backend RF nuevo |
+
+Los informes primarios son [[01 - OTA IEEE - RAW FRAME y BURST]], [[02 - OTA IEEE - CONTINUOUS y STOP]], [[03 - OTA proprietary - GFSK 868 y 915 MHz]], [[04 - OTA proprietary - campaña ampliada]] y [[05 - OTA IEEE - CONTINUOUS STOP dirigido]]. La campaña se considera completada con elementos `PARTIAL`/`INCONCLUSIVE`; el siguiente trabajo es medición CTF/U2/J1 y análisis dirigido de scheduler, cancelación, lifecycle y colas.
+
 ## Estado de definición y validación — reconciliación del 7 de octubre de 2026
 
 Esta nota es la definición integral canónica. El cuerpo anterior fue elaborado el 6-10-2026 con un corte de evidencia al 5-10 y permanece íntegro; sus afirmaciones “TX actual no demostrado” o “EV-12/13/14 pendientes” se leen como históricas. No constituyen el estado actual. [[FeralRF - Matriz de pruebas]] es la autoridad documental de coberturaactual; [[Registro de validación FeralRF]] explica montaje/cronología y [[Auditoría técnica de validación FeralRF - EV ejecutadas]] interpreta brechas.

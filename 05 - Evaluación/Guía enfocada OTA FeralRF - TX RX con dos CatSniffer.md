@@ -396,7 +396,7 @@ Esperado: el marcador solicitado aparece contiguo dentro del PDU recibido, `crc_
 
 ## Tiers de presets recalculados
 
-> **Actualización 2026-10-08:** Tier A/B fue ejecutado parcialmente y extendido en [[Segunda campaña OTA proprietary FeralRF — Ampliación de presets y verificación del procedimiento]], con cero paquetes entregados. La expansión ciega queda pausada. Esta sección conserva el diseño del procedimiento, no un estado pendiente de barrido.
+> **Actualización 2026-10-08:** Tier A/B fue ejecutado parcialmente y extendido en [[04 - OTA proprietary - campaña ampliada]], con cero paquetes entregados. La expansión ciega queda pausada. Esta sección conserva el diseño del procedimiento, no un estado pendiente de barrido.
 
 - **Tier A, representativo:** un GFSK autorizado entre `gfsk_868_50k` o `gfsk_915_50k`, bidireccional, y `gfsk_2440_50k`. `4fsk_868_50k` queda fuera como prueba de 4FSK: el setup TI auditado reserva `modType=5`.
 - **Tier B, OTA ampliada:** tasas/modulaciones restantes de 868/902/915/2440 después del Tier A; presets W-MBus, Wi-SUN o Sidewalk sólo como parámetros RF y con lenguaje estricto.
@@ -441,6 +441,16 @@ No añade una prueba necesaria al núcleo. El ejemplo público sólo hace sniff 
 
 ## Decisión final de campaña
 
-El mínimo para declarar cumplido el objetivo es: preflight/selector documentados, RAW IEEE 10/10 en ambas direcciones con controles negativos, FRAME físico una dirección, BURST y CONTINUOUS+STOP caracterizados sin confundir observación con emisión, y Tier A proprietary en rutas/bandas demostrables. Todo cero-packet bajo incertidumbre de U2/CTF, antena o firmware RP2040 se clasifica BLOCKED/INCONCLUSIVE.
+El mínimo para declarar cumplido el objetivo es: preflight/selector documentados, RAW IEEE 10/10 en ambas direcciones con controles negativos, FRAME físico una dirección, BURST y CONTINUOUS+STOP caracterizados sin confundir observación con emisión, y Tier A proprietary en rutas/bandas demostrables. Todo cero-packet bajo incertidumbre de U2/CTF, antena o firmware RP2040 conserva la causa física como `INCONCLUSIVE`; esto no impide registrar `FAIL` del criterio concreto de recepción OTA.
+
+### Estado final tras la ejecución
+
+- Preflight/control, RX IEEE en ambas placas, RAW bidireccional y FRAME cumplieron sus criterios; RAW/FRAME tienen evidencia física A y control C.
+- BURST fue ejecutado y quedó `PARTIAL`: solicitudes de cinco produjeron una recepción atribuible; el conteo físico solicitado no fue validado.
+- `TX_CONTINUOUS interval_us=0` demostró repetición OTA. `TX_STOP` quedó `PASS-CONTROL`; el cese RF inmediato permanece `NOT FULLY VALIDATED`. La campaña dirigida está en [[05 - OTA IEEE - CONTINUOUS STOP dirigido]].
+- Tier A y parte de Tier B proprietary fueron ejecutados: 24 corridas, 240 retornos exitosos de `transmit()`, 19 presets y cero paquetes entregados. El criterio de recepción OTA falló; emisión, recepción física y causa raíz permanecen `INCONCLUSIVE` por no haberse medido CTF/U2/J1 ni energía RF.
+- Tier C quedó bloqueado o diferido por las condiciones documentadas. BLE era opcional. KillerBee se difirió como integración host y no es una brecha del núcleo RF.
+
+La campaña descrita por esta guía se considera **completada con elementos `PARTIAL`/`INCONCLUSIVE` documentados**, no “todas las funciones validadas”. Repetir más variantes OTA sin medir el frente RF o instrumentar firmware/colas ya no discrimina las hipótesis restantes. El siguiente paso es análisis físico CTF/U2/J1 para proprietary y análisis de implementación para BURST, `TX_STOP`, `RX_STOP` y las respuestas `0x90`. Véase [[Auditoría final de experimentos FeralRF]].
 
 Véase [[Checklist OTA FeralRF - dos CatSniffer]] para la hoja breve de banco.

@@ -1,6 +1,6 @@
 # Registro de validación FeralRF
 
-Registro cronológico canónico y puerta de entrada a los resultados. Actualización documental: 7 de octubre de 2026. Fechas experimentales sólo cuando constan expresamente. No se usa orden de archivos ni Git como prueba de cronología o resultado.
+Registro cronológico canónico y puerta de entrada a los resultados. Actualización documental inicial: 7 de octubre de 2026; cierre incorporado: 11 de octubre de 2026. Fechas experimentales sólo cuando constan expresamente. No se usa orden de archivos ni Git como prueba de cronología o resultado.
 
 ## Jerarquía documental
 
@@ -39,6 +39,20 @@ Modelo canónico: [[FeralRF - Matriz de pruebas#Modelo de evidencia A–F]]. A=R
 El orden inicial se apoya en dependencias y referencias de los registros; las fechas exactas entre esas pruebas no están documentadas. La secuencia de bloques de EV-11 no acredita el reset no registrado ni fechas distintas. EV-13/14 son posteriores por relación explícita, pero no se les asigna automáticamente el 6 o 7 de octubre. La sucesión 13→14 no equivale a una prueba de RX_STOP: EV-14 atiende la pregunta de error RF/firma de su propio registro; su relación causal específica con los timeouts de EV-13 no está establecida.
 
 RX_STOP sigue la cadena host request → serialization → transport → firmware handler → RF state transition → completion/error generation → response transport → host correlation → observed timeout. No se trazó el request fallido por las etapas internas; el diagnóstico host reaparece al final. Sólo último ID 0x90 está preservado: no identificar las demás respuestas como paquetes ni inferir recepción nueva. [[Auditoría técnica de validación FeralRF - EV ejecutadas#Cadena causal de RX_STOP]] muestra la evidencia por etapa.
+
+## Cierre cronológico de la campaña OTA
+
+| Posición respaldada | Registro primario | Ejecución y resultado |
+|---:|---|---|
+|1|[[01 - OTA IEEE - RAW FRAME y BURST]]|Baseline RX en ambas placas; RAW bidireccional 20/20 y 10/10; FRAME 10/10; BURST 1/5 y repetición host-open 1/5. RAW/FRAME `PASS-RF`; BURST `PARTIAL`.|
+|2|[[02 - OTA IEEE - CONTINUOUS y STOP]]|CONTINUOUS 250000 µs 1/5; CONTINUOUS 0 µs 30 hits; STOP ACK y ventanas posteriores sin marcador; `RX_STOP` timeout. `PASS-RF` de repetición a intervalo cero, bloque global `PARTIAL`.|
+|3|[[03 - OTA proprietary - GFSK 868 y 915 MHz]]|Cuatro corridas, 40 retornos TX, cero paquetes entregados. `FAIL` del criterio OTA; emisión/recepción físicas y causa `INCONCLUSIVE`.|
+|4|[[04 - OTA proprietary - campaña ampliada]]|Veinte corridas adicionales; acumulado 24/240/19 presets, cero paquetes y cero `RxStreamError`. Tier A/B ejecutado parcialmente; Tier C bloqueado/diferido.|
+|5|[[05 - OTA IEEE - CONTINUOUS STOP dirigido]]|RX continuo alrededor de STOP; buffering host demostrado; anclas RAW post-STOP aceptadas pero no observadas en la sesión cargada; `RX_STOP` timeout repetido; nueva sesión sin reset recuperó RAW 9/10 y `RX_STOP ACK`.|
+
+Las posiciones 2 y 3 pertenecen al corte del 8 de octubre; no existe timestamp suficiente para afirmar su orden de pared exacto. El orden numérico refleja la dependencia mejor sustentada por los propios informes: el primer informe IEEE difería CONTINUOUS y proprietary; después se cerró CONTINUOUS inicial y se abrió el bloque proprietary. La posición 5 sí es posterior y está fechada el 9 de octubre. [[Seguimiento documental OTA Sub-GHz - ruta RF y control de banda]] es síntesis D/E, no una ejecución adicional.
+
+El cierre no convierte todos los resultados en PASS. La campaña queda completada con BURST `PARTIAL`, STOP físico `NOT FULLY VALIDATED`, proprietary con criterio receptor `FAIL` y causa física `INCONCLUSIVE`, BLE opcional diferido y KillerBee diferido como integración.
 
 ## Roles de los registros y duplicaciones
 
@@ -616,7 +630,7 @@ La interpretación documental de las cuatro corridas GFSK negativas está en [[S
 
 ## 2026-10-08 — Segunda campaña OTA proprietary
 
-Fuente literal: [[Segunda campaña OTA proprietary FeralRF — Ampliación de presets y verificación del procedimiento]]. Continuación del corte de cuatro corridas/40 solicitudes del primer reporte.
+Fuente literal: [[04 - OTA proprietary - campaña ampliada]]. Continuación del corte de cuatro corridas/40 solicitudes del primer reporte.
 
 | etapa | corridas | retornos `transmit()` exitosos | presets únicos acumulados | paquetes/hits | errores asíncronos expuestos |
 |---|---:|---:|---:|---:|---:|

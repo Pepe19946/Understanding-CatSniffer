@@ -1,6 +1,6 @@
 ---
 
-title: "Validación dirigida de TX_STOP con RX continuo — FeralRF"
+title: "05 — OTA IEEE: validación dirigida de TX_STOP con RX continuo"
 date: 2026-10-09
 project: "CatSniffer - FeralRF"
 status: "Cerrado experimentalmente — PARTIAL / anomalía de sesión identificada"
@@ -17,7 +17,7 @@ tags:
 
 ---
 
-# Validación dirigida de `TX_STOP` con RX continuo — FeralRF
+# 05 — OTA IEEE: validación dirigida de `TX_STOP` con RX continuo
 
 ## 1. Propósito
 
@@ -2194,7 +2194,7 @@ La guía prescribe negativo, RX previo, `TX_CONTINUOUS`, `TX_STOP`, control post
 
 ## Evidencia previa
 
-`Reporte_evidencia_OTA_CONTINUOUS_STOP_FeralRF_2026-10-08(1).md`
+[[02 - OTA IEEE - CONTINUOUS y STOP]]
 
 El reporte previo clasifica:
 

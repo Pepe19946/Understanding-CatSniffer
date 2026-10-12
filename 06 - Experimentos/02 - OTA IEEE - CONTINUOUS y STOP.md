@@ -1,12 +1,12 @@
 ---
-title: "Reporte de evidencia OTA — CONTINUOUS y STOP (dos CatSniffer)"
+title: "02 — OTA IEEE: CONTINUOUS y STOP (dos CatSniffer)"
 date: 2026-10-08
 project: CatSniffer - FeralRF
 status: "Evaluación ejecutada — PARTIAL con PASS-RF en interval_us=0"
 tags: [FeralRF, CatSniffer, OTA, IEEE-802-15-4, CONTINUOUS, STOP, validacion]
 ---
 
-# Reporte de evidencia OTA — `TX_CONTINUOUS` y `TX_STOP`
+# 02 — OTA IEEE: `TX_CONTINUOUS` y `TX_STOP`
 
 **Proyecto:** CatSniffer – FeralRF  
 **Fecha de consolidación:** 2026-10-08 (fecha de ejecución exacta no registrada en stdout)  

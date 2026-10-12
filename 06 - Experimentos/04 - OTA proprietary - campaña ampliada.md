@@ -1,4 +1,4 @@
-Segunda campaña OTA proprietary FeralRF — Ampliación de presets y verificación del procedimiento
+# 04 — OTA proprietary: campaña ampliada de presets y verificación del procedimiento
 1. Propósito
 
 Este reporte continúa el registro experimental iniciado en el primer informe OTA.
