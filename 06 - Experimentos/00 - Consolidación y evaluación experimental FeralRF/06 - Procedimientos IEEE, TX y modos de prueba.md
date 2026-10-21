@@ -2,14 +2,14 @@
 
 ## Prerrequisitos comunes
 
-Complete OP-01 y la preparación de PowerShell de [[05 - Manual práctico de uso de FeralRF]]. Para IEEE, seleccione la ruta 2,4 GHz en ambos Shell antes de abrir los Bridges. La campaña del 12-oct forzó `band2`→`band1` para evitar confiar en el estado inicial:
+Complete OP-01 y la preparación de PowerShell de [[05 - Manual práctico de uso de FeralRF]]. El directorio obligatorio es `FeralRF\python`. Para IEEE, seleccione la ruta 2,4 GHz en ambos Shell antes de abrir los Bridges y consulte el estado final:
 
 ```powershell
-python -c "import serial,time; s=serial.Serial('COM35',115200,timeout=.5); s.write(b'band2\r\n'); time.sleep(.3); s.write(b'band1\r\n'); time.sleep(.3); print(s.read_all().decode(errors='replace')); s.close()"
-python -c "import serial,time; s=serial.Serial('COM87',115200,timeout=.5); s.write(b'band2\r\n'); time.sleep(.3); s.write(b'band1\r\n'); time.sleep(.3); print(s.read_all().decode(errors='replace')); s.close()"
+python -c "import serial,time; s=serial.Serial('COM35',115200,timeout=1); s.reset_input_buffer(); s.write(b'band1\r\n'); time.sleep(.3); print(s.read_all().decode(errors='replace')); s.write(b'status\r\n'); time.sleep(.5); print(s.read_all().decode(errors='replace')); s.close()"
+python -c "import serial,time; s=serial.Serial('COM87',115200,timeout=1); s.reset_input_buffer(); s.write(b'band1\r\n'); time.sleep(.3); print(s.read_all().decode(errors='replace')); s.write(b'status\r\n'); time.sleep(.5); print(s.read_all().decode(errors='replace')); s.close()"
 ```
 
-Esto fue un control de software. La comunicación IEEE posterior respalda una ruta funcional durante esa campaña; la respuesta Shell aislada no mide GPIO ni el switch RF.
+Con RP2040 `v3.1.0.1`, el resultado lógico esperado es `2.4GHz Band` y después `Band: 0`. La secuencia histórica `band2`→`band1` imprimía ambas respuestas acumuladas; no significaba dos rutas activas. Éste sigue siendo un control de software: no mide GPIO, posición física del switch ni frecuencia. Cat-Shell selecciona ruta; FeralRF, por Cat-Bridge, configura PHY/canal.
 
 ---
 
@@ -21,7 +21,7 @@ Inicializar una CatSniffer, configurar PHY 4/canal 25, observar durante 30 s y d
 
 ### 2. Evidencia histórica y estado
 
-**VALIDADO EN LAS CONDICIONES INDICADAS.** EV-05 ejecutó tres ventanas formales con 41, 43 y 43 paquetes y cleanup correcto. Fuente declarada: tráfico Zigbee continuo; su identidad no se correlacionó independientemente.
+**VALIDADO EN LAS CONDICIONES INDICADAS.** EV-05 ejecutó tres ventanas formales con 41, 43 y 43 paquetes y cleanup correcto. El 21-oct se ejecutó nuevamente en `COM88`: 54 paquetes, primer paquete `crc_ok=True`, `RX_STOP ACK` y exit satisfactorio. Fuente declarada históricamente: tráfico Zigbee continuo; su identidad no se correlacionó independientemente.
 
 ### 3. Equipo necesario
 
@@ -41,10 +41,8 @@ Comando histórico exacto, desde `FeralRF\python`, repetido tres veces:
 
 ```powershell
 Set-Location 'C:\Users\Support\Documents\ec-projects\catsniffer-feralrf\FeralRF\python'
-python examples\smoke_phy4_ieee154.py --port COM88 --channel 25 --duration 30
+python .\examples\smoke_phy4_ieee154.py --port COM88 --channel 25 --duration 30
 ```
-
-Equivalente desde la raíz actual: `python .\python\examples\smoke_phy4_ieee154.py --port COM88 --channel 25 --duration 30`.
 
 ### 7. Salida esperada
 
@@ -126,21 +124,36 @@ try:
         r.transmit(b"\x01", power_dbm=-20)
         raise RuntimeError("TX aceptado inesperadamente durante RX")
     except CommandError as exc:
-        print("TX REJECTED:", repr(exc))
+        print("TX REJECTED:", str(exc))
+        print(f"ERROR CODE: 0x{exc.error_code:02X}")
+        if exc.error_code != 0x05:
+            raise RuntimeError(
+                f"Unexpected TX rejection code: 0x{exc.error_code:02X}"
+            )
+        print("PASS: TX rejected with expected error code 0x05")
     r.stop_rx(); rx_started = False
     print("RX: STOPPED")
     print("STATS:", r.get_stats())
 finally:
+    cleanup_error = None
     if rx_started:
-        try: r.stop_rx()
-        except Exception as exc: print("RX_STOP no confirmado:", repr(exc))
-    r.disconnect()
+        try:
+            r.stop_rx()
+        except Exception as exc:
+            cleanup_error = exc
+            print("RX_STOP no confirmado:", repr(exc))
+    try:
+        r.disconnect()
+    finally:
+        if cleanup_error is not None:
+            raise cleanup_error
 '@ | python -
+$LASTEXITCODE
 ```
 
 ### 7. Salida esperada
 
-Históricamente se observó `RX: STARTED`, `TX REJECTED` con código 0x05, `RX: STOPPED` y stats; no `TX: UNEXPECTEDLY ACCEPTED`.
+El 21-oct se observó `ERROR CODE: 0x05`, el PASS explícito, `RX: STOPPED` y stats válidos. La excepción de limpieza ya no queda convertida en una impresión exitosa; `disconnect()` se conserva aun cuando el stop falle.
 
 ### 8. Interpretación
 
@@ -172,7 +185,7 @@ Demostrar entrega OTA RAW con marcador único entre dos CatSniffer, separando AC
 
 ### 2. Evidencia histórica y estado
 
-**VALIDADO EN LAS CONDICIONES INDICADAS.** OCT-IEEE registró COM33→COM88 20/20 (20 envíos accidentales) y COM88→COM33 10/10. Las líneas originales no se preservaron literalmente; los comandos siguientes son el **equivalente actual reconstruido** del procedimiento/argumentos conservados.
+**VALIDADO EN LAS CONDICIONES INDICADAS, CON VARIACIÓN.** OCT-IEEE registró COM33→COM88 20/20 (20 envíos accidentales) y COM88→COM33 10/10. En la validación del manual del 21-oct, la primera corrida COM33→COM88 obtuvo 9/10 en 60 s (FAIL del umbral, pero entrega OTA confirmada) y la segunda 10/10 en 90 s (PASS). No se ha demostrado que ampliar la ventana causara la diferencia.
 
 ### 3. Equipo necesario
 
@@ -191,30 +204,30 @@ Ejecute OP-01, seleccione `band1` en ambas y confirme que los dos Bridges inicia
 1. Terminal 1, control negativo; espere a que termine y exija cero hits:
 
    ```powershell
-   python .\python\examples\lab\ota_rx_probe.py --port COM88 --phy 4 --channel 25 --duration 5 --marker-hex A10133008801 --match-mode contains --min-hits 0 --print-limit 30
+   python .\examples\lab\ota_rx_probe.py --port COM88 --phy 4 --channel 25 --duration 5 --marker-hex A10133008801 --match-mode contains --min-hits 0 --print-limit 30
    ```
 
 2. Terminal 1, inicie RX positivo y déjelo corriendo:
 
    ```powershell
-   python .\python\examples\lab\ota_rx_probe.py --port COM88 --phy 4 --channel 25 --duration 60 --marker-hex A10133008801 --match-mode contains --min-hits 10 --print-limit 80
+   python .\examples\lab\ota_rx_probe.py --port COM88 --phy 4 --channel 25 --duration 90 --marker-hex A10133008801 --match-mode contains --min-hits 10 --print-limit 80
    ```
 
 3. Cuando Terminal 1 muestre `[ OK ] RX_START ACK`, ejecute en Terminal 2:
 
    ```powershell
-   1..10 | ForEach-Object { python .\python\examples\smoke_tx_phase1.py --port COM33 --phy 4 --channel 25 --power 0 --packet-hex A10133008801 --tx-timeout 2 }
+   1..10 | ForEach-Object { python .\examples\smoke_tx_phase1.py --port COM33 --phy 4 --channel 25 --power 0 --packet-hex A10133008801 --tx-timeout 2 }
    ```
 
 4. Espere la terminación natural del RX. Para dirección inversa, cambie RX a `COM33`, TX a `COM88` y marcador a `A10288003301`.
 
 ### 7. Salida esperada
 
-RX imprime `RX_START ACK`, líneas de paquetes/marcador, `RX_STOP ACK` y resumen. TX imprime diez veces `TX_RAW ACK`. Históricamente el payload recibido fue `a1013300880117b5`: seis bytes de marcador y dos de FCS.
+RX imprime `RX_START ACK`, líneas de paquetes/marcador, `RX_STOP ACK` y resumen. TX imprime diez veces `TX_RAW ACK`. El control negativo sólo es válido si el resumen dice literalmente `marker_hits=0`: con `--min-hits 0`, el PASS del script no impone cero hits. La validación reciente observó nueve paquetes ambientales sin marcador en ese control. Históricamente el payload recibido fue `a1013300880117b5`: seis bytes de marcador y dos de FCS.
 
 ### 8. Interpretación
 
-Diez ACK TX son control. Diez `marker_hits` CRC-good en el peer respaldan entrega OTA. Los dos bytes extra fueron FCS de la ruta IEEE, no parte del marcador solicitado.
+Diez ACK TX son control. Diez `marker_hits` CRC-good en el peer respaldan entrega OTA. `marker_hits` cuenta coincidencias recibidas; al reutilizar el mismo marcador no establece correspondencia individual ni PDR por solicitud. Los dos bytes extra fueron FCS de la ruta IEEE, no parte del marcador solicitado.
 
 ### 9. Limpieza
 
@@ -261,19 +274,19 @@ Complete el control negativo y RAW de OP-06. Seleccione `band1` en ambos y use u
 1. Terminal 1, control negativo:
 
    ```powershell
-   python .\python\examples\lab\ota_rx_probe.py --port COM88 --phy 4 --channel 25 --duration 5 --marker-hex A20133008802 --match-mode contains --min-hits 0 --print-limit 30
+   python .\examples\lab\ota_rx_probe.py --port COM88 --phy 4 --channel 25 --duration 5 --marker-hex A20133008802 --match-mode contains --min-hits 0 --print-limit 30
    ```
 
 2. Terminal 1, RX positivo; déjelo corriendo:
 
    ```powershell
-   python .\python\examples\lab\ota_rx_probe.py --port COM88 --phy 4 --channel 25 --duration 45 --marker-hex A20133008802 --match-mode contains --min-hits 10 --print-limit 80
+   python .\examples\lab\ota_rx_probe.py --port COM88 --phy 4 --channel 25 --duration 45 --marker-hex A20133008802 --match-mode contains --min-hits 10 --print-limit 80
    ```
 
 3. Tras `RX_START ACK`, Terminal 2:
 
    ```powershell
-   python .\python\examples\lab\ota_tx_frame.py --port COM33 --phy 4 --channel 25 --power 0 --payload-hex A20133008802 --count 10 --interval-ms 250 --tx-timeout 2 --progress-every 1
+   python .\examples\lab\ota_tx_frame.py --port COM33 --phy 4 --channel 25 --power 0 --payload-hex A20133008802 --count 10 --interval-ms 250 --tx-timeout 2 --progress-every 1
    ```
 
 ### 7. Salida esperada
@@ -310,7 +323,7 @@ Solicitar cinco transmisiones BURST separadas 250000 µs y medir hits en un peer
 
 ### 2. Evidencia histórica y estado
 
-**FALLO HISTÓRICO DOCUMENTADO del umbral / VALIDACIÓN PARCIAL.** El comando obtuvo ACK, pero se observó 1/5; mantener el host abierto no cambió el resultado. También se registró 1 match para 40×25 ms. No quedó medido el número físico de emisiones. Secuencia actual reconstruida porque faltó la línea shell original.
+**FALLO DEL UMBRAL / VALIDACIÓN PARCIAL, REPRODUCIDO.** El histórico obtuvo ACK pero 1/5; el 21-oct se repitieron `count=5`, 250000 µs y marcador `A30133008803`: TX mostró `scheduled=5`, el peer observó 1 hit CRC-good y terminó FAIL 1/5. No quedó medido el número físico de emisiones.
 
 ### 3. Equipo necesario
 
@@ -329,24 +342,24 @@ Complete RAW/FRAME, mantenga `band1` y reserve marcador `A30133008803`.
 1. Terminal 1, negativo:
 
    ```powershell
-   python .\python\examples\lab\ota_rx_probe.py --port COM88 --phy 4 --channel 25 --duration 5 --marker-hex A30133008803 --match-mode contains --min-hits 0 --print-limit 30
+   python .\examples\lab\ota_rx_probe.py --port COM88 --phy 4 --channel 25 --duration 5 --marker-hex A30133008803 --match-mode contains --min-hits 0 --print-limit 30
    ```
 
 2. Terminal 1, RX positivo:
 
    ```powershell
-   python .\python\examples\lab\ota_rx_probe.py --port COM88 --phy 4 --channel 25 --duration 12 --marker-hex A30133008803 --match-mode contains --min-hits 5 --print-limit 80
+   python .\examples\lab\ota_rx_probe.py --port COM88 --phy 4 --channel 25 --duration 12 --marker-hex A30133008803 --match-mode contains --min-hits 5 --print-limit 80
    ```
 
 3. Tras `RX_START ACK`, Terminal 2:
 
    ```powershell
-   python .\python\examples\lab\ota_tx_burst.py --port COM33 --phy 4 --channel 25 --power 0 --payload-hex A30133008803 --count 5 --interval-us 250000 --tx-timeout 2
+   python .\examples\lab\ota_tx_burst.py --port COM33 --phy 4 --channel 25 --power 0 --payload-hex A30133008803 --count 5 --interval-us 250000 --tx-timeout 2
    ```
 
 ### 7. Salida esperada
 
-TX puede mostrar ACK y PASS del helper aunque RX no alcance 5. El resultado histórico estrecho fue un marcador; no se debe fabricar una salida de 5.
+TX puede mostrar ACK y `scheduled=5` aunque RX no alcance 5. Tanto el resultado histórico como el reciente fueron un marcador. `scheduled` es el conteo solicitado que el helper imprime tras el ACK inicial; no son cinco completions RF.
 
 ### 8. Interpretación
 
@@ -378,7 +391,7 @@ Comparar CONTINUOUS con intervalo positivo y cero, y ejecutar una ventana poster
 
 ### 2. Evidencia histórica y estado
 
-**VALIDACIÓN PARCIAL.** Con 250000 µs se observó 1 hit frente a umbral 5; con intervalo 0 hubo 30 hits en la matriz y 99/102 bajo otra variante. `TX_STOP` obtuvo ACK, pero el cese inmediato no fue medido independientemente.
+**VALIDACIÓN PARCIAL.** El 21-oct, 250000 µs produjo 1 hit frente a umbral 5; intervalo 0 produjo 37 hits CRC-good en unos 7 s, con separación media reportada de 1118,7 µs. TX obtuvo `TX_CONTINUOUS ACK` y `TX_STOP ACK` en ambas variantes. La corrida rápida terminó con timeout de `RX_STOP`; una sesión posterior recuperó start/stop y un control de cinco segundos dio cero hits. Los históricos registraron 30 y 99/102 bajo variantes distintas.
 
 ### 3. Equipo necesario
 
@@ -397,44 +410,44 @@ Complete OP-06 y use `band1`. No confunda conteo RX con transmisiones físicas. 
 1. Terminal 1, RX positivo:
 
    ```powershell
-   python .\python\examples\lab\ota_rx_probe.py --port COM88 --phy 4 --channel 25 --duration 10 --marker-hex A40133008804 --match-mode contains --min-hits 5 --print-limit 120
+   python .\examples\lab\ota_rx_probe.py --port COM88 --phy 4 --channel 25 --duration 10 --marker-hex A40133008804 --match-mode contains --min-hits 5 --print-limit 120
    ```
 
 2. Tras `RX_START ACK`, Terminal 2, comando histórico exacto del procedimiento del 12-oct:
 
    ```powershell
-   python .\python\examples\smoke_tx_continuous_phase1.py --port COM33 --phy 4 --channel 25 --power 0 --packet-hex A40133008804 --interval-us 250000 --run-seconds 3 --tx-timeout 2
+   python .\examples\smoke_tx_continuous_phase1.py --port COM33 --phy 4 --channel 25 --power 0 --packet-hex A40133008804 --interval-us 250000 --run-seconds 3 --tx-timeout 2
    ```
 
 3. Cuando ambos terminen, Terminal 1, control posterior:
 
    ```powershell
-   python .\python\examples\lab\ota_rx_probe.py --port COM88 --phy 4 --channel 25 --duration 5 --marker-hex A40133008804 --match-mode contains --min-hits 0 --print-limit 40
+   python .\examples\lab\ota_rx_probe.py --port COM88 --phy 4 --channel 25 --duration 5 --marker-hex A40133008804 --match-mode contains --min-hits 0 --print-limit 40
    ```
 
 4. Variante histórica intervalo 0, con Terminal 1 primero:
 
    ```powershell
-   python .\python\examples\lab\ota_rx_probe.py --port COM88 --phy 4 --channel 25 --duration 7 --marker-hex A40233008804 --match-mode contains --min-hits 20 --print-limit 160
+   python .\examples\lab\ota_rx_probe.py --port COM88 --phy 4 --channel 25 --duration 7 --marker-hex A40233008804 --match-mode contains --min-hits 20 --print-limit 160
    ```
 
    Después de `RX_START ACK`, Terminal 2:
 
    ```powershell
-   python .\python\examples\smoke_tx_continuous_phase1.py --port COM33 --phy 4 --channel 25 --power 0 --packet-hex A40233008804 --interval-us 0 --run-seconds 1 --tx-timeout 2
+   python .\examples\smoke_tx_continuous_phase1.py --port COM33 --phy 4 --channel 25 --power 0 --packet-hex A40233008804 --interval-us 0 --run-seconds 1 --tx-timeout 2
    ```
 
    Al terminar ambos, Terminal 1, control posterior:
 
    ```powershell
-   python .\python\examples\lab\ota_rx_probe.py --port COM88 --phy 4 --channel 25 --duration 5 --marker-hex A40233008804 --match-mode contains --min-hits 0 --print-limit 40
+   python .\examples\lab\ota_rx_probe.py --port COM88 --phy 4 --channel 25 --duration 5 --marker-hex A40233008804 --match-mode contains --min-hits 0 --print-limit 40
    ```
 
 La variante EV-12 con `interval_us=1` obtuvo un marker, frente a 99 en su variante de intervalo cero; no se presenta como workflow separado.
 
 ### 7. Salida esperada
 
-TX: `TX_CONTINUOUS ACK`, luego `TX_STOP ACK`. RX histórico con intervalo positivo: un hit; intervalo 0: actividad repetida. La ventana post-stop histórica no observó el marcador en su ventana posterior.
+TX: `TX_CONTINUOUS ACK`, luego `TX_STOP ACK`. RX con intervalo positivo: un hit; intervalo 0: actividad repetida. Para las ventanas post-stop, compruebe literalmente `marker_hits=0`; el PASS con `--min-hits 0` no basta. La coincidencia intermedia registrada en una corrida de 10 s no tiene relación temporal confirmada con una segunda ejecución TX y no prueba transmisión posterior al STOP.
 
 ### 8. Interpretación
 
@@ -466,7 +479,7 @@ Recorrer la ruta de control de CW/PRBS y garantizar `tx_test_stop()` tras cada m
 
 ### 2. Evidencia histórica y estado
 
-**VALIDACIÓN PARCIAL.** EV-13 obtuvo ACK para CW, PRBS15, PRBS32 y STOP, incluidos dos STOP idle. No midió señal, frecuencia, potencia, patrón ni cese. El bloque siguiente es **PROCEDIMIENTO RECONSTRUIDO — NO EJECUTADO** que combina los harness históricos usando la API actual.
+**VALIDACIÓN PARCIAL.** EV-13 y la validación reciente obtuvieron ACK para CW, PRBS15, PRBS32 y STOP. No midieron señal, frecuencia, potencia, patrón ni cese. La consulta posterior del 21-oct mostró `Band: 0`, pero no acredita retrospectivamente la banda durante cada modo. El bloque siguiente sigue siendo un **PROCEDIMIENTO RECONSTRUIDO — NO VALIDADO COMO SECUENCIA EXACTA EN HARDWARE** aunque las operaciones de control sí fueron ejecutadas.
 
 ### 3. Equipo necesario
 
@@ -547,7 +560,7 @@ Preservar los lanzamientos coordinados de switching y el punto exacto donde se b
 
 ### 2. Evidencia histórica y estado
 
-**EXPERIMENTO BLOQUEADO.** RF-01 recibió 10/10 en IEEE canal 25 y se bloqueó en `RX_STOP` antes de 25→20→25. RF-03 recibió 10/10 en IEEE inicial y se bloqueó antes de IEEE→Sub-GHz. `completed_stages=[]` en ambos; no se demostró fallo de switching.
+**EXPERIMENTOS BLOQUEADOS, CON NUEVA EVIDENCIA POSITIVA EN RF-01.** El 20-oct RF-01 se bloqueó antes del switching. El 21-oct recorrió 25/25=10/10, 25/20=0/10, 20/20=10/10 y retorno 25/25=9/10; el último `RX_STOP` agotó timeout, por lo que el resultado global sigue `BLOCKED`. RF-03 reciente obtuvo 7/10 en su etapa IEEE inicial y volvió a bloquearse en `RX_STOP` antes de configurar Sub-GHz. No hay evidencia reciente de IEEE↔Sub-GHz.
 
 ### 3. Equipo necesario
 
@@ -558,9 +571,9 @@ Dos CatSniffer V3: TX #2 `COM33/35`, RX #3 `COM88/87`; antenas 2,4 GHz y, para e
 Sólo en una campaña de diagnóstico autorizada. Confirme posibilidad de power-cycle total ≥15 s. Defina log y ejecute preflight:
 
 ```powershell
-$rfRunDir = Join-Path (Resolve-Path '.\validation_runs') ('manual_' + (Get-Date -Format 'yyyyMMdd_HHmmss'))
+$rfRunDir = Join-Path (Resolve-Path '..\validation_runs') ('manual_' + (Get-Date -Format 'yyyyMMdd_HHmmss'))
 New-Item -ItemType Directory -Path $rfRunDir | Out-Null
-python .\experimental_artifacts\next_rf_validation\preflight.py --tx-port COM33 --rx-port COM88 --tx-shell COM35 --rx-shell COM87 --antenna-confirmed --recovery-confirmed 2>&1 | Tee-Object -FilePath (Join-Path $rfRunDir '00_preflight.jsonl')
+python ..\experimental_artifacts\next_rf_validation\preflight.py --tx-port COM33 --rx-port COM88 --tx-shell COM35 --rx-shell COM87 --antenna-confirmed --recovery-confirmed 2>&1 | Tee-Object -FilePath (Join-Path $rfRunDir '00_preflight.jsonl')
 $LASTEXITCODE
 ```
 
@@ -573,20 +586,20 @@ $LASTEXITCODE
 RF-01 histórico exacto:
 
 ```powershell
-python .\experimental_artifacts\next_rf_validation\rf01_ieee_channel_switch.py --tx-port COM33 --rx-port COM88 --tx-shell COM35 --rx-shell COM87 --min-received 9 2>&1 | Tee-Object -FilePath (Join-Path $rfRunDir '01_rf01_ieee_channel_switch.jsonl')
+python ..\experimental_artifacts\next_rf_validation\rf01_ieee_channel_switch.py --tx-port COM33 --rx-port COM88 --tx-shell COM35 --rx-shell COM87 --min-received 9 2>&1 | Tee-Object -FilePath (Join-Path $rfRunDir '01_rf01_ieee_channel_switch.jsonl')
 $LASTEXITCODE
 ```
 
 Tras su bloqueo, deténgase y recupere; no lance RF-03 en la misma sesión. RF-03 histórico exacto, sólo después de un preflight fresco:
 
 ```powershell
-python .\experimental_artifacts\next_rf_validation\rf03_cross_phy_switch.py --tx-port COM33 --rx-port COM88 --tx-shell COM35 --rx-shell COM87 --min-received 9 2>&1 | Tee-Object -FilePath (Join-Path $rfRunDir '03_rf03_cross_phy_switch.jsonl')
+python ..\experimental_artifacts\next_rf_validation\rf03_cross_phy_switch.py --tx-port COM33 --rx-port COM88 --tx-shell COM35 --rx-shell COM87 --min-received 9 2>&1 | Tee-Object -FilePath (Join-Path $rfRunDir '03_rf03_cross_phy_switch.jsonl')
 $LASTEXITCODE
 ```
 
 ### 7. Salida esperada
 
-Históricamente: `marker_match_count:10`, luego `RX_STOP_CLEANUP_ERROR`/`FATAL` con `last=0x90`, `DISCONNECT_OK` en ambos y `RESULT ... BLOCKED`. Exit esperado del diseño para BLOCKED: 3.
+La salida debe interpretarse por etapa. RF-01 reciente logró los cuatro criterios de recepción, pero terminó `BLOCKED` por cleanup; RF-03 reciente terminó `BLOCKED` en IEEE inicial. Exit diseñado para BLOCKED: 3. `last=0x90` identifica paquetes RX asíncronos ignorados durante la espera, no prueba por sí solo qué capa omitió o perdió el ACK.
 
 ### 8. Interpretación
 
@@ -601,17 +614,19 @@ Los scripts desconectaron ambos objetos aun tras el fatal. Conserve JSONL. No co
 Quite toda alimentación ≥15 s, reenumere, ejecute preflight y como máximo este control:
 
 ```powershell
-python .\experimental_artifacts\next_rf_validation\rf01_ieee_channel_switch.py --only-control --tx-port COM33 --rx-port COM88 --tx-shell COM35 --rx-shell COM87 --min-received 9 2>&1 | Tee-Object -FilePath (Join-Path $rfRunDir 'recovery_ieee_control.jsonl')
+python ..\experimental_artifacts\next_rf_validation\rf01_ieee_channel_switch.py --only-control --tx-port COM33 --rx-port COM88 --tx-shell COM35 --rx-shell COM87 --min-received 9 2>&1 | Tee-Object -FilePath (Join-Path $rfRunDir 'recovery_ieee_control.jsonl')
 $LASTEXITCODE
 ```
 
-Ese control también se bloqueó históricamente; si ocurre, detenga la campaña.
+Después del primer power-cycle reciente, ese control dio 10/10 y PASS; después de RF-03, el preflight fue PASS pero el control obtuvo 9/10 y volvió a `BLOCKED` pese a un ACK durante cleanup. Un preflight accesible no demuestra recuperación del ciclo RX. Si el control se bloquea, detenga la campaña.
 
 ### 11. Límites de la conclusión
 
-No prueba que switching falle ni que los canales 20/25 sean incompatibles. Prueba un bloqueo de cleanup host-visible bajo tráfico.
+La corrida del 21-oct sí respalda switching IEEE 25→20→25 bajo esas condiciones; una sola ejecución no prueba estabilidad. RF-03 no evaluó la transición Sub-GHz. El bloqueo recurrente sigue concentrado en finalización RX host-visible.
 
 ### 12. Fuentes
 
 [[../EXPERIMENT_REPORT_2026-10-20/RF-01 — IEEE 802.15.4 Channel Switching]]; [[../EXPERIMENT_REPORT_2026-10-20/RF-03 — Validación de transición IEEE 802.15.4 ↔ Sub-GHz]]; `FeralRF/validation_runs/next_rf_20261020_091040/{01_rf01_ieee_channel_switch,03_rf03_cross_phy_switch}.jsonl`.
+
+Para la comparación completa con el 21-oct, véase [[08 - Validación reciente del manual frente a evidencia histórica]]. RF-04/KillerBee conserva el identificador OP-15 en el documento Sub-GHz por continuidad histórica, pero es una integración IEEE 802.15.4; desde aquí debe seguirse el enlace, no duplicar la receta.
 

@@ -9,6 +9,7 @@ Las recetas se reparten así:
 - este documento: preparación, identificación, inicialización y recuperación;
 - [[06 - Procedimientos IEEE, TX y modos de prueba]]: RX IEEE, exclusión RX/TX, OTA RAW/FRAME, BURST, CONTINUOUS, CW/PRBS y RF-01/RF-03;
 - [[07 - Procedimientos Sub-GHz y experimentos condicionados]]: control de presets, recuperación Sub-GHz, RF-02, RF-04 y RF-05.
+- [[08 - Validación reciente del manual frente a evidencia histórica]]: disposición de los nueve reportes del operador del 21-oct-2026 y comparación sin sobrescribir la evidencia histórica.
 
 Los comandos que transmiten RF requieren autorización, antena/carga correcta para la banda y cumplimiento regulatorio. `0 dBm` es potencia solicitada, no medida. Las asignaciones `COM33/35/88/87` son ejemplos históricos del banco de octubre de 2026; deben sustituirse si la enumeración actual difiere.
 
@@ -36,11 +37,11 @@ Cada receta declara además si el comando es **exacto ejecutado**, **equivalente
 
 ## Preparación común de PowerShell
 
-Las campañas del 12 y 20 de octubre partieron del repositorio FeralRF y usaron el paquete local. En cada terminal nuevo:
+Para eliminar ambigüedad de rutas, **todos los comandos operativos de estos documentos parten de `FeralRF\python`**, salvo que una receta declare expresamente otra ubicación histórica. En cada terminal nueva:
 
 ```powershell
-Set-Location 'C:\Users\Support\Documents\ec-projects\catsniffer-feralrf\FeralRF'
-$env:PYTHONPATH = (Resolve-Path '.\python').Path
+Set-Location 'C:\Users\Support\Documents\ec-projects\catsniffer-feralrf\FeralRF\python'
+$env:PYTHONPATH = (Resolve-Path '.').Path
 python --version
 python -c "import feralrf; print(feralrf.__file__)"
 ```
@@ -65,14 +66,14 @@ Los comandos históricos literales conservan sus COM originales. Cuando una CLI 
 | OP-01 | Enumerar y asociar interfaces; EV-00/checklist 12-oct | VALIDACIÓN PARCIAL | A | exacto/equivalente actual |
 | OP-02 | Inicializar y reconectar cinco procesos; EV-03 | VALIDADO | A | exacto ejecutado |
 | OP-03 | Reset manual `boot`→`exit`; EV-04/recuperación 15-oct | VALIDACIÓN PARCIAL | A | reconstruido de orden exacto |
-| OP-04 | RX IEEE canal 25; EV-05 | VALIDADO | A | exacto ejecutado |
-| OP-05 | TX durante RX, error 0x05 y recuperación; EV-06 | VALIDADO-control | A | equivalente actual de comando exacto |
-| OP-06 | OTA RAW bidireccional; OCT-IEEE | VALIDADO | B | equivalente reconstruido |
+| OP-04 | RX IEEE canal 25; EV-05 y repetición 21-oct | VALIDADO | A | exacto ejecutado |
+| OP-05 | TX durante RX, error 0x05 y recuperación; EV-06/21-oct | VALIDADO-control | A | equivalente actual ejecutado |
+| OP-06 | OTA RAW bidireccional; OCT-IEEE y 21-oct | VALIDADO con variación 9/10–10/10 | B | equivalente actual ejecutado |
 | OP-07 | OTA FRAME; OCT-IEEE | VALIDADO | B | equivalente reconstruido |
-| OP-08 | BURST con intervalo positivo; EV-12/OCT-IEEE | VALIDACIÓN PARCIAL / FALLO de umbral | B | equivalente reconstruido |
-| OP-09 | CONTINUOUS + STOP; EV-12/OCT-IEEE | VALIDACIÓN PARCIAL | B | exacto ejecutado |
-| OP-10 | CW/PRBS/`TX_TEST_STOP`; EV-13 | VALIDACIÓN PARCIAL | A | reconstruido de harness histórico |
-| OP-11 | Switching RF-01/RF-03; 20-oct | EXPERIMENTO BLOQUEADO | C | exacto ejecutado |
+| OP-08 | BURST con intervalo positivo; EV-12/OCT-IEEE/21-oct | VALIDACIÓN PARCIAL, 1/5 reproducido | B | equivalente actual ejecutado |
+| OP-09 | CONTINUOUS + STOP; EV-12/OCT-IEEE/21-oct | VALIDACIÓN PARCIAL; `RX_STOP` intermitente | B | exacto ejecutado |
+| OP-10 | CW/PRBS/`TX_TEST_STOP`; EV-13/21-oct | VALIDACIÓN PARCIAL | A | procedimiento reconstruido y control ACK ejecutado |
+| OP-11 | Switching RF-01/RF-03; 20–21-oct | RF-01: switching observado pero BLOCKED; RF-03: BLOCKED antes de Sub-GHz | C | exacto ejecutado |
 | OP-12 | Control de preset GFSK 868; EV-11 | VALIDADO-control | A | exacto ejecutado |
 | OP-13 | Recuperación OTA Sub-GHz #2→#3; REC-3A…4A | VALIDADO | C | equivalente actual reconstruido |
 | OP-14 | RF-02 Sub-GHz inverso #3→#2 | VALIDADO | C | exacto ejecutado |
@@ -167,7 +168,7 @@ Una CatSniffer V3 y su Bridge identificado. Condición histórica: `COM88`, firm
 
 ### 4. Antes de abrir las terminales
 
-Complete OP-01. Para reproducir literalmente, trabaje desde `FeralRF\python`; para un equivalente desde la raíz, mantenga `PYTHONPATH`.
+Complete OP-01 y use el directorio común `FeralRF\python`.
 
 ### 5. Disposición de terminales
 
@@ -235,8 +236,8 @@ Cierre procesos sobre Bridge/Shell y registre el último fallo. No use `Radio.re
 Secuencia operativa reconstruida con el orden exacto recuperado de la campaña del 15-oct (`boot` → 0,5 s → `exit` → 0,3 s → asentamiento ≥3,5 s):
 
 ```powershell
-Set-Location 'C:\Users\Support\Documents\ec-projects\catsniffer-feralrf\FeralRF'
-$env:PYTHONPATH = (Resolve-Path '.\python').Path
+Set-Location 'C:\Users\Support\Documents\ec-projects\catsniffer-feralrf\FeralRF\python'
+$env:PYTHONPATH = (Resolve-Path '.').Path
 python -c "import serial,time; s=serial.Serial('COM87',115200,timeout=1,write_timeout=1); print('OPEN',s.name); s.write(b'boot\r\n'); s.flush(); time.sleep(.5); print(s.read_all().decode(errors='replace')); s.write(b'exit\r\n'); s.flush(); time.sleep(.3); print(s.read_all().decode(errors='replace')); s.close(); time.sleep(3.5); print('CLOSED')"
 python -c "from feralrf import Radio; r=Radio(port='COM88'); print('INIT:',r.init()); print('STATS:',r.get_stats()); r.disconnect()"
 ```
@@ -288,7 +289,11 @@ En scripts de `next_rf_validation`: exit `0` = criterio satisfecho; `2` = FAIL/P
 | `manual_preset_runner.py` archivado | 0 `PASS-RF`; 2 cualquier otra clasificación |
 | `next_rf_validation` | 0 PASS; 2 FAIL/PARTIAL; 3 BLOCKED, además del evento JSONL `RESULT` |
 
-Un exit 0 de un helper TX puede significar sólo ACK/control. La receta determina si además necesita markers peer.
+Un exit 0 de un helper TX puede significar sólo ACK/control. La receta determina si además necesita markers peer. En un control negativo, `--min-hits 0` hace que cualquier conteo no negativo satisfaga el criterio del script: el operador debe verificar expresamente `marker_hits=0`; `RX PROBE PASS hits=N min_hits=0` no afirma ausencia del marcador.
+
+### `$LASTEXITCODE` y pipelines PowerShell
+
+En los comandos documentados, `python ... 2>&1 | Tee-Object ...` deja a `python` como programa nativo de la pipeline. Consulte `$LASTEXITCODE` **en la línea inmediatamente posterior**, antes de ejecutar otro programa nativo. El texto `PASS` o `ACK` no sustituye ese código ni el evento final `RESULT`. No use `$?` como equivalente del código definido por el script y no añada otra pipeline/comando entre Python y la consulta.
 
 ## Recuperación general entre recetas
 

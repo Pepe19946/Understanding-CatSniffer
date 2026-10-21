@@ -13,6 +13,7 @@ La lectura recomendada es:
 5. [[05 - Manual práctico de uso de FeralRF]] — entrada operativa, preparación, puertos y recuperación.
 6. [[06 - Procedimientos IEEE, TX y modos de prueba]] — recetas IEEE/control con terminales, orden, salida y cleanup.
 7. [[07 - Procedimientos Sub-GHz y experimentos condicionados]] — presets, recuperación OTA, RF-02, KillerBee y OOK gated.
+8. [[08 - Validación reciente del manual frente a evidencia histórica]] — disposición de los nueve reportes del operador y comparación 21-oct frente a campañas previas.
 
 ## Instantáneas locales revisadas
 
@@ -69,6 +70,10 @@ La matriz identifica **193 unidades de ejecución** en **ocho familias/campañas
 - No se modificaron firmware, Python, scripts, logs ni documentos históricos.
 - No se hizo una auditoría causal completa de `RX_STOP`, RSSI, canal propietario o backend de presets; son preguntas de Fase II.
 - No se validaron afirmaciones de pila Zigbee, Thread, Wi-SUN, Sidewalk o Wireless M-Bus por el nombre de un preset.
+
+## Revisión operativa del 21-oct-2026
+
+Los reportes aportados posteriormente por el operador se integran sin alterar la línea base histórica. Corrigen rutas/criterios de los manuales, reproducen varios resultados IEEE y añaden evidencia de switching de canal 25→20→25, pero conservan `RX_STOP` como limitación recurrente. El documento 07 reconstruye procedimientos Sub-GHz a partir de historia y código actual; todavía no fue validado por el operador. La trazabilidad detallada está en [[08 - Validación reciente del manual frente a evidencia histórica]].
 
 ## Cobertura resumida
 
