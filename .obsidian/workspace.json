@@ -144,7 +144,7 @@
                 "sortOrder": "alphabetical"
               },
               "icon": "lucide-search",
-              "title": "Buscar"
+              "title": "Search"
             }
           },
           {
@@ -160,7 +160,8 @@
               "title": "Marcadores"
             }
           }
-        ]
+        ],
+        "currentTab": 1
       }
     ],
     "direction": "horizontal",
@@ -269,8 +270,9 @@
       "bases:Create new base": false
     }
   },
-  "active": "beaf1f2fc504663d",
+  "active": "c516cdb1c2a7520c",
   "lastOpenFiles": [
+    "06 - Experimentos/MIOTY_OOK_VALIDATION_RUNBOOK.md",
     "06 - Experimentos/03 - OTA proprietary - GFSK 868 y 915 MHz.md",
     "06 - Experimentos/02 - OTA IEEE - CONTINUOUS y STOP.md",
     "06 - Experimentos/Seguimiento documental OTA Sub-GHz - ruta RF y control de banda.md",
@@ -297,7 +299,6 @@
     "05 - Evaluación/EV-14 — Eventos RF asíncronos y firma RX.md",
     "05 - Evaluación/Registro de validación FeralRF.md",
     "05 - Evaluación/EV-13 — CW PRBS y TX_TEST_STOP por control.md",
-    "05 - Evaluación/EV-12 — TX RAW FRAME BURST CONTINUOUS por aire.md",
     "05 - Evaluación/# EV-14 — Error RF asíncrono y firm.txt",
     "05 - Evaluación/# EV-12 — Validación de TX rawframe.txt",
     "05 - Evaluación/# EV-13 — Registro técnico consolid.txt",
