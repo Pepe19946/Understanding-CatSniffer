@@ -1,0 +1,27 @@
+OP-MO-07 — Post-OOK reidentification and preflight
+
+Operator reported complete power removal, 15-second interval requested by the procedure, and reconnection of both boards.
+
+Post-cycle USB mapping:
+- Unit A, USB E661A89753565932: Bridge COM33, LoRa COM34 unused, Shell COM35.
+- Unit B, USB E661A89753656A35: Bridge COM88, LoRa COM86 unused, Shell COM87.
+
+COM35 status, exit 0:
+Mode: 0, Band: 0, Radio: LoRa, LoRa: initialized, LoRa Mode: Stream, FW: v3.1.0.1, CC1352 FW: feralrf_cc1352 (custom)
+CC1352 loss: uart_overrun=0, ring_dropped=0 bytes
+
+COM87 status, exit 0:
+Mode: 0, Band: 0, Radio: LoRa, LoRa: initialized, LoRa Mode: Stream, FW: v3.1.0.1, CC1352 FW: feralrf_cc1352 (custom)
+CC1352 loss: uart_overrun=0, ring_dropped=0 bytes
+
+COM33 preflight, exit 0:
+INFO=DeviceInfo(firmware_version='1.0.0', capabilities=7, serial='464552414c524631')
+STATS=DeviceStats(rx_ok=0, rx_crc_err=0, rx_drop=0, rx_overflow=0, ll_kind_unknown=0, ll_kind_adv=0, ll_kind_scan=0, ll_kind_connect=0, ll_kind_data=0)
+
+COM88 preflight, exit 0:
+INFO=DeviceInfo(firmware_version='1.0.0', capabilities=7, serial='464552414c524631')
+STATS=DeviceStats(rx_ok=0, rx_crc_err=0, rx_drop=0, rx_overflow=0, ll_kind_unknown=0, ll_kind_adv=0, ll_kind_scan=0, ll_kind_connect=0, ll_kind_data=0)
+
+Classification: PASS for post-power-cycle identification and control-plane preflight.
+No band2, RX, or TX was executed during this substage.
+

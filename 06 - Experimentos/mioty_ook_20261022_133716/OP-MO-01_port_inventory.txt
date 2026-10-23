@@ -1,0 +1,71 @@
+OP-MO-01 — Port inventory
+Date: 2026-10-22 America/Mexico_City
+
+Initial sandbox CIM attempt:
+Get-CimInstance : Access denied
+FullyQualifiedErrorId : HRESULT 0x80041003,Microsoft.Management.Infrastructure.CimCmdlets.GetCimInstanceCommand
+
+pyserial inventory (exit 0):
+7 ports found
+COM1
+    desc: Communications Port (COM1)
+    hwid: ACPI\PNP0501\0
+COM33
+    desc: USB Serial Device (COM33)
+    hwid: USB VID:PID=1209:BABB SER=E661A89753565932 LOCATION=1-2:x.0
+COM34
+    desc: USB Serial Device (COM34)
+    hwid: USB VID:PID=1209:BABB SER=E661A89753565932 LOCATION=1-2:x.2
+COM35
+    desc: USB Serial Device (COM35)
+    hwid: USB VID:PID=1209:BABB SER=E661A89753565932 LOCATION=1-2:x.4
+COM86
+    desc: USB Serial Device (COM86)
+    hwid: USB VID:PID=1209:BABB SER=E661A89753656A35 LOCATION=1-1:x.2
+COM87
+    desc: USB Serial Device (COM87)
+    hwid: USB VID:PID=1209:BABB SER=E661A89753656A35 LOCATION=1-1:x.4
+COM88
+    desc: USB Serial Device (COM88)
+    hwid: USB VID:PID=1209:BABB SER=E661A89753656A35 LOCATION=1-1:x.0
+
+Elevated CIM inventory (exit 0):
+DeviceID    : COM1
+Name        : Communications Port (COM1)
+PNPDeviceID : ACPI\PNP0501\0
+
+DeviceID    : COM33
+Name        : USB Serial Device (COM33)
+PNPDeviceID : USB\VID_1209&PID_BABB&MI_00\6&1E70E7AF&0&0000
+
+DeviceID    : COM34
+Name        : USB Serial Device (COM34)
+PNPDeviceID : USB\VID_1209&PID_BABB&MI_02\6&1E70E7AF&0&0002
+
+DeviceID    : COM35
+Name        : USB Serial Device (COM35)
+PNPDeviceID : USB\VID_1209&PID_BABB&MI_04\6&1E70E7AF&0&0004
+
+DeviceID    : COM86
+Name        : USB Serial Device (COM86)
+PNPDeviceID : USB\VID_1209&PID_BABB&MI_02\6&106D987F&0&0002
+
+DeviceID    : COM87
+Name        : USB Serial Device (COM87)
+PNPDeviceID : USB\VID_1209&PID_BABB&MI_04\6&106D987F&0&0004
+
+DeviceID    : COM88
+Name        : USB Serial Device (COM88)
+PNPDeviceID : USB\VID_1209&PID_BABB&MI_00\6&106D987F&0&0000
+
+Derived mapping by USB identity and interface number, not COM arithmetic:
+Unit A, USB serial E661A89753565932, PNP group 1E70E7AF:
+  Cat-Bridge MI_00: COM33
+  Cat-LoRa   MI_02: COM34 (unused)
+  Cat-Shell  MI_04: COM35
+
+Unit B, USB serial E661A89753656A35, PNP group 106D987F:
+  Cat-Bridge MI_00: COM88
+  Cat-LoRa   MI_02: COM86 (unused)
+  Cat-Shell  MI_04: COM87
+

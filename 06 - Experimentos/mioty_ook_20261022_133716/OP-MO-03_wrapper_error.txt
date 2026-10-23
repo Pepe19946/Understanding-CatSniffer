@@ -1,0 +1,13 @@
+OP-MO-03 — Non-RF wrapper error before the executed experiment
+
+The first PowerShell invocation extracted the wrong embedded block because `$OtaCode` was interpolated inside a regex string.
+
+Observed output:
+Traceback (most recent call last):
+  File "<stdin>", line 2, in <module>
+  File "<frozen os>", line 709, in __getitem__
+KeyError: 'FERAL_SHELL_PORT'
+PYTHON_EXIT=1
+
+No serial port was opened and no configuration, RX or TX command was issued. The extraction was corrected to use a literal regex and guards requiring the selected block to start with `import os` and contain `FERAL_PRESET`. No RF test parameter changed.
+

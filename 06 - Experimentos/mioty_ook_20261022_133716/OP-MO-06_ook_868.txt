@@ -1,0 +1,35 @@
+OTACODE_EXTRACTED chars=5875
+LABEL=OP-MO-06_OOK_868_ISOLATED
+TX_PORT=COM33 RX_PORT=COM88
+PRESET=ook_868_4k8 CONFIG={'frequency_hz': 868000000, 'mod_type': 2, 'symbol_rate': 4800, 'deviation': 0, 'rx_bw': 76, 'sync_word': 2466992606}
+POWER_DBM=0 COUNT=10 MIN_HITS=9
+MARKER_PREFIX=4d4f30364f3030 SEQUENCES=01..0a
+SPACING_SECONDS=0.25 OBSERVE_SECONDS=5.0
+TX_INFO=DeviceInfo(firmware_version='1.0.0', capabilities=7, serial='464552414c524631')
+RX_INFO=DeviceInfo(firmware_version='1.0.0', capabilities=7, serial='464552414c524631')
+<stdin>:85: UserWarning: OOK mode locks the radio — power cycle required to change frequency or switch to other modes. Set target frequency now.
+<stdin>:86: UserWarning: OOK mode locks the radio — power cycle required to change frequency or switch to other modes. Set target frequency now.
+CONFIG_ACCEPTED=2/2
+TX_STATS_BEFORE=DeviceStats(rx_ok=0, rx_crc_err=0, rx_drop=0, rx_overflow=0, ll_kind_unknown=0, ll_kind_adv=0, ll_kind_scan=0, ll_kind_connect=0, ll_kind_data=0)
+RX_STATS_BEFORE=DeviceStats(rx_ok=0, rx_crc_err=0, rx_drop=0, rx_overflow=0, ll_kind_unknown=0, ll_kind_adv=0, ll_kind_scan=0, ll_kind_connect=0, ll_kind_data=0)
+RX_START_ACK=1
+TX_ACK seq=1 payload=4d4f30364f303001
+TX_EXCEPTION seq=2 error=TimeoutError('Response timeout')
+TX_EXCEPTION seq=3 error=CommandError('Transmit failed')
+TX_EXCEPTION seq=4 error=CommandError('Transmit failed')
+TX_EXCEPTION seq=5 error=CommandError('Transmit failed')
+TX_EXCEPTION seq=6 error=CommandError('Transmit failed')
+TX_EXCEPTION seq=7 error=CommandError('Transmit failed')
+TX_EXCEPTION seq=8 error=CommandError('Transmit failed')
+TX_EXCEPTION seq=9 error=CommandError('Transmit failed')
+TX_EXCEPTION seq=10 error=CommandError('Transmit failed')
+RX_STOP_ERROR=CommandError('Stop RX failed')
+STATS_AFTER=SKIPPED_FOR_SAFE_RECOVERY
+SUMMARY tx_acks=1/10
+SUMMARY unique_marker_hits=0 values=[]
+SUMMARY crc_good_unique_hits=0 values=[]
+SUMMARY async_or_tx_errors=9
+SUMMARY cleanup_ok=False
+CLASSIFICATION=BLOCKED_OR_CLEANUP_FAILED
+PYTHON_EXIT=1
+

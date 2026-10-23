@@ -1,0 +1,20 @@
+OP-MO-02 — Bridge preflight without RX or TX
+Baudrate: 921600
+Commands: RADIO_INIT, GET_INFO, GET_STATS
+
+PORT=COM33
+FIRMWARE=1.0.0
+CAPABILITIES=0x07
+SERIAL=464552414c524631
+STATS=DeviceStats(rx_ok=0, rx_crc_err=0, rx_drop=0, rx_overflow=0, ll_kind_unknown=0, ll_kind_adv=0, ll_kind_scan=0, ll_kind_connect=0, ll_kind_data=0)
+PYTHON_EXIT_COM33=0
+
+PORT=COM88
+FIRMWARE=1.0.0
+CAPABILITIES=0x07
+SERIAL=464552414c524631
+STATS=DeviceStats(rx_ok=0, rx_crc_err=0, rx_drop=0, rx_overflow=0, ll_kind_unknown=0, ll_kind_adv=0, ll_kind_scan=0, ll_kind_connect=0, ll_kind_data=0)
+PYTHON_EXIT_COM88=0
+
+Limitation: both devices expose the same generic logical serial (ASCII FERALRF1) and firmware version 1.0.0. These fields do not identify the installed binary hash.
+

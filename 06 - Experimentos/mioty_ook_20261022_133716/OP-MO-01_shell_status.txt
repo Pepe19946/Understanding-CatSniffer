@@ -1,0 +1,18 @@
+OP-MO-01 — Explicit Cat-Shell status query
+Baudrate: 115200
+Commands sent: status only
+
+SHELL_PORT=COM35
+status
+Mode: 0, Band: 0, Radio: LoRa, LoRa: initialized, LoRa Mode: Stream, FW: v3.1.0.1, CC1352 FW: feralrf_cc1352 (custom)
+CC1352 loss: uart_overrun=0, ring_dropped=0 bytes
+PYTHON_EXIT_COM35=0
+
+SHELL_PORT=COM87
+status
+Mode: 0, Band: 0, Radio: LoRa, LoRa: initialized, LoRa Mode: Stream, FW: v3.1.0.1, CC1352 FW: feralrf_cc1352 (custom)
+CC1352 loss: uart_overrun=0, ring_dropped=0 bytes
+PYTHON_EXIT_COM87=0
+
+Interpretation limit: Band/Radio are RP2040 logical status and do not independently prove the physical RF-switch path.
+

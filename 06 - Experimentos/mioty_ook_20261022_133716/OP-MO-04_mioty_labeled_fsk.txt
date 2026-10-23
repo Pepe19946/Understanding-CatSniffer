@@ -1,0 +1,34 @@
+OTACODE_EXTRACTED chars=5875
+LABEL=OP-MO-04_MIOTY_LABELED_GENERIC_FSK
+TX_PORT=COM33 RX_PORT=COM88
+PRESET=mioty_868_tsunb CONFIG={'frequency_hz': 868000000, 'mod_type': 0, 'symbol_rate': 396, 'deviation': 1, 'rx_bw': 74, 'sync_word': 2466992606}
+POWER_DBM=0 COUNT=10 MIN_HITS=9
+MARKER_PREFIX=4d4f30344d3030 SEQUENCES=01..0a
+SPACING_SECONDS=1.0 OBSERVE_SECONDS=5.0
+TX_INFO=DeviceInfo(firmware_version='1.0.0', capabilities=7, serial='464552414c524631')
+RX_INFO=DeviceInfo(firmware_version='1.0.0', capabilities=7, serial='464552414c524631')
+CONFIG_ACCEPTED=2/2
+TX_STATS_BEFORE=DeviceStats(rx_ok=0, rx_crc_err=0, rx_drop=0, rx_overflow=0, ll_kind_unknown=0, ll_kind_adv=0, ll_kind_scan=0, ll_kind_connect=0, ll_kind_data=0)
+RX_STATS_BEFORE=DeviceStats(rx_ok=0, rx_crc_err=0, rx_drop=0, rx_overflow=0, ll_kind_unknown=0, ll_kind_adv=0, ll_kind_scan=0, ll_kind_connect=0, ll_kind_data=0)
+RX_START_ACK=1
+TX_ACK seq=1 payload=4d4f30344d303001
+TX_ACK seq=2 payload=4d4f30344d303002
+TX_ACK seq=3 payload=4d4f30344d303003
+TX_ACK seq=4 payload=4d4f30344d303004
+TX_ACK seq=5 payload=4d4f30344d303005
+TX_ACK seq=6 payload=4d4f30344d303006
+TX_ACK seq=7 payload=4d4f30344d303007
+TX_ACK seq=8 payload=4d4f30344d303008
+TX_ACK seq=9 payload=4d4f30344d303009
+TX_ACK seq=10 payload=4d4f30344d30300a
+RX_STOP_ACK=1
+TX_STATS_AFTER=DeviceStats(rx_ok=0, rx_crc_err=0, rx_drop=0, rx_overflow=0, ll_kind_unknown=0, ll_kind_adv=0, ll_kind_scan=0, ll_kind_connect=0, ll_kind_data=0)
+RX_STATS_AFTER=DeviceStats(rx_ok=0, rx_crc_err=0, rx_drop=0, rx_overflow=0, ll_kind_unknown=0, ll_kind_adv=0, ll_kind_scan=0, ll_kind_connect=0, ll_kind_data=0)
+SUMMARY tx_acks=10/10
+SUMMARY unique_marker_hits=0 values=[]
+SUMMARY crc_good_unique_hits=0 values=[]
+SUMMARY async_or_tx_errors=0
+SUMMARY cleanup_ok=True
+CLASSIFICATION=FAIL_RAW_DELIVERY_CRITERION
+PYTHON_EXIT=1
+

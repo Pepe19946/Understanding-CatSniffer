@@ -1,0 +1,44 @@
+OTACODE_EXTRACTED chars=5875
+LABEL=OP-MO-05_CONTROL_AFTER_SLOW_FSK
+TX_PORT=COM33 RX_PORT=COM88
+PRESET=gfsk_868_50k CONFIG={'frequency_hz': 868000000, 'mod_type': 1, 'symbol_rate': 50000, 'deviation': 100, 'rx_bw': 82, 'sync_word': 2466992606}
+POWER_DBM=0 COUNT=10 MIN_HITS=9
+MARKER_PREFIX=4d4f3035433030 SEQUENCES=01..0a
+SPACING_SECONDS=0.25 OBSERVE_SECONDS=5.0
+TX_INFO=DeviceInfo(firmware_version='1.0.0', capabilities=7, serial='464552414c524631')
+RX_INFO=DeviceInfo(firmware_version='1.0.0', capabilities=7, serial='464552414c524631')
+CONFIG_ACCEPTED=2/2
+TX_STATS_BEFORE=DeviceStats(rx_ok=0, rx_crc_err=0, rx_drop=0, rx_overflow=0, ll_kind_unknown=0, ll_kind_adv=0, ll_kind_scan=0, ll_kind_connect=0, ll_kind_data=0)
+RX_STATS_BEFORE=DeviceStats(rx_ok=0, rx_crc_err=0, rx_drop=0, rx_overflow=0, ll_kind_unknown=0, ll_kind_adv=0, ll_kind_scan=0, ll_kind_connect=0, ll_kind_data=0)
+RX_START_ACK=1
+TX_ACK seq=1 payload=4d4f303543303001
+TX_ACK seq=2 payload=4d4f303543303002
+TX_ACK seq=3 payload=4d4f303543303003
+TX_ACK seq=4 payload=4d4f303543303004
+TX_ACK seq=5 payload=4d4f303543303005
+TX_ACK seq=6 payload=4d4f303543303006
+TX_ACK seq=7 payload=4d4f303543303007
+TX_ACK seq=8 payload=4d4f303543303008
+TX_ACK seq=9 payload=4d4f303543303009
+TX_ACK seq=10 payload=4d4f30354330300a
+RX_PACKET seq=1 crc_ok=True rssi_dbm=-98 lqi=0 data=084d4f303543303001efb9
+RX_PACKET seq=2 crc_ok=True rssi_dbm=-62 lqi=0 data=084d4f303543303002efb3
+RX_PACKET seq=3 crc_ok=True rssi_dbm=-3 lqi=0 data=084d4f3035433030036fb6
+RX_PACKET seq=4 crc_ok=True rssi_dbm=85 lqi=0 data=084d4f303543303004efa7
+RX_PACKET seq=5 crc_ok=True rssi_dbm=96 lqi=0 data=084d4f3035433030056fa2
+RX_PACKET seq=6 crc_ok=True rssi_dbm=72 lqi=0 data=084d4f3035433030066fa8
+RX_PACKET seq=7 crc_ok=True rssi_dbm=-20 lqi=0 data=084d4f303543303007efad
+RX_PACKET seq=8 crc_ok=True rssi_dbm=-33 lqi=0 data=084d4f303543303008ef8f
+RX_PACKET seq=9 crc_ok=True rssi_dbm=2 lqi=0 data=084d4f3035433030096f8a
+RX_PACKET seq=10 crc_ok=True rssi_dbm=109 lqi=0 data=084d4f30354330300a6f80
+RX_STOP_ACK=1
+TX_STATS_AFTER=DeviceStats(rx_ok=0, rx_crc_err=0, rx_drop=0, rx_overflow=0, ll_kind_unknown=0, ll_kind_adv=0, ll_kind_scan=0, ll_kind_connect=0, ll_kind_data=0)
+RX_STATS_AFTER=DeviceStats(rx_ok=10, rx_crc_err=0, rx_drop=0, rx_overflow=0, ll_kind_unknown=0, ll_kind_adv=0, ll_kind_scan=0, ll_kind_connect=0, ll_kind_data=0)
+SUMMARY tx_acks=10/10
+SUMMARY unique_marker_hits=10 values=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+SUMMARY crc_good_unique_hits=10 values=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+SUMMARY async_or_tx_errors=0
+SUMMARY cleanup_ok=True
+CLASSIFICATION=PASS_RAW_STAGE
+PYTHON_EXIT=0
+
